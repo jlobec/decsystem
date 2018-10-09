@@ -15,8 +15,6 @@ import javax.validation.constraints.Size;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import es.udc.fic.decisionsystem.model.common.AuditModel;
 import es.udc.fic.decisionsystem.model.consulta.Consulta;
 
@@ -34,7 +32,6 @@ public class ConsultaOpcion extends AuditModel {
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "id_consulta", nullable = false)
 	@OnDelete(action = OnDeleteAction.NO_ACTION)
-	@JsonIgnore
 	private Consulta consulta;
 
 	@Column(name = "nombre")
