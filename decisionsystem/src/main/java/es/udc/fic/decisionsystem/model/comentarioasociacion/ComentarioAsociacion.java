@@ -28,15 +28,13 @@ public class ComentarioAsociacion extends AuditModel {
 	@Column(name = "id_comentario_asociacion")
 	private Long idComentarioAsociacion;
 
-	@Column(name = "id_comentario_padre")
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "id_comentario", nullable = false)
+	@JoinColumn(name = "id_comentario_padre", referencedColumnName="id_comentario", nullable = false)
 	@OnDelete(action = OnDeleteAction.NO_ACTION)
 	private Comentario comentarioPadre;
 
-	@Column(name = "id_comentario_hijo")
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "id_comentario", nullable = false)
+	@JoinColumn(name = "id_comentario_hijo", referencedColumnName="id_comentario", nullable = false)
 	@OnDelete(action = OnDeleteAction.NO_ACTION)
 	private Comentario comentarioHijo;
 

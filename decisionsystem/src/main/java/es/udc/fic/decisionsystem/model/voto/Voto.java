@@ -7,8 +7,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -38,21 +40,21 @@ public class Voto extends AuditModel {
 	@OnDelete(action = OnDeleteAction.NO_ACTION)
 	private ConsultaOpcion consultaOpcion;
 
+	@Column(name = "motivacion")
+	@Lob
+	@NotNull
+	private String motivacion;
+
 	public Voto() {
 		super();
 	}
 
-	public Voto(Long idVoto, Usuario usuario, ConsultaOpcion consultaOpcion) {
+	public Voto(Long idVoto, Usuario usuario, ConsultaOpcion consultaOpcion, @NotNull String motivacion) {
 		super();
 		this.idVoto = idVoto;
 		this.usuario = usuario;
 		this.consultaOpcion = consultaOpcion;
-	}
-
-	public Voto(Long idVoto, Usuario usuario) {
-		super();
-		this.idVoto = idVoto;
-		this.usuario = usuario;
+		this.motivacion = motivacion;
 	}
 
 	public Long getIdVoto() {
@@ -79,9 +81,12 @@ public class Voto extends AuditModel {
 		this.consultaOpcion = consultaOpcion;
 	}
 
-	@Override
-	public String toString() {
-		return "Voto [idVoto=" + idVoto + ", usuario=" + usuario + ", consultaOpcion=" + consultaOpcion + "]";
+	public String getMotivacion() {
+		return motivacion;
+	}
+
+	public void setMotivacion(String motivacion) {
+		this.motivacion = motivacion;
 	}
 
 }
