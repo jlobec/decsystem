@@ -18,35 +18,33 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @SuppressWarnings("serial")
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(
-        value = {"createdAt", "updatedAt"},
-        allowGetters = true
-)
+@JsonIgnoreProperties(value = { "createdAt", "updatedAt" }, allowGetters = true)
 public abstract class AuditModel implements Serializable {
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "created_at", nullable = false, updatable = false)
+	@Column(name = "fecha_hora_alta", nullable = false, updatable = false)
 	@CreatedDate
-	private Date createdAt;
+	private Date fechaHoraAlta;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "updated_at", nullable = false)
+	@Column(name = "fecha_hora_modificacion", nullable = false)
 	@LastModifiedDate
-	private Date updatedAt;
+	private Date fechaHoraModificacion;
 
-	public Date getCreatedAt() {
-		return createdAt;
+	public Date getFechaHoraAlta() {
+		return fechaHoraAlta;
 	}
 
-	public void setCreatedAt(Date createdAt) {
-		this.createdAt = createdAt;
+	public void setFechaHoraAlta(Date fechaHoraAlta) {
+		this.fechaHoraAlta = fechaHoraAlta;
 	}
 
-	public Date getUpdatedAt() {
-		return updatedAt;
+	public Date getFechaHoraModificacion() {
+		return fechaHoraModificacion;
 	}
 
-	public void setUpdatedAt(Date updatedAt) {
-		this.updatedAt = updatedAt;
+	public void setFechaHoraModificacion(Date fechaHoraModificacion) {
+		this.fechaHoraModificacion = fechaHoraModificacion;
 	}
+
 }
