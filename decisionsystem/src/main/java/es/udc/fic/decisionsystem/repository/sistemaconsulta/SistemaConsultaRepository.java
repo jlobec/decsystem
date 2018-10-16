@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsulta;
 
 @Repository
-public interface SistemaConsultaRepository extends JpaRepository<SistemaConsulta, Long>{
+public interface SistemaConsultaRepository extends JpaRepository<SistemaConsulta, Integer>{
 
 }

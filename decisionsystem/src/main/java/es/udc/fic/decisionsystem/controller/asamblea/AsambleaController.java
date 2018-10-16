@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,7 +24,14 @@ public class AsambleaController {
 	@Autowired
 	private AsambleaRepository asambleaRepository;
 
-	@GetMapping
+	@GetMapping("/api/asamblea/{asambleaId}")
+	public Asamblea getAsamblea(@PathVariable Integer asambleaId) {
+		return asambleaRepository.findById(asambleaId).map(asamblea -> {
+			return asamblea;
+		}).orElseThrow(() -> new ResourceNotFoundException("Asamblea not found with id " + asambleaId));
+	}
+	
+	@GetMapping("/api/asamblea")
 	public Page<Asamblea> getAsamblea(Pageable pageable) {
 		return asambleaRepository.findAll(pageable);
 	}
@@ -32,6 +40,16 @@ public class AsambleaController {
 	public Asamblea createAsamblea(@Valid @RequestBody Asamblea asamblea) {
 		return asambleaRepository.save(asamblea);
 	}
+	
+	@PutMapping("/api/asamblea/{asambleaId}")
+	public ResponseEntity<?> updateAsamblea(@Valid @RequestBody Asamblea asamblea, @PathVariable Integer asambleaId) {
+        return asambleaRepository.findById(asambleaId)
+                .map(foundAsamblea -> {
+                	asamblea.setIdAsamblea(asambleaId);
+                	asambleaRepository.save(asamblea);
+                    return ResponseEntity.ok().build();
+                }).orElseThrow(() -> new ResourceNotFoundException("Asamblea not found with id " + asambleaId));
+    }
 	
 	@DeleteMapping("/api/asamblea/{asambleaId}")
 	public ResponseEntity<?> deleteAsamblea(@PathVariable Integer asambleaId) {
