@@ -1,4 +1,4 @@
-package es.udc.fic.decisionsystem.controller.exception;
+package es.udc.fic.decisionsystem.controller.common.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
