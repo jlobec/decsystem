@@ -27,8 +27,8 @@ import es.udc.fic.decisionsystem.model.rol.RoleName;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.payload.ApiResponse;
 import es.udc.fic.decisionsystem.payload.JwtAuthenticationResponse;
-import es.udc.fic.decisionsystem.payload.LoginRequest;
-import es.udc.fic.decisionsystem.payload.SignUpRequest;
+import es.udc.fic.decisionsystem.payload.usuario.LoginRequest;
+import es.udc.fic.decisionsystem.payload.usuario.SignUpRequest;
 import es.udc.fic.decisionsystem.repository.rol.RolRepository;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
 

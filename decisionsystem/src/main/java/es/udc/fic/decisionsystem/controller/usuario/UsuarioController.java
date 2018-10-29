@@ -9,13 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
+import es.udc.fic.decisionsystem.payload.usuario.UpdateUserRequest;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
 
 @RestController
@@ -36,17 +36,12 @@ public class UsuarioController {
 		return usuarioRepository.findAll(pageable);
 	}
 
-	@PostMapping("/api/usuario")
-	public Usuario createUsuario(@Valid @RequestBody Usuario usuario) {
-		return usuarioRepository.save(usuario);
-	}
-	
 	@PutMapping("/api/usuario/{usuarioId}")
-	public Usuario updateUsuario(@Valid @RequestBody Usuario usuario, @PathVariable Long usuarioId) {
+	public Usuario updateUsuario(@Valid @RequestBody UpdateUserRequest request, @PathVariable Long usuarioId) {
 		return usuarioRepository.findById(usuarioId).map(foundUsuario -> {
-			usuario.setIdUsuario(usuarioId);
-			usuarioRepository.save(usuario);
-			return usuario;
+			foundUsuario.setNombre(request.getName());
+			foundUsuario.setApellido(request.getLastname());
+			return usuarioRepository.save(foundUsuario); 
 		}).orElseThrow(() -> new ResourceNotFoundException("Usuario not found with id " + usuarioId));
 	}
 

@@ -1,4 +1,4 @@
-package es.udc.fic.decisionsystem.payload;
+package es.udc.fic.decisionsystem.payload.usuario;
 
 import javax.validation.constraints.NotBlank;
 
