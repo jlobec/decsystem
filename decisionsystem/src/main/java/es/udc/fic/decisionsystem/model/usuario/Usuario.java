@@ -1,5 +1,6 @@
 package es.udc.fic.decisionsystem.model.usuario;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -61,10 +62,10 @@ public class Usuario extends AuditModel {
 
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "usuario_asamblea", joinColumns = @JoinColumn(referencedColumnName = "id_usuario", name = "idUsuario"), inverseJoinColumns = @JoinColumn(referencedColumnName = "id_asamblea", name = "idAsamblea"))
-	private List<Asamblea> asambleas;
+	private List<Asamblea> asambleas = new ArrayList<>();
 
 	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(name = "usuario_roles", joinColumns = @JoinColumn(name = "id_usuario"), inverseJoinColumns = @JoinColumn(name = "id_rol"))
+	@JoinTable(name = "usuario_rol", joinColumns = @JoinColumn(referencedColumnName = "id_usuario", name = "idUsuario"), inverseJoinColumns = @JoinColumn(referencedColumnName = "id_rol", name = "idRol"))
 	private Set<Rol> roles = new HashSet<>();
 
 	public Usuario() {

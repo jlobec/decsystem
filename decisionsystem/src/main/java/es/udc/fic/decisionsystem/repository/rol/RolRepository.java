@@ -11,6 +11,6 @@ import es.udc.fic.decisionsystem.model.rol.RoleName;
 @Repository
 public interface RolRepository extends JpaRepository<Rol, Long> {
 
-	Optional<Rol> findByName(RoleName roleName);
+	Optional<Rol> findByNombre(RoleName roleName);
 	
 }
