@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import es.udc.fic.decisionsystem.model.asamblea.Asamblea;
 
 @Repository
-public interface AsambleaRepository extends JpaRepository<Asamblea, Integer>{
+public interface AsambleaRepository extends JpaRepository<Asamblea, Integer> {
 
 }

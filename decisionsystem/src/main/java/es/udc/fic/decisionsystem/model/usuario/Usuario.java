@@ -1,8 +1,6 @@
 package es.udc.fic.decisionsystem.model.usuario;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -20,7 +18,6 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
-import es.udc.fic.decisionsystem.model.asamblea.Asamblea;
 import es.udc.fic.decisionsystem.model.common.AuditModel;
 import es.udc.fic.decisionsystem.model.rol.Rol;
 
@@ -59,10 +56,6 @@ public class Usuario extends AuditModel {
 	@Column(name = "password")
 	@NotBlank
 	private String password;
-
-	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(name = "usuario_asamblea", joinColumns = @JoinColumn(referencedColumnName = "id_usuario", name = "idUsuario"), inverseJoinColumns = @JoinColumn(referencedColumnName = "id_asamblea", name = "idAsamblea"))
-	private List<Asamblea> asambleas = new ArrayList<>();
 
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "usuario_rol", joinColumns = @JoinColumn(referencedColumnName = "id_usuario", name = "idUsuario"), inverseJoinColumns = @JoinColumn(referencedColumnName = "id_rol", name = "idRol"))
@@ -129,14 +122,6 @@ public class Usuario extends AuditModel {
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	public List<Asamblea> getAsambleas() {
-		return asambleas;
-	}
-
-	public void setAsambleas(List<Asamblea> asambleas) {
-		this.asambleas = asambleas;
 	}
 
 	public Set<Rol> getRoles() {
