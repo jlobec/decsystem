@@ -18,6 +18,8 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import es.udc.fic.decisionsystem.model.common.AuditModel;
 import es.udc.fic.decisionsystem.model.rol.Rol;
 
@@ -55,6 +57,7 @@ public class Usuario extends AuditModel {
 
 	@Column(name = "password")
 	@NotBlank
+	@JsonIgnore
 	private String password;
 
 	@ManyToMany(fetch = FetchType.LAZY)
