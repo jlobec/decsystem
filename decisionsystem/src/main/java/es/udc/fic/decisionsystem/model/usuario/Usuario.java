@@ -1,9 +1,13 @@
 package es.udc.fic.decisionsystem.model.usuario;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -11,14 +15,18 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 import es.udc.fic.decisionsystem.model.asamblea.Asamblea;
 import es.udc.fic.decisionsystem.model.common.AuditModel;
+import es.udc.fic.decisionsystem.model.rol.Rol;
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "usuario", uniqueConstraints = { @UniqueConstraint(columnNames = { "nickname" }),
+		@UniqueConstraint(columnNames = { "email" }) })
 public class Usuario extends AuditModel {
 
 	private static final long serialVersionUID = 472204311282263993L;
@@ -30,6 +38,7 @@ public class Usuario extends AuditModel {
 
 	@Column(name = "nombre")
 	@Size(max = 100)
+	@NotBlank
 	private String nombre;
 
 	@Column(name = "apellido")
@@ -38,34 +47,40 @@ public class Usuario extends AuditModel {
 
 	@Column(name = "email")
 	@Size(max = 200)
+	@NotBlank
+	@Email
 	private String email;
 
 	@Column(name = "nickname")
 	@Size(max = 100)
-	@NotNull
+	@NotBlank
 	private String nickname;
 
-	@Column(name = "salt")
-	@NotNull
-	private String salt;
+	@Column(name = "password")
+	@NotBlank
+	private String password;
 
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "usuario_asamblea", joinColumns = @JoinColumn(referencedColumnName = "id_usuario", name = "idUsuario"), inverseJoinColumns = @JoinColumn(referencedColumnName = "id_asamblea", name = "idAsamblea"))
-	private List<Asamblea> asambleas;
+	private List<Asamblea> asambleas = new ArrayList<>();
+
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "usuario_rol", joinColumns = @JoinColumn(referencedColumnName = "id_usuario", name = "idUsuario"), inverseJoinColumns = @JoinColumn(referencedColumnName = "id_rol", name = "idRol"))
+	private Set<Rol> roles = new HashSet<>();
 
 	public Usuario() {
 		super();
 	}
 
-	public Usuario(Long idUsuario, @Size(max = 100) String nombre, @Size(max = 100) String apellido,
-			@Size(max = 200) String email, @Size(max = 100) String nickname, @NotNull String salt) {
+	public Usuario(@Size(max = 100) @NotBlank String nombre, @Size(max = 100) String apellido,
+			@Size(max = 200) @NotBlank @Email String email, @Size(max = 100) @NotBlank String nickname,
+			@NotBlank String password) {
 		super();
-		this.idUsuario = idUsuario;
 		this.nombre = nombre;
 		this.apellido = apellido;
 		this.email = email;
 		this.nickname = nickname;
-		this.salt = salt;
+		this.password = password;
 	}
 
 	public Long getIdUsuario() {
@@ -108,12 +123,12 @@ public class Usuario extends AuditModel {
 		this.nickname = nickname;
 	}
 
-	public String getSalt() {
-		return salt;
+	public String getPassword() {
+		return password;
 	}
 
-	public void setSalt(String salt) {
-		this.salt = salt;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public List<Asamblea> getAsambleas() {
@@ -124,10 +139,18 @@ public class Usuario extends AuditModel {
 		this.asambleas = asambleas;
 	}
 
+	public Set<Rol> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Rol> roles) {
+		this.roles = roles;
+	}
+
 	@Override
 	public String toString() {
 		return "Usuario [idUsuario=" + idUsuario + ", nombre=" + nombre + ", apellido=" + apellido + ", email=" + email
-				+ ", nickname=" + nickname + ", salt=" + salt + "]";
+				+ ", nickname=" + nickname + "]";
 	}
 
 }
