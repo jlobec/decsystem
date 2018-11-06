@@ -16,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -33,7 +32,6 @@ import es.udc.fic.decisionsystem.repository.rol.RolRepository;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
 
 @RestController
-@RequestMapping("/api/auth")
 public class AuthController {
 
 	@Autowired
@@ -51,7 +49,7 @@ public class AuthController {
 	@Autowired
 	private JwtTokenProvider tokenProvider;
 
-	@PostMapping("/signin")
+	@PostMapping("api/user/auth/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
 		Authentication authentication = authenticationManager.authenticate(
@@ -63,7 +61,7 @@ public class AuthController {
 		return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
 	}
 
-	@PostMapping("/signup")
+	@PostMapping("api/user/auth/signup")
 	@Transactional
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
 		if (userRepository.existsByNickname(signUpRequest.getNickname())) {
