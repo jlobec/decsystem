@@ -24,19 +24,19 @@ public class UsuarioController {
 	@Autowired
 	private UsuarioRepository usuarioRepository;
 	
-	@GetMapping("/api/usuario/{usuarioId}")
+	@GetMapping("/api/user/{usuarioId}")
 	public Usuario getUsuarioById(@PathVariable Long usuarioId) {
 		return usuarioRepository.findById(usuarioId).map(usuario -> {
 			return usuario;
 		}).orElseThrow(() -> new ResourceNotFoundException("Usuario not found with id " + usuarioId));
 	}
 
-	@GetMapping("/api/usuario")
+	@GetMapping("/api/user")
 	public Page<Usuario> getUsuario(Pageable pageable) {
 		return usuarioRepository.findAll(pageable);
 	}
 
-	@PutMapping("/api/usuario/{usuarioId}")
+	@PutMapping("/api/user/{usuarioId}")
 	public Usuario updateUsuario(@Valid @RequestBody UpdateUserRequest request, @PathVariable Long usuarioId) {
 		return usuarioRepository.findById(usuarioId).map(foundUsuario -> {
 			foundUsuario.setNombre(request.getName());
@@ -45,7 +45,7 @@ public class UsuarioController {
 		}).orElseThrow(() -> new ResourceNotFoundException("Usuario not found with id " + usuarioId));
 	}
 
-	@DeleteMapping("/api/usuario/{usuarioId}")
+	@DeleteMapping("/api/user/{usuarioId}")
 	public ResponseEntity<?> deleteUsuario(@PathVariable Long usuarioId) {
 		return usuarioRepository.findById(usuarioId).map(usuario -> {
 			usuarioRepository.delete(usuario);

@@ -23,17 +23,17 @@ public class SistemaConsultaController {
 	@Autowired
 	private SistemaConsultaRepository sistemaConsultaRepository;
 	
-	@GetMapping("/api/sistconsulta")
+	@GetMapping("/api/pollsystem")
     public Page<SistemaConsulta> getSistemaConsulta(Pageable pageable) {
         return sistemaConsultaRepository.findAll(pageable);
     }
 	
-	@PostMapping("/api/sistconsulta")
+	@PostMapping("/api/pollsystem")
 	public SistemaConsulta createAsamblea(@Valid @RequestBody SistemaConsulta sistemaConsulta) {
 		return sistemaConsultaRepository.save(sistemaConsulta);
 	}
 	
-	@DeleteMapping("/api/sistconsulta/{sistConsultaId}")
+	@DeleteMapping("/api/pollsystem/{sistConsultaId}")
 	public ResponseEntity<?> deleteAsamblea(@PathVariable Integer sistConsultaId) {
         return sistemaConsultaRepository.findById(sistConsultaId)
                 .map(sistConsulta -> {
