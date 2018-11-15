@@ -16,11 +16,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
 import es.udc.fic.decisionsystem.model.asamblea.Asamblea;
+import es.udc.fic.decisionsystem.model.consulta.Consulta;
+import es.udc.fic.decisionsystem.model.consultaasamblea.ConsultaAsamblea;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.usuarioasamblea.UsuarioAsamblea;
 import es.udc.fic.decisionsystem.payload.ApiResponse;
+import es.udc.fic.decisionsystem.payload.asamblea.AssemblyPollRequest;
 import es.udc.fic.decisionsystem.payload.asamblea.AssemblyUserRequest;
 import es.udc.fic.decisionsystem.repository.asamblea.AsambleaRepository;
+import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
+import es.udc.fic.decisionsystem.repository.consultaasamblea.ConsultaAsambleaRepository;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
 import es.udc.fic.decisionsystem.repository.usuarioasamblea.UsuarioAsambleaRepository;
 
@@ -35,6 +40,12 @@ public class AsambleaController {
 
 	@Autowired
 	private UsuarioAsambleaRepository usuarioAsambleaRepository;
+
+	@Autowired
+	private ConsultaRepository consultaRepository;
+
+	@Autowired
+	private ConsultaAsambleaRepository consultaAsambleaRepository;
 
 	@GetMapping("/api/assembly/{asambleaId}")
 	public Asamblea getAsamblea(@PathVariable Integer asambleaId) {
@@ -97,6 +108,32 @@ public class AsambleaController {
 					() -> new ResourceNotFoundException("User not found with id " + deleteUserRequest.getUserId()));
 		}).orElseThrow(() -> new ResourceNotFoundException("Asamblea not found with id " + asambleaId));
 
+	}
+
+	@PostMapping("/api/assembly/{asambleaId}/addpoll")
+	public ResponseEntity<?> addPoll(@Valid @RequestBody AssemblyPollRequest addPollRequest,
+			@PathVariable Integer asambleaId) {
+
+		Asamblea asamblea = asambleaRepository.findById(asambleaId).map(a -> {
+			return a;
+		}).orElseThrow(() -> new ResourceNotFoundException("Assembly not found with id " + asambleaId));
+
+		Consulta consulta = consultaRepository.findById(addPollRequest.getPollId()).map(c -> {
+			return c;
+		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + addPollRequest.getPollId()));
+
+		if (consultaAsambleaRepository.findByConsultaAndAsamblea(consulta, asamblea).isPresent()) {
+			return ResponseEntity.badRequest().body(new ApiResponse(false,
+					String.format("Poll %d already added to assembly", addPollRequest.getPollId())));
+		}
+
+		ConsultaAsamblea toAdd = new ConsultaAsamblea();
+		toAdd.setAsamblea(asamblea);
+		toAdd.setConsulta(consulta);
+		consultaAsambleaRepository.save(toAdd);
+
+		return ResponseEntity.ok()
+				.body(new ApiResponse(true, String.format("Added poll %d ", addPollRequest.getPollId())));
 	}
 
 	@PutMapping("/api/assembly/{asambleaId}")
