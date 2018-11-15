@@ -136,6 +136,26 @@ public class AsambleaController {
 				.body(new ApiResponse(true, String.format("Added poll %d ", addPollRequest.getPollId())));
 	}
 
+	@PostMapping("/api/assembly/{asambleaId}/deletepoll")
+	public ResponseEntity<?> deletePoll(@Valid @RequestBody AssemblyPollRequest deletePollRequest,
+			@PathVariable Integer asambleaId) {
+
+		Asamblea asamblea = asambleaRepository.findById(asambleaId).map(a -> {
+			return a;
+		}).orElseThrow(() -> new ResourceNotFoundException("Assembly not found with id " + asambleaId));
+
+		Consulta consulta = consultaRepository.findById(deletePollRequest.getPollId()).map(c -> {
+			return c;
+		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + deletePollRequest.getPollId()));
+
+		return consultaAsambleaRepository.findByConsultaAndAsamblea(consulta, asamblea).map(ca -> {
+			consultaAsambleaRepository.delete(ca);
+			return ResponseEntity.ok().body(new ApiResponse(true,
+					String.format("Deleted poll %d from assembly", deletePollRequest.getPollId())));
+		}).orElseThrow(() -> new ResourceNotFoundException("Poll not added"));
+
+	}
+
 	@PutMapping("/api/assembly/{asambleaId}")
 	public ResponseEntity<?> updateAsamblea(@Valid @RequestBody Asamblea asamblea, @PathVariable Integer asambleaId) {
 		return asambleaRepository.findById(asambleaId).map(foundAsamblea -> {
