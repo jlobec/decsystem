@@ -1,5 +1,6 @@
 package es.udc.fic.decisionsystem.controller.consulta;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -18,10 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
 import es.udc.fic.decisionsystem.model.consulta.Consulta;
+import es.udc.fic.decisionsystem.model.consultaopcion.ConsultaOpcion;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsulta;
 import es.udc.fic.decisionsystem.model.util.DateUtil;
+import es.udc.fic.decisionsystem.payload.ApiResponse;
+import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
 import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
+import es.udc.fic.decisionsystem.repository.consultaopcion.ConsultaOpcionRepository;
 import es.udc.fic.decisionsystem.repository.sistemaconsulta.SistemaConsultaRepository;
 
 @RestController
@@ -33,6 +38,9 @@ public class ConsultaController {
 	@Autowired
 	private SistemaConsultaRepository sistemaConsultaRepository;
 
+	@Autowired
+	private ConsultaOpcionRepository consultaOpcionRepository;
+
 	@GetMapping("/api/poll/{consultaId}")
 	public Consulta getConsulta(@PathVariable Long consultaId) {
 		return consultaRepository.findById(consultaId).map(consulta -> {
@@ -43,6 +51,16 @@ public class ConsultaController {
 	@GetMapping("/api/poll")
 	public Page<Consulta> getConsulta(Pageable pageable) {
 		return consultaRepository.findAll(pageable);
+	}
+
+	@GetMapping("/api/poll/{consultaId}/options")
+	public List<ConsultaOpcion> getPollOptions(@PathVariable Long consultaId) {
+		Consulta consulta = consultaRepository.findById(consultaId).map(c -> {
+			return c;
+		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
+
+		return consultaOpcionRepository.findByConsulta(consulta);
+
 	}
 
 	@PostMapping("/api/poll")
@@ -61,6 +79,22 @@ public class ConsultaController {
 		} else {
 			throw new ResourceNotFoundException("Poll system not found");
 		}
+	}
+
+	@PostMapping("/api/poll/{consultaId}/addoption")
+	public ResponseEntity<?> addPollOption(@Valid @RequestBody AddPollOptionRequest addPollOptionRequest,
+			@PathVariable Long consultaId) {
+		Consulta consulta = consultaRepository.findById(consultaId).map(c -> {
+			return c;
+		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
+
+		ConsultaOpcion option = new ConsultaOpcion();
+		option.setConsulta(consulta);
+		option.setNombre(addPollOptionRequest.getName());
+		option.setDescripcion(addPollOptionRequest.getDescription());
+		consultaOpcionRepository.save(option);
+
+		return ResponseEntity.ok().body(new ApiResponse(true, "Option added"));
 
 	}
 
@@ -70,7 +104,7 @@ public class ConsultaController {
 			consulta.setIdConsulta(consultaId);
 			consultaRepository.save(consulta);
 			return ResponseEntity.ok().build();
-		}).orElseThrow(() -> new ResourceNotFoundException("Consulta not found with id " + consultaId));
+		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
 	}
 
 	@DeleteMapping("/api/poll/{consultaId}")
