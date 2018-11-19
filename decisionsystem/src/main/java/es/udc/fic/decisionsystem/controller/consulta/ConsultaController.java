@@ -1,6 +1,5 @@
 package es.udc.fic.decisionsystem.controller.consulta;
 
-import java.sql.Date;
 import java.util.Optional;
 
 import javax.validation.Valid;
