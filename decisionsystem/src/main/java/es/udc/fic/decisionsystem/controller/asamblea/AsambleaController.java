@@ -64,6 +64,11 @@ public class AsambleaController {
 		return usuarioRepository.findByIdAsamblea(pageable, asambleaId);
 	}
 
+	@GetMapping("/api/assembly/{asambleaId}/polls")
+	public Page<Consulta> getAssemblyPolls(Pageable pageable, @PathVariable Integer asambleaId) {
+		return consultaRepository.findByIdAsamblea(pageable, asambleaId);
+	}
+
 	@PostMapping("/api/assembly")
 	public Asamblea createAsamblea(@Valid @RequestBody Asamblea asamblea) {
 		return asambleaRepository.save(asamblea);

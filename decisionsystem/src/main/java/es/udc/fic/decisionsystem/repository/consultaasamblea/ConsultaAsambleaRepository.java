@@ -11,7 +11,8 @@ import es.udc.fic.decisionsystem.model.consultaasamblea.ConsultaAsamblea;
 
 @Repository
 public interface ConsultaAsambleaRepository extends JpaRepository<ConsultaAsamblea, Long> {
-	
+
 	Optional<ConsultaAsamblea> findByConsultaAndAsamblea(Consulta consulta, Asamblea asamblea);
-	
+
+	Optional<ConsultaAsamblea> findByAsamblea(Asamblea asamblea);
 }

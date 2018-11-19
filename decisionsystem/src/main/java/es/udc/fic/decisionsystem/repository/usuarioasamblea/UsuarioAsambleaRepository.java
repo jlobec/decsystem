@@ -10,7 +10,9 @@ import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.usuarioasamblea.UsuarioAsamblea;
 
 @Repository
-public interface UsuarioAsambleaRepository extends JpaRepository<UsuarioAsamblea, Long>{
+public interface UsuarioAsambleaRepository extends JpaRepository<UsuarioAsamblea, Long> {
 
 	Optional<UsuarioAsamblea> findByUsuarioAndAsamblea(Usuario usuario, Asamblea asamblea);
+
+	Optional<UsuarioAsamblea> findByAsamblea(Asamblea asamblea);
 }
