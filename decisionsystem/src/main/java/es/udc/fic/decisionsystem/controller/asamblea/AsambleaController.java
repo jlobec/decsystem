@@ -115,6 +115,23 @@ public class AsambleaController {
 
 	}
 
+	@PostMapping("/api/assembly/{asambleaId}/makeuseradmin")
+	public ResponseEntity<?> makeUserAdmin(@Valid @RequestBody AssemblyUserRequest addUserRequest,
+			@PathVariable Integer asambleaId) {
+		Asamblea assembly = asambleaRepository.findById(asambleaId)
+				.orElseThrow(() -> new ResourceNotFoundException("Assembly not found with id " + asambleaId));
+
+		Usuario user = usuarioRepository.findById(addUserRequest.getUserId()).orElseThrow(
+				() -> new ResourceNotFoundException("User not found with id " + addUserRequest.getUserId()));
+
+		return usuarioAsambleaRepository.findByUsuarioAndAsamblea(user, assembly).map(userAssembly -> {
+			userAssembly.setEsAdministrador(Boolean.TRUE);
+			usuarioAsambleaRepository.save(userAssembly);
+			return ResponseEntity.ok().body(new ApiResponse(true,
+					String.format("User %d is now an admin over assembly", addUserRequest.getUserId())));
+		}).orElseThrow(() -> new ResourceNotFoundException("User not found with id " + addUserRequest.getUserId()));
+	}
+
 	@PostMapping("/api/assembly/{asambleaId}/addpoll")
 	public ResponseEntity<?> addPoll(@Valid @RequestBody AssemblyPollRequest addPollRequest,
 			@PathVariable Integer asambleaId) {
