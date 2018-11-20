@@ -15,6 +15,8 @@ import es.udc.fic.decisionsystem.model.usuario.Usuario;
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
 	Optional<Usuario> findByNicknameOrEmail(String username, String email);
+	
+	Optional<Usuario> findByNickname(String username);
 
 	boolean existsByNickname(String username);
 
