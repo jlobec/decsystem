@@ -16,47 +16,82 @@ import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
 import es.udc.fic.decisionsystem.model.comentario.Comentario;
+import es.udc.fic.decisionsystem.model.comentarioasociacion.ComentarioAsociacion;
+import es.udc.fic.decisionsystem.model.usuario.Usuario;
+import es.udc.fic.decisionsystem.model.voto.Voto;
+import es.udc.fic.decisionsystem.payload.comentario.AddCommentRequest;
 import es.udc.fic.decisionsystem.repository.comentario.ComentarioRepository;
+import es.udc.fic.decisionsystem.repository.comentarioasociacion.ComentarioAsociacionRepository;
+import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
+import es.udc.fic.decisionsystem.repository.voto.VotoRepository;
 
 @RestController
 public class ComentarioController {
 
 	@Autowired
 	private ComentarioRepository comentarioRepository;
-	
-	@GetMapping("/api/comentario/{comentarioId}")
+
+	@Autowired
+	private ComentarioAsociacionRepository comentarioAsociacionRepository;
+
+	@Autowired
+	private VotoRepository votoRepository;
+
+	@Autowired
+	private UsuarioRepository usuarioRepository;
+
+	@GetMapping("/api/comment/{comentarioId}")
 	public Comentario getComentario(@PathVariable Long comentarioId) {
 		return comentarioRepository.findById(comentarioId).map(comentario -> {
 			return comentario;
-		}).orElseThrow(() -> new ResourceNotFoundException("Comentario not found with id " + comentarioId));
+		}).orElseThrow(() -> new ResourceNotFoundException("Comment und with id " + comentarioId));
 	}
-	
-	@GetMapping("/api/comentario")
+
+	@GetMapping("/api/comment")
 	public Page<Comentario> getComentario(Pageable pageable) {
 		return comentarioRepository.findAll(pageable);
 	}
 
-	@PostMapping("/api/comentario")
-	public Comentario createComentario(@Valid @RequestBody Comentario comentario) {
-		return comentarioRepository.save(comentario);
+	@PostMapping("/api/comment")
+	public Comentario createComentario(@Valid @RequestBody AddCommentRequest addCommentRequest) {
+		Voto vote = votoRepository.findById(addCommentRequest.getVoteId())
+				.orElseThrow(() -> new ResourceNotFoundException("Vote not found"));
+		Usuario user = usuarioRepository.findById(addCommentRequest.getUserId())
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+		Comentario commentToAdd = new Comentario();
+		commentToAdd.setUsuario(user);
+		commentToAdd.setVoto(vote);
+		commentToAdd.setContenido(addCommentRequest.getContent());
+
+		// Add comment entity, then add comment relationship
+		Comentario commentAdded = comentarioRepository.save(commentToAdd);
+
+		ComentarioAsociacion commentRelationship = new ComentarioAsociacion();
+		commentRelationship.setComentarioPadre(commentAdded);
+		commentRelationship.setComentarioHijo(commentAdded);
+		commentRelationship.setProfundidadNodo(0);
+
+		comentarioAsociacionRepository.save(commentRelationship);
+
+		return commentAdded;
 	}
-	
-	@PutMapping("/api/comentario/{comentarioId}")
-	public ResponseEntity<?> updateComentario(@Valid @RequestBody Comentario comentario, @PathVariable Long comentarioId) {
-        return comentarioRepository.findById(comentarioId)
-                .map(foundComentario -> {
-                	comentario.setIdComentario(comentarioId);
-                	comentarioRepository.save(comentario);
-                    return ResponseEntity.ok().build();
-                }).orElseThrow(() -> new ResourceNotFoundException("Comentario not found with id " + comentarioId));
-    }
-	
-	@DeleteMapping("/api/comentario/{comentarioId}")
+
+	@PutMapping("/api/comment/{comentarioId}")
+	public ResponseEntity<?> updateComentario(@Valid @RequestBody Comentario comentario,
+			@PathVariable Long comentarioId) {
+		return comentarioRepository.findById(comentarioId).map(foundComentario -> {
+			comentario.setIdComentario(comentarioId);
+			comentarioRepository.save(comentario);
+			return ResponseEntity.ok().build();
+		}).orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
+	}
+
+	@DeleteMapping("/api/comment/{comentarioId}")
 	public ResponseEntity<?> deleteComentario(@PathVariable Long comentarioId) {
-        return comentarioRepository.findById(comentarioId)
-                .map(comentario -> {
-                	comentarioRepository.delete(comentario);
-                    return ResponseEntity.ok().build();
-                }).orElseThrow(() -> new ResourceNotFoundException("Comentario not found with id " + comentarioId));
-    }
+		return comentarioRepository.findById(comentarioId).map(comentario -> {
+			comentarioRepository.delete(comentario);
+			return ResponseEntity.ok().build();
+		}).orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
+	}
 }

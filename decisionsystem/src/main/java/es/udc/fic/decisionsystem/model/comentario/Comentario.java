@@ -16,6 +16,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import es.udc.fic.decisionsystem.model.common.AuditModel;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
+import es.udc.fic.decisionsystem.model.voto.Voto;
 
 @Entity
 @Table(name = "comentario")
@@ -32,6 +33,11 @@ public class Comentario extends AuditModel {
 	@JoinColumn(name = "id_usuario", nullable = false)
 	@OnDelete(action = OnDeleteAction.NO_ACTION)
 	private Usuario usuario;
+
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "id_voto", nullable = false)
+	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	private Voto voto;
 
 	@Column(name = "contenido")
 	@Lob
@@ -62,6 +68,14 @@ public class Comentario extends AuditModel {
 
 	public void setUsuario(Usuario usuario) {
 		this.usuario = usuario;
+	}
+
+	public Voto getVoto() {
+		return voto;
+	}
+
+	public void setVoto(Voto voto) {
+		this.voto = voto;
 	}
 
 	public String getContenido() {
