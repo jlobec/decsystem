@@ -19,6 +19,7 @@ import es.udc.fic.decisionsystem.model.comentario.Comentario;
 import es.udc.fic.decisionsystem.model.comentarioasociacion.ComentarioAsociacion;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.voto.Voto;
+import es.udc.fic.decisionsystem.payload.comentario.AddCommentReplyRequest;
 import es.udc.fic.decisionsystem.payload.comentario.AddCommentRequest;
 import es.udc.fic.decisionsystem.repository.comentario.ComentarioRepository;
 import es.udc.fic.decisionsystem.repository.comentarioasociacion.ComentarioAsociacionRepository;
@@ -69,6 +70,34 @@ public class ComentarioController {
 
 		ComentarioAsociacion commentRelationship = new ComentarioAsociacion();
 		commentRelationship.setComentarioPadre(commentAdded);
+		commentRelationship.setComentarioHijo(commentAdded);
+		commentRelationship.setProfundidadNodo(0);
+
+		comentarioAsociacionRepository.save(commentRelationship);
+
+		return commentAdded;
+	}
+
+	@PostMapping("/api/comment/{comentarioId}/reply")
+	public Comentario replyComment(@Valid @RequestBody AddCommentReplyRequest addCommentRequest,
+			@PathVariable Long comentarioId) {
+		Comentario replyTo = comentarioRepository.findById(comentarioId)
+				.orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
+		Voto vote = votoRepository.findById(replyTo.getVoto().getIdVoto())
+				.orElseThrow(() -> new ResourceNotFoundException("Vote not found"));
+		Usuario user = usuarioRepository.findById(addCommentRequest.getUserId())
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+		Comentario commentToAdd = new Comentario();
+		commentToAdd.setUsuario(user);
+		commentToAdd.setVoto(vote);
+		commentToAdd.setContenido(addCommentRequest.getContent());
+
+		// Add comment entity, then add comment relationship
+		Comentario commentAdded = comentarioRepository.save(commentToAdd);
+
+		ComentarioAsociacion commentRelationship = new ComentarioAsociacion();
+		commentRelationship.setComentarioPadre(replyTo);
 		commentRelationship.setComentarioHijo(commentAdded);
 		commentRelationship.setProfundidadNodo(0);
 
