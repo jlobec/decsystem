@@ -12,6 +12,7 @@ import TaskIcon from "@material-ui/icons/AssignmentTurnedIn";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import withStyles from "@material-ui/core/styles/withStyles";
+import axios from "axios";
 
 import { config } from "../../config";
 
@@ -22,36 +23,11 @@ class SignIn extends React.Component {
     error: false
   };
 
-  doSendLogin = async (userOrEmail, passwd) => {
-    const signInRequest = {
-      nicknameOrEmail: userOrEmail,
-      password: passwd
-    };
-    console.log(signInRequest);
-    return await fetch(config.baseUrl + "api/user/auth/signin", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(signInRequest)
-    })
-      .then(response => {
-        if (!response.ok) {
-          console.log("Error: " + this.state.error);
-          return { success: false };
-        }
-        return response.json();
-      })
-      .then(data => {
-        return {
-          success: true,
-          data
-        };
-      })
-      .catch(function(error) {
-        console.log(error);
-      });
+  clearForm = () => {
+    this.setState({
+      email: "",
+      password: ""
+    });
   };
 
   handleChange = event => {
@@ -64,23 +40,21 @@ class SignIn extends React.Component {
     event.preventDefault();
 
     // Send login user request to backend
-    const fetchResult = await this.doSendLogin(
-      this.state.email,
-      this.state.password
-    );
-    console.log(fetchResult);
-
-    this.setState({ error: !fetchResult.success });
-    if (fetchResult.success) {
-      // Save session details
-      console.log("accessToken: " + fetchResult.data.accessToken);
-      console.log("tokenType: " + fetchResult.data.tokenType);
-      // TODO bear in mind "remember me option"
-
+    const url = config.baseUrl + "api/user/auth/signin";
+    const body = {
+      nicknameOrEmail: this.state.email,
+      password: this.state.password
+    };
+    try {
+      const { data: signInResult } = await axios.post(url, body);
+      console.log(signInResult);
+      this.setState({ error: false });
+      this.clearForm();
       this.props.history.push("/my");
+    } catch (error) {
+      this.clearForm();
+      this.setState({ error: true });
     }
-
-    event.currentTarget.reset();
   };
 
   render() {
