@@ -4,6 +4,7 @@ import App from "../App";
 import SignIn from "./signin/SignIn";
 import NotFound from "./NotFound";
 import CssBaseline from "@material-ui/core/CssBaseline";
+import Register from "./register/Register";
 
 const Router = () => (
   <React.Fragment>
@@ -11,6 +12,7 @@ const Router = () => (
     <BrowserRouter>
       <Switch>
         <Route exact path="/" component={SignIn} />
+        <Route exact path="/register" component={Register} />
         <Route exact path="/my" component={App} />
         <Route component={NotFound} />
       </Switch>

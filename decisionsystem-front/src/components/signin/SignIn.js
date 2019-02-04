@@ -12,6 +12,8 @@ import TaskIcon from "@material-ui/icons/AssignmentTurnedIn";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import withStyles from "@material-ui/core/styles/withStyles";
+import { Link as RouterLink } from "react-router-dom";
+import Link from "@material-ui/core/Link";
 import axios from "axios";
 
 import { config } from "../../config";
@@ -118,14 +120,14 @@ class SignIn extends React.Component {
               className={classes.body1}
             >
               Not registered yet?
+              <Link
+                className={classes.link}
+                component={RouterLink}
+                to="/register"
+              >
+                Register
+              </Link>
             </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              className={classes.signup}
-            >
-              Sign Up
-            </Button>
           </Paper>
         </main>
       </React.Fragment>
@@ -171,8 +173,8 @@ const styles = theme => ({
   body1: {
     marginTop: theme.spacing.unit * 2
   },
-  signup: {
-    marginTop: theme.spacing.unit * 2
+  link: {
+    marginLeft: theme.spacing.unit
   }
 });
 
