@@ -1,27 +1,39 @@
 import React from "react";
 import { Link as RouterLink } from "react-router-dom";
 import Link from "@material-ui/core/Link";
+import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
-import Divider from "@material-ui/core/Divider";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import FormControl from "@material-ui/core/FormControl";
 import Input from "@material-ui/core/Input";
 import InputLabel from "@material-ui/core/InputLabel";
 import Paper from "@material-ui/core/Paper";
-
+import Grid from "@material-ui/core/Grid";
+import Typography from "@material-ui/core/Typography";
+import TaskIcon from "@material-ui/icons/AssignmentTurnedIn";
 import withStyles from "@material-ui/core/styles/withStyles";
+import axios from "axios";
+
+import { config } from "../../config";
 
 class Register extends React.Component {
   state = {
+    name: "",
+    lastName: "",
+    nick: "",
     email: "",
-    password: ""
+    password: "",
+    error: false
   };
 
   clearForm = () => {
     this.setState({
+      name: "",
+      lastName: "",
+      nick: "",
       email: "",
-      password: ""
+      password: "",
+      error: false
     });
   };
 
@@ -31,6 +43,49 @@ class Register extends React.Component {
     });
   };
 
+  handleSubmit = async event => {
+    event.preventDefault();
+
+    // Send signup user request to backend
+    const url = config.baseUrl + "api/user/auth/signup";
+    const body = {
+      name: this.state.name,
+      lastName: this.state.lastName,
+      nickname: this.state.nick,
+      email: this.state.email,
+      password: this.state.password
+    };
+    try {
+      const { data: registerResult } = await axios.post(url, body);
+      console.log(registerResult);
+      this.setState({ error: false });
+
+      // If everything is OK, then sign in user
+      // to get access token
+      if (registerResult.success) {
+        // Send login user request to backend
+        const url = config.baseUrl + "api/user/auth/signin";
+        const body = {
+          nicknameOrEmail: this.state.email,
+          password: this.state.password
+        };
+        try {
+          const { data: signInResult } = await axios.post(url, body);
+          console.log(signInResult);
+          this.setState({ error: false });
+          this.clearForm();
+          this.props.history.push("/my");
+        } catch (error) {
+          this.clearForm();
+          this.setState({ error: true });
+        }
+      }
+    } catch (error) {
+      this.clearForm();
+      this.setState({ error: true });
+    }
+  };
+
   render() {
     const { classes } = this.props;
     return (
@@ -38,9 +93,48 @@ class Register extends React.Component {
         <CssBaseline />
         <main className={classes.layout}>
           <Paper className={classes.paper}>
+            <Avatar className={classes.avatar}>
+              <TaskIcon />
+            </Avatar>
+            <Typography component="h1" variant="h5">
+              Register
+            </Typography>
             <form className={classes.form} onSubmit={this.handleSubmit}>
               <FormControl margin="normal" required fullWidth>
-                <InputLabel htmlFor="email">User or email</InputLabel>
+                <InputLabel>Name</InputLabel>
+                <Input
+                  id="name"
+                  name="name"
+                  value={this.state.name}
+                  onChange={this.handleChange}
+                  autoComplete="name"
+                  autoFocus
+                />
+              </FormControl>
+              <FormControl margin="normal" required fullWidth>
+                <InputLabel>Last Name</InputLabel>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  value={this.state.lastName}
+                  onChange={this.handleChange}
+                  autoComplete="lastName"
+                  autoFocus
+                />
+              </FormControl>
+              <FormControl margin="normal" required fullWidth>
+                <InputLabel>User Name</InputLabel>
+                <Input
+                  id="nick"
+                  name="nick"
+                  value={this.state.nick}
+                  onChange={this.handleChange}
+                  autoComplete="nick"
+                  autoFocus
+                />
+              </FormControl>
+              <FormControl margin="normal" required fullWidth>
+                <InputLabel htmlFor="email">Email</InputLabel>
                 <Input
                   id="email"
                   name="email"
@@ -61,19 +155,26 @@ class Register extends React.Component {
                   autoComplete="current-password"
                 />
               </FormControl>
-              <div>
-                <Link className={classes.link} component={RouterLink} to="/">
-                  Cancel
-                </Link>
+
+              <Button
+                className={classes.btn_submit}
+                fullWidth
+                type="submit"
+                variant="contained"
+                color="primary"
+              >
+                Register
+              </Button>
+              <Link component={RouterLink} to="/">
                 <Button
-                  className={classes.submit}
-                  type="submit"
+                  className={classes.btn_cancel}
+                  fullWidth
                   variant="contained"
-                  color="primary"
+                  color="default"
                 >
-                  Register
+                  Cancel
                 </Button>
-              </div>
+              </Link>
             </form>
           </Paper>
         </main>
@@ -83,6 +184,9 @@ class Register extends React.Component {
 }
 
 const styles = theme => ({
+  action_container: {
+    marginTop: theme.spacing.unit * 2 * 3
+  },
   layout: {
     width: "auto",
     display: "block", // Fix IE 11 issue.
@@ -110,19 +214,12 @@ const styles = theme => ({
     width: "100%", // Fix IE 11 issue.
     marginTop: theme.spacing.unit
   },
-  submit: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "right",
-    marginTop: theme.spacing.unit * 2,
-    marginBottom: theme.spacing.unit * 2
+  btn_submit: {
+    marginTop: theme.spacing.unit * 3 * 3
   },
-  link: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "left",
+  btn_cancel: {
     marginTop: theme.spacing.unit * 2,
-    marginBottom: theme.spacing.unit * 2
+    marginBottom: theme.spacing.unit
   }
 });
 
