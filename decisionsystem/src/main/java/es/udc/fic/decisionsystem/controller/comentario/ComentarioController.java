@@ -17,12 +17,18 @@ import org.springframework.web.bind.annotation.RestController;
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
 import es.udc.fic.decisionsystem.model.comentario.Comentario;
 import es.udc.fic.decisionsystem.model.comentarioasociacion.ComentarioAsociacion;
+import es.udc.fic.decisionsystem.model.reaccion.Reaccion;
+import es.udc.fic.decisionsystem.model.tiporeaccion.TipoReaccion;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.voto.Voto;
+import es.udc.fic.decisionsystem.payload.ApiResponse;
+import es.udc.fic.decisionsystem.payload.comentario.AddCommentReactionRequest;
 import es.udc.fic.decisionsystem.payload.comentario.AddCommentReplyRequest;
 import es.udc.fic.decisionsystem.payload.comentario.AddCommentRequest;
 import es.udc.fic.decisionsystem.repository.comentario.ComentarioRepository;
 import es.udc.fic.decisionsystem.repository.comentarioasociacion.ComentarioAsociacionRepository;
+import es.udc.fic.decisionsystem.repository.reaccion.ReaccionRepository;
+import es.udc.fic.decisionsystem.repository.tiporeaccion.TipoReaccionRepository;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
 import es.udc.fic.decisionsystem.repository.voto.VotoRepository;
 
@@ -40,6 +46,12 @@ public class ComentarioController {
 
 	@Autowired
 	private UsuarioRepository usuarioRepository;
+
+	@Autowired
+	private ReaccionRepository reaccionRepository;
+
+	@Autowired
+	private TipoReaccionRepository tipoReaccionRepository;
 
 	@GetMapping("/api/comment/{comentarioId}")
 	public Comentario getComentario(@PathVariable Long comentarioId) {
@@ -104,6 +116,31 @@ public class ComentarioController {
 		comentarioAsociacionRepository.save(commentRelationship);
 
 		return commentAdded;
+	}
+
+	@PostMapping("/api/comment/{comentarioId}/reaction")
+	public ResponseEntity<?> addReaction(@Valid @RequestBody AddCommentReactionRequest addReactionRequest,
+			@PathVariable Long comentarioId) {
+		Comentario comment = comentarioRepository.findById(comentarioId)
+				.orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
+		Usuario user = usuarioRepository.findById(addReactionRequest.getUserId())
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		TipoReaccion reactionType = tipoReaccionRepository.findById(addReactionRequest.getReactionTypeId())
+				.orElseThrow(() -> new ResourceNotFoundException("Reaction type not found"));
+
+		Boolean alreadyAdded = reaccionRepository.findByComentarioAndUsuario(comment, user).isPresent();
+		if (alreadyAdded) {
+			return ResponseEntity.badRequest().body(new ApiResponse(false, "Reaction already added"));
+		}
+
+		Reaccion reaction = new Reaccion();
+		reaction.setComentario(comment);
+		reaction.setTipoReaccion(reactionType);
+		reaction.setUsuario(user);
+
+		reaccionRepository.save(reaction);
+
+		return ResponseEntity.ok().body(new ApiResponse(true, "Reaction added"));
 	}
 
 	@PutMapping("/api/comment/{comentarioId}")
