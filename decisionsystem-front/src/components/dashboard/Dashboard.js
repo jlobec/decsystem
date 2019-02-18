@@ -17,6 +17,7 @@ import NotificationsIcon from "@material-ui/icons/Notifications";
 import { mainListItems, secondaryListItems } from "./listItems";
 import SimpleLineChart from "./SimpleLineChart";
 import SimpleTable from "./SimpleTable";
+import axios from "axios";
 
 const drawerWidth = 240;
 
@@ -99,7 +100,8 @@ const styles = theme => ({
 
 class Dashboard extends React.Component {
   state = {
-    open: true
+    open: true,
+    polls: []
   };
 
   handleDrawerOpen = () => {
@@ -108,6 +110,27 @@ class Dashboard extends React.Component {
 
   handleDrawerClose = () => {
     this.setState({ open: false });
+  };
+
+  getOpenPolls = async () => {
+    const url = config.baseUrl + "api/poll/open";
+    const config = {
+      headers: { Authorization: "bearer " + token }
+    };
+    try {
+      return await axios.get(url, config);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  componentWillMount = async () => {
+    const { data: openPolls } = await getOpenPolls();
+    if (openPolls) {
+      this.setState({
+        polls: openPolls.content
+      });
+    }
   };
 
   render() {
@@ -176,9 +199,9 @@ class Dashboard extends React.Component {
         </Drawer>
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
-          <Typography variant="h4" gutterBottom component="h2">
-            Orders
-          </Typography>
+          {/* <Typography variant="h4" gutterBottom component="h2">
+            My Open Polls
+          </Typography> */}
           <Typography component="div" className={classes.chartContainer}>
             <SimpleLineChart />
           </Typography>
