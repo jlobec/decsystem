@@ -17,4 +17,14 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
 			+ "INNER JOIN Asamblea a ON ca.asamblea = a "
 			+ "WHERE a.idAsamblea = :idAsamblea")
 	Page<Consulta> findByIdAsamblea(Pageable pageable, @Param("idAsamblea") Integer idAsamblea);
+	
+	
+	
+	@Query("SELECT c FROM UsuarioAsamblea ua "
+			+ "INNER JOIN Asamblea a ON ua.asamblea = a "
+			+ "INNER JOIN Usuario u ON ua.usuario = u "
+			+ "INNER JOIN ConsultaAsamblea ca ON ca.asamblea = a "
+			+ "INNER JOIN Consulta c ON ca.consulta = c "
+			+ "WHERE u.idUsuario =  :idUser")
+	Page<Consulta> findByUser(Pageable pageable, @Param("idUser") Long idUser);
 }
