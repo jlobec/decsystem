@@ -19,6 +19,8 @@ import SimpleLineChart from "./SimpleLineChart";
 import SimpleTable from "./SimpleTable";
 import axios from "axios";
 
+import { config } from "../../config";
+
 const drawerWidth = 240;
 
 const styles = theme => ({
@@ -101,6 +103,7 @@ const styles = theme => ({
 class Dashboard extends React.Component {
   state = {
     open: true,
+    loading: false,
     polls: []
   };
 
@@ -113,25 +116,26 @@ class Dashboard extends React.Component {
   };
 
   getOpenPolls = async () => {
+    const token = sessionStorage.getItem("jwtToken");
     const url = config.baseUrl + "api/poll/open";
-    const config = {
-      headers: { Authorization: "bearer " + token }
+    const auth = {
+      headers: { Authorization: "Bearer " + token }
     };
-    try {
-      return await axios.get(url, config);
-    } catch (error) {
-      console.log(error);
-    }
+
+    return axios.get(url, auth);
   };
 
-  componentWillMount = async () => {
-    const { data: openPolls } = await getOpenPolls();
+  async componentDidMount() {
+    this.setState({ loading: true });
+    const { data: openPolls } = await this.getOpenPolls();
     if (openPolls) {
+      console.log(openPolls);
       this.setState({
+        loading: false,
         polls: openPolls.content
       });
     }
-  };
+  }
 
   render() {
     const { classes } = this.props;
