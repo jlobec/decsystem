@@ -15,9 +15,17 @@ import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import NotificationsIcon from "@material-ui/icons/Notifications";
 import { mainListItems, secondaryListItems } from "./listItems";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+import DashboardIcon from "@material-ui/icons/Dashboard";
+import PeopleIcon from "@material-ui/icons/People";
+import BarChartIcon from "@material-ui/icons/BarChart";
+import SettingsIcon from "@material-ui/icons/Settings";
 import SimpleLineChart from "./SimpleLineChart";
 import SimpleTable from "./SimpleTable";
 import axios from "axios";
+import Poll from "./Poll";
 
 import { config } from "../../config";
 
@@ -100,10 +108,18 @@ const styles = theme => ({
   }
 });
 
+const sections = {
+  onDecisions: true,
+  onAssemblies: false,
+  onReports: false,
+  onSettings: false
+};
+
 class Dashboard extends React.Component {
   state = {
     open: true,
     loading: false,
+    sections: sections,
     polls: []
   };
 
@@ -113,6 +129,15 @@ class Dashboard extends React.Component {
 
   handleDrawerClose = () => {
     this.setState({ open: false });
+  };
+
+  handleSection = sectionName => {
+    Object.keys(sections).map(key => {
+      sections[key] = key === sectionName;
+    });
+    this.setState({
+      sections
+    });
   };
 
   getOpenPolls = async () => {
@@ -139,6 +164,13 @@ class Dashboard extends React.Component {
 
   render() {
     const { classes } = this.props;
+    const openPolls = this.state.polls.map((poll, index) => {
+      return (
+        <li>
+          <Poll key={index} pollInfo={poll} />
+        </li>
+      );
+    });
 
     return (
       <div className={classes.root}>
@@ -172,7 +204,7 @@ class Dashboard extends React.Component {
               noWrap
               className={classes.title}
             >
-              Dashboard
+              DecisionApp
             </Typography>
             <IconButton color="inherit">
               <Badge badgeContent={4} color="secondary">
@@ -197,15 +229,50 @@ class Dashboard extends React.Component {
             </IconButton>
           </div>
           <Divider />
-          <List>{mainListItems}</List>
-          <Divider />
-          <List>{secondaryListItems}</List>
+          <List>
+            <div>
+              <ListItem
+                button
+                onClick={() => this.handleSection("onDecisions")}
+              >
+                <ListItemIcon>
+                  <DashboardIcon />
+                </ListItemIcon>
+                <ListItemText primary="My Decisions" />
+              </ListItem>
+              <ListItem
+                button
+                onClick={() => this.handleSection("onAssemblies")}
+              >
+                <ListItemIcon>
+                  <PeopleIcon />
+                </ListItemIcon>
+                <ListItemText primary="Assemblies" />
+              </ListItem>
+              <ListItem button onClick={() => this.handleSection("onReports")}>
+                <ListItemIcon>
+                  <BarChartIcon />
+                </ListItemIcon>
+                <ListItemText primary="Reports" />
+              </ListItem>
+              <ListItem button onClick={() => this.handleSection("onSettings")}>
+                <ListItemIcon>
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText primary="Settings" />
+              </ListItem>
+            </div>
+          </List>
         </Drawer>
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
-          {/* <Typography variant="h4" gutterBottom component="h2">
-            My Open Polls
-          </Typography> */}
+          <Typography variant="h4" gutterBottom component="h2">
+            {this.state.sections.onDecisions && <ul>{openPolls}</ul>}
+            {this.state.sections.onAssemblies && <p>Assemblies Section</p>}
+            {this.state.sections.onReports && <p>Reports Section</p>}
+            {this.state.sections.onSettings && <p>Settings Section</p>}
+          </Typography>
+
           <Typography component="div" className={classes.chartContainer}>
             <SimpleLineChart />
           </Typography>

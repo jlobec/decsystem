@@ -20,11 +20,31 @@ import { config } from "../../config";
 
 class Poll extends React.Component {
   render() {
-    const { classes } = this.props;
+    const { classes, pollInfo } = this.props;
+
+    const options = {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      hour12: false
+    };
+    const fStartTime = new Intl.DateTimeFormat("es-ES", options).format(
+      new Date(pollInfo.startedAt)
+    );
+    const fEndTime = new Intl.DateTimeFormat("es-ES", options).format(
+      new Date(pollInfo.endsAt)
+    );
     return (
       <React.Fragment>
         <CssBaseline />
-        <main className={classes.layout} />
+        <main className={classes.layout}>
+          <p>{pollInfo.pollTitle}</p>
+          <p>From {fStartTime}</p>
+          <p>To {fEndTime}</p>
+        </main>
       </React.Fragment>
     );
   }
