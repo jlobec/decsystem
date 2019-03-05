@@ -24,10 +24,9 @@ import BarChartIcon from "@material-ui/icons/BarChart";
 import SettingsIcon from "@material-ui/icons/Settings";
 import SimpleLineChart from "./SimpleLineChart";
 import SimpleTable from "./SimpleTable";
-import axios from "axios";
-import Poll from "./Poll";
 
-import { config } from "../../config";
+import Settings from "../settings/Settings";
+import MyDecisions from "../Decision/MyDecisions";
 
 const drawerWidth = 240;
 
@@ -118,9 +117,7 @@ const sections = {
 class Dashboard extends React.Component {
   state = {
     open: true,
-    loading: false,
-    sections: sections,
-    polls: []
+    sections: sections
   };
 
   handleDrawerOpen = () => {
@@ -140,37 +137,8 @@ class Dashboard extends React.Component {
     });
   };
 
-  getOpenPolls = async () => {
-    const token = sessionStorage.getItem("jwtToken");
-    const url = config.baseUrl + "api/poll/open";
-    const auth = {
-      headers: { Authorization: "Bearer " + token }
-    };
-
-    return axios.get(url, auth);
-  };
-
-  async componentDidMount() {
-    this.setState({ loading: true });
-    const { data: openPolls } = await this.getOpenPolls();
-    if (openPolls) {
-      console.log(openPolls);
-      this.setState({
-        loading: false,
-        polls: openPolls.content
-      });
-    }
-  }
-
   render() {
     const { classes } = this.props;
-    const openPolls = this.state.polls.map((poll, index) => {
-      return (
-        <li>
-          <Poll key={index} pollInfo={poll} />
-        </li>
-      );
-    });
 
     return (
       <div className={classes.root}>
@@ -267,10 +235,10 @@ class Dashboard extends React.Component {
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
           <Typography variant="h4" gutterBottom component="h2">
-            {this.state.sections.onDecisions && <ul>{openPolls}</ul>}
+            {this.state.sections.onDecisions && <MyDecisions />}
             {this.state.sections.onAssemblies && <p>Assemblies Section</p>}
             {this.state.sections.onReports && <p>Reports Section</p>}
-            {this.state.sections.onSettings && <p>Settings Section</p>}
+            {this.state.sections.onSettings && <Settings />}
           </Typography>
 
           <Typography component="div" className={classes.chartContainer}>
