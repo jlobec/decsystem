@@ -241,15 +241,15 @@ class Dashboard extends React.Component {
             {this.state.sections.onSettings && <Settings />}
           </Typography>
 
-          <Typography component="div" className={classes.chartContainer}>
+          {/* <Typography component="div" className={classes.chartContainer}>
             <SimpleLineChart />
-          </Typography>
-          <Typography variant="h4" gutterBottom component="h2">
+          </Typography> */}
+          {/* <Typography variant="h4" gutterBottom component="h2">
             Products
           </Typography>
           <div className={classes.tableContainer}>
             <SimpleTable />
-          </div>
+          </div> */}
         </main>
       </div>
     );
