@@ -15,8 +15,18 @@ import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import NotificationsIcon from "@material-ui/icons/Notifications";
 import { mainListItems, secondaryListItems } from "./listItems";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+import DashboardIcon from "@material-ui/icons/Dashboard";
+import PeopleIcon from "@material-ui/icons/People";
+import BarChartIcon from "@material-ui/icons/BarChart";
+import SettingsIcon from "@material-ui/icons/Settings";
 import SimpleLineChart from "./SimpleLineChart";
 import SimpleTable from "./SimpleTable";
+
+import Settings from "../settings/Settings";
+import MyDecisions from "../Decision/MyDecisions";
 
 const drawerWidth = 240;
 
@@ -97,9 +107,17 @@ const styles = theme => ({
   }
 });
 
+const sections = {
+  onDecisions: true,
+  onAssemblies: false,
+  onReports: false,
+  onSettings: false
+};
+
 class Dashboard extends React.Component {
   state = {
-    open: true
+    open: true,
+    sections: sections
   };
 
   handleDrawerOpen = () => {
@@ -108,6 +126,15 @@ class Dashboard extends React.Component {
 
   handleDrawerClose = () => {
     this.setState({ open: false });
+  };
+
+  handleSection = sectionName => {
+    Object.keys(sections).map(key => {
+      sections[key] = key === sectionName;
+    });
+    this.setState({
+      sections
+    });
   };
 
   render() {
@@ -145,7 +172,7 @@ class Dashboard extends React.Component {
               noWrap
               className={classes.title}
             >
-              Dashboard
+              DecisionApp
             </Typography>
             <IconButton color="inherit">
               <Badge badgeContent={4} color="secondary">
@@ -170,24 +197,59 @@ class Dashboard extends React.Component {
             </IconButton>
           </div>
           <Divider />
-          <List>{mainListItems}</List>
-          <Divider />
-          <List>{secondaryListItems}</List>
+          <List>
+            <div>
+              <ListItem
+                button
+                onClick={() => this.handleSection("onDecisions")}
+              >
+                <ListItemIcon>
+                  <DashboardIcon />
+                </ListItemIcon>
+                <ListItemText primary="My Decisions" />
+              </ListItem>
+              <ListItem
+                button
+                onClick={() => this.handleSection("onAssemblies")}
+              >
+                <ListItemIcon>
+                  <PeopleIcon />
+                </ListItemIcon>
+                <ListItemText primary="Assemblies" />
+              </ListItem>
+              <ListItem button onClick={() => this.handleSection("onReports")}>
+                <ListItemIcon>
+                  <BarChartIcon />
+                </ListItemIcon>
+                <ListItemText primary="Reports" />
+              </ListItem>
+              <ListItem button onClick={() => this.handleSection("onSettings")}>
+                <ListItemIcon>
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText primary="Settings" />
+              </ListItem>
+            </div>
+          </List>
         </Drawer>
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
           <Typography variant="h4" gutterBottom component="h2">
-            Orders
+            {this.state.sections.onDecisions && <MyDecisions />}
+            {this.state.sections.onAssemblies && <p>Assemblies Section</p>}
+            {this.state.sections.onReports && <p>Reports Section</p>}
+            {this.state.sections.onSettings && <Settings />}
           </Typography>
-          <Typography component="div" className={classes.chartContainer}>
+
+          {/* <Typography component="div" className={classes.chartContainer}>
             <SimpleLineChart />
-          </Typography>
-          <Typography variant="h4" gutterBottom component="h2">
+          </Typography> */}
+          {/* <Typography variant="h4" gutterBottom component="h2">
             Products
           </Typography>
           <div className={classes.tableContainer}>
             <SimpleTable />
-          </div>
+          </div> */}
         </main>
       </div>
     );
