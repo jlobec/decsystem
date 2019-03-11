@@ -14,7 +14,6 @@ class MyDecisions extends React.Component {
   state = { ...initialState };
 
   getOpenPolls = async () => {
-    console.log("getting open polls");
     const token = sessionStorage.getItem("jwtToken");
     const url = config.baseUrl + "api/poll/open";
     const auth = {
