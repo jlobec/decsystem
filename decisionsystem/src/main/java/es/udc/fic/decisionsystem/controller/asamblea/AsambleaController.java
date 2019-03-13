@@ -1,5 +1,8 @@
 package es.udc.fic.decisionsystem.controller.asamblea;
 
+import java.security.Principal;
+import java.util.Optional;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +25,9 @@ import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.usuarioasamblea.UsuarioAsamblea;
 import es.udc.fic.decisionsystem.payload.ApiResponse;
 import es.udc.fic.decisionsystem.payload.asamblea.AssemblyPollRequest;
+import es.udc.fic.decisionsystem.payload.asamblea.AssemblyResponse;
 import es.udc.fic.decisionsystem.payload.asamblea.AssemblyUserRequest;
+import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.repository.asamblea.AsambleaRepository;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
 import es.udc.fic.decisionsystem.repository.consultaasamblea.ConsultaAsambleaRepository;
@@ -67,6 +72,28 @@ public class AsambleaController {
 	@GetMapping("/api/assembly/{asambleaId}/polls")
 	public Page<Consulta> getAssemblyPolls(Pageable pageable, @PathVariable Integer asambleaId) {
 		return consultaRepository.findByIdAsamblea(pageable, asambleaId);
+	}
+	
+	@GetMapping("/api/assembly/mine")
+	public Page<AssemblyResponse> getLoggedUserAssemblies(Pageable pageable, Principal principal){
+		Optional<Usuario> loggedUser = usuarioRepository.findByNickname(principal.getName());
+		if (loggedUser.isPresent()) {
+			Long userId = loggedUser.get().getIdUsuario();
+			return asambleaRepository.findByUser(pageable, userId).map(a -> {
+				AssemblyResponse assembly = new AssemblyResponse();
+				assembly.setAssemblyId(a.getIdAsamblea());
+				assembly.setName(a.getNombre());
+				assembly.setDescription(a.getDescripcion());
+				assembly.setTimecreated(a.getFechaHoraAlta().getTime());
+				long pollCount = consultaRepository.findByIdAsamblea(pageable, a.getIdAsamblea()).getTotalElements();
+				long usersCount = usuarioRepository.findByIdAsamblea(pageable, a.getIdAsamblea()).getTotalElements();
+				assembly.setPollCount(Math.toIntExact(pollCount));
+				assembly.setMembersCount(Math.toIntExact(usersCount));
+				return assembly;
+			});
+		}
+		// Actually unlikely
+		throw new ResourceNotFoundException("No logged user");
 	}
 
 	@PostMapping("/api/assembly")

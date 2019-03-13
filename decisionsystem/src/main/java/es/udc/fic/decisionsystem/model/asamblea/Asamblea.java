@@ -38,6 +38,10 @@ public class Asamblea extends AuditModel {
 	@NotNull
 	private String nombre;
 
+	@Column(name = "descripcion")
+	@Size(max = 300)
+	private String descripcion;
+
 	public Asamblea() {
 		super();
 	}
@@ -64,9 +68,17 @@ public class Asamblea extends AuditModel {
 		this.nombre = nombre;
 	}
 
+	public String getDescripcion() {
+		return descripcion;
+	}
+
+	public void setDescripcion(String descripcion) {
+		this.descripcion = descripcion;
+	}
+
 	@Override
 	public String toString() {
-		return "Asamblea [idAsamblea=" + idAsamblea + ", nombre=" + nombre + "]";
+		return "Asamblea [idAsamblea=" + idAsamblea + ", nombre=" + nombre + ", descripcion=" + descripcion + "]";
 	}
 
 }
