@@ -27,6 +27,7 @@ import SimpleTable from "./SimpleTable";
 
 import Settings from "../settings/Settings";
 import MyDecisions from "../Decision/MyDecisions";
+import Assemblies from "../assembly/Assemblies";
 
 const drawerWidth = 240;
 
@@ -91,6 +92,7 @@ const styles = theme => ({
   },
   appBarSpacer: theme.mixins.toolbar,
   content: {
+    textAlign: "left",
     flexGrow: 1,
     padding: theme.spacing.unit * 3,
     height: "100vh",
@@ -236,7 +238,7 @@ class Dashboard extends React.Component {
           <div className={classes.appBarSpacer} />
           <Typography variant="h4" gutterBottom component="h2">
             {this.state.sections.onDecisions && <MyDecisions />}
-            {this.state.sections.onAssemblies && <p>Assemblies Section</p>}
+            {this.state.sections.onAssemblies && <Assemblies />}
             {this.state.sections.onReports && <p>Reports Section</p>}
             {this.state.sections.onSettings && <Settings />}
           </Typography>
