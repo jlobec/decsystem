@@ -1,6 +1,6 @@
 import React from "react";
 import { withStyles } from "@material-ui/core";
-import UserInfoTable from "./UserInfoTable";
+import UserInfo from "./UserInfo";
 import CssBaseline from "@material-ui/core/CssBaseline";
 
 const initialState = {
@@ -20,7 +20,7 @@ class Settings extends React.Component {
     return (
       <React.Fragment>
         <CssBaseline />
-        <UserInfoTable />
+        <UserInfo />
       </React.Fragment>
     );
   }
