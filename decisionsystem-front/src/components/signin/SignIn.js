@@ -61,6 +61,10 @@ class SignIn extends React.Component {
     }
   };
 
+  componentDidMount() {
+    sessionStorage.removeItem("jwtToken");
+  }
+
   render() {
     const { classes } = this.props;
     return (
