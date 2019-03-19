@@ -85,9 +85,8 @@ class Assembly extends React.Component {
                   className={classes.inline}
                   color="textPrimary"
                 >
-                  {`@${member.nickname}`}
+                  {`@${member.nickname} `}
                 </Typography>
-                {member.email}
               </React.Fragment>
             }
           />
