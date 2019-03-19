@@ -43,10 +43,16 @@ public class UsuarioController {
 	}
 
 	@PutMapping("/api/user/{usuarioId}")
-	public Usuario updateUsuario(@Valid @RequestBody UpdateUserRequest request, @PathVariable Long usuarioId) {
+	public Usuario updateUsuario(@Valid @RequestBody UpdateUserRequest request, @PathVariable Long usuarioId, Principal principal) {
+		Long loggedUserId = usuarioRepository.findByNickname(principal.getName()).map(Usuario::getIdUsuario).orElse(null);
+		if (!usuarioId.equals(loggedUserId)) {
+			throw new ResourceNotFoundException("Usuario not found with id " + usuarioId);
+		}
 		return usuarioRepository.findById(usuarioId).map(foundUsuario -> {
 			foundUsuario.setNombre(request.getName());
-			foundUsuario.setApellido(request.getLastname());
+			foundUsuario.setApellido(request.getLastName());
+			foundUsuario.setEmail(request.getEmail());
+			foundUsuario.setNickname(request.getNickname());
 			return usuarioRepository.save(foundUsuario);
 		}).orElseThrow(() -> new ResourceNotFoundException("Usuario not found with id " + usuarioId));
 	}

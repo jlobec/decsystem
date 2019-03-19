@@ -11,17 +11,15 @@ public class UpdateUserRequest {
 
 	@Size(max = 100)
 	@NotBlank
-	private String lastname;
+	private String lastName;
 
-	public UpdateUserRequest() {
-		super();
-	}
+	@Size(max = 100)
+	@NotBlank
+	private String nickname;
 
-	public UpdateUserRequest(@Size(max = 100) @NotBlank String name, @Size(max = 100) @NotBlank String lastname) {
-		super();
-		this.name = name;
-		this.lastname = lastname;
-	}
+	@Size(max = 100)
+	@NotBlank
+	private String email;
 
 	public String getName() {
 		return name;
@@ -31,12 +29,28 @@ public class UpdateUserRequest {
 		this.name = name;
 	}
 
-	public String getLastname() {
-		return lastname;
+	public String getLastName() {
+		return lastName;
 	}
 
-	public void setLastname(String lastname) {
-		this.lastname = lastname;
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getNickname() {
+		return nickname;
+	}
+
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 }
