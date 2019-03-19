@@ -21,55 +21,109 @@ import axios from "axios";
 import { config } from "../../config";
 
 const initialState = {
-  loading: false
-};
-
-const colors = [red[500], pink[500], green[500]];
-
-const getRandomInt = (min, max) => {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  loading: false,
+  showMembers: false,
+  showPolls: false,
+  members: [],
+  polls: []
 };
 
 class Assembly extends React.Component {
   state = { ...initialState };
 
-  render() {
-    const { classes, assembly } = this.props;
-    console.log(assembly);
+  getFormattedDate = assembly => {
     const options = {
       year: "numeric",
       month: "long",
       day: "numeric"
     };
-    const createdAt = new Intl.DateTimeFormat("en-US", options).format(
+    return new Intl.DateTimeFormat("en-US", options).format(
       new Date(assembly.timecreated)
     );
-    const avatarChar = assembly.name.charAt(0).toUpperCase();
-    const randomColor = colors[getRandomInt(1, 3)];
-    const avatarStyle = {
-      "background-color": randomColor
+  };
+
+  getAssemblyMembers = async assembly => {
+    const token = sessionStorage.getItem("jwtToken");
+    const url =
+      config.baseUrl + "api/assembly/" + assembly.assemblyId + "/users";
+    const auth = {
+      headers: { Authorization: "Bearer " + token }
     };
+
+    return axios.get(url, auth);
+  };
+
+  handleShowPolls = () => {
+    const showPolls = !this.state.showPolls;
+    this.setState({ showPolls: showPolls });
+  };
+
+  handleShowMembers = () => {
+    const showMembers = !this.state.showMembers;
+    this.setState({ showMembers: showMembers });
+  };
+
+  buildMembersList = members => {
+    return members.map(member => {
+      return (
+        <li>
+          <p>Name: {member.name}</p>
+          <p>Name: {member.lastName}</p>
+          <p>Name: {member.nickname}</p>
+          <p>Name: {member.email}</p>
+        </li>
+      );
+    });
+  };
+
+  async componentDidMount() {
+    this.setState({ loading: true });
+    const { data: members } = await this.getAssemblyMembers(
+      this.props.assembly
+    );
+    if (members) {
+      this.setState({
+        loading: false,
+        members: members.content
+      });
+    }
+  }
+
+  render() {
+    const { classes, assembly } = this.props;
+    const showCardActions = !(this.state.showMembers || this.state.showPolls);
+    const showHidePolls = this.state.showPolls ? "Hide" : "Show";
+    const showHideMembers = this.state.showMembers ? "Hide" : "Show";
+    const cardActions = (
+      <CardActions>
+        <Button size="small" color="primary" onClick={this.handleShowPolls}>
+          {showHidePolls} polls
+        </Button>
+        <Button size="small" color="primary" onClick={this.handleShowMembers}>
+          {showHideMembers} members
+        </Button>
+      </CardActions>
+    );
+
+    const membersList = this.state.showMembers && (
+      <div>
+        <ul>{this.buildMembersList(this.state.members)}</ul>
+      </div>
+    );
+    const pollList = this.state.showPolls && (
+      <div>
+        <p>Poll list</p>
+      </div>
+    );
     return (
       <React.Fragment>
-        <CssBaseline />
         <Card className={classes.card}>
-          {/* <CardHeader
-            avatar={
-              <Avatar aria-label="Recipe" style={avatarStyle}>
-                {avatarChar}
-              </Avatar>
-            }
-            title={assembly.name}
-            subheader={`Created on ${createdAt}`}
-          /> */}
           <CardContent>
             <Typography gutterBottom variant="h5" component="h2">
               {assembly.name}
             </Typography>
             <Typography className={classes.pos} color="textSecondary">
-              Created at {createdAt}
+              Created at {this.getFormattedDate(assembly)}
             </Typography>
 
             <Typography component="p">
@@ -77,14 +131,9 @@ class Assembly extends React.Component {
               {assembly.pollCount}
             </Typography>
           </CardContent>
-          <CardActions>
-            <Button size="small" color="primary">
-              Show polls
-            </Button>
-            <Button size="small" color="primary">
-              Show members
-            </Button>
-          </CardActions>
+          {cardActions}
+          {membersList}
+          {pollList}
         </Card>
       </React.Fragment>
     );

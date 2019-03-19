@@ -27,6 +27,7 @@ import es.udc.fic.decisionsystem.payload.ApiResponse;
 import es.udc.fic.decisionsystem.payload.asamblea.AssemblyPollRequest;
 import es.udc.fic.decisionsystem.payload.asamblea.AssemblyResponse;
 import es.udc.fic.decisionsystem.payload.asamblea.AssemblyUserRequest;
+import es.udc.fic.decisionsystem.payload.asamblea.AssemblyUserResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.repository.asamblea.AsambleaRepository;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
@@ -65,8 +66,15 @@ public class AsambleaController {
 	}
 
 	@GetMapping("/api/assembly/{asambleaId}/users")
-	public Page<Usuario> getAsambleaUsers(Pageable pageable, @PathVariable Integer asambleaId) {
-		return usuarioRepository.findByIdAsamblea(pageable, asambleaId);
+	public Page<AssemblyUserResponse> getAsambleaUsers(Pageable pageable, @PathVariable Integer asambleaId) {
+		return usuarioRepository.findByIdAsamblea(pageable, asambleaId).map(u -> {
+			AssemblyUserResponse user = new AssemblyUserResponse();
+			user.setName(u.getNombre());
+			user.setLastName(u.getApellido());
+			user.setNickname(u.getNickname());
+			user.setEmail(u.getEmail());
+			return user;
+		});
 	}
 
 	@GetMapping("/api/assembly/{asambleaId}/polls")
@@ -100,7 +108,7 @@ public class AsambleaController {
 	public Asamblea createAsamblea(@Valid @RequestBody Asamblea asamblea) {
 		return asambleaRepository.save(asamblea);
 	}
-
+	
 	@PostMapping("/api/assembly/{asambleaId}/adduser")
 	public ResponseEntity<?> addUser(@Valid @RequestBody AssemblyUserRequest addUserRequest,
 			@PathVariable Integer asambleaId) {
