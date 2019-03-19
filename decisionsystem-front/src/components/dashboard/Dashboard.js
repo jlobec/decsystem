@@ -24,6 +24,10 @@ import BarChartIcon from "@material-ui/icons/BarChart";
 import SettingsIcon from "@material-ui/icons/Settings";
 import SimpleLineChart from "./SimpleLineChart";
 import SimpleTable from "./SimpleTable";
+import Avatar from "@material-ui/core/Avatar";
+import deepOrange from "@material-ui/core/colors/deepOrange";
+import deepPurple from "@material-ui/core/colors/deepPurple";
+import Grid from "@material-ui/core/Grid";
 
 import Settings from "../settings/Settings";
 import MyDecisions from "../Decision/MyDecisions";
@@ -106,14 +110,17 @@ const styles = theme => ({
   },
   h5: {
     marginBottom: theme.spacing.unit * 2
+  },
+  avatar: {
+    marginLeft: theme.spacing.unit * 2
   }
 });
 
 const sections = {
   onDecisions: true,
   onAssemblies: false,
-  onReports: false,
-  onSettings: false
+  onSettings: false,
+  onNotifications: false
 };
 
 class Dashboard extends React.Component {
@@ -176,11 +183,17 @@ class Dashboard extends React.Component {
             >
               DecisionApp
             </Typography>
-            <IconButton color="inherit">
+            {/* <IconButton color="inherit">
               <Badge badgeContent={4} color="secondary">
                 <NotificationsIcon />
               </Badge>
-            </IconButton>
+            </IconButton> */}
+            {/* AVATAR */}
+            <div className={classes.avatarContainer}>
+              <Grid container>
+                <Avatar className={classes.avatar}>H</Avatar>
+              </Grid>
+            </div>
           </Toolbar>
         </AppBar>
         <Drawer
@@ -198,6 +211,7 @@ class Dashboard extends React.Component {
               <ChevronLeftIcon />
             </IconButton>
           </div>
+
           <Divider />
           <List>
             <div>
@@ -219,17 +233,28 @@ class Dashboard extends React.Component {
                 </ListItemIcon>
                 <ListItemText primary="Assemblies" />
               </ListItem>
-              <ListItem button onClick={() => this.handleSection("onReports")}>
+              {/* <ListItem button onClick={() => this.handleSection("onReports")}>
                 <ListItemIcon>
                   <BarChartIcon />
                 </ListItemIcon>
                 <ListItemText primary="Reports" />
-              </ListItem>
+              </ListItem> */}
               <ListItem button onClick={() => this.handleSection("onSettings")}>
                 <ListItemIcon>
                   <SettingsIcon />
                 </ListItemIcon>
                 <ListItemText primary="Settings" />
+              </ListItem>
+              <ListItem
+                button
+                onClick={() => this.handleSection("onNotifications")}
+              >
+                <ListItemIcon>
+                  <Badge badgeContent={4} color="secondary">
+                    <NotificationsIcon />
+                  </Badge>
+                </ListItemIcon>
+                <ListItemText primary="Notifications" />
               </ListItem>
             </div>
           </List>
@@ -239,8 +264,11 @@ class Dashboard extends React.Component {
           <Typography variant="h4" gutterBottom component="h2">
             {this.state.sections.onDecisions && <MyDecisions />}
             {this.state.sections.onAssemblies && <Assemblies />}
-            {this.state.sections.onReports && <p>Reports Section</p>}
+            {/* {this.state.sections.onReports && <p>Reports Section</p>} */}
             {this.state.sections.onSettings && <Settings />}
+            {this.state.sections.onNotifications && (
+              <p>Notifications Section</p>
+            )}
           </Typography>
 
           {/* <Typography component="div" className={classes.chartContainer}>
