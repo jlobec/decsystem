@@ -46,7 +46,6 @@ class Assemblies extends React.Component {
     });
     return (
       <React.Fragment>
-        <CssBaseline />
         <div>{assemblies}</div>
       </React.Fragment>
     );

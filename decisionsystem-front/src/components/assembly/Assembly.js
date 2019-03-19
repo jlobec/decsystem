@@ -1,7 +1,5 @@
 import React from "react";
-import { withStyles } from "@material-ui/core";
-import Paper from "@material-ui/core/Paper";
-import CssBaseline from "@material-ui/core/CssBaseline";
+import { withStyles, Divider } from "@material-ui/core";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -16,60 +14,135 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import pink from "@material-ui/core/colors/pink";
 import green from "@material-ui/core/colors/green";
 import red from "@material-ui/core/colors/red";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import axios from "axios";
 
 import { config } from "../../config";
 
 const initialState = {
-  loading: false
-};
-
-const colors = [red[500], pink[500], green[500]];
-
-const getRandomInt = (min, max) => {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  loading: false,
+  showMembers: false,
+  showPolls: false,
+  members: [],
+  polls: []
 };
 
 class Assembly extends React.Component {
   state = { ...initialState };
 
-  render() {
-    const { classes, assembly } = this.props;
-    console.log(assembly);
+  getFormattedDate = assembly => {
     const options = {
       year: "numeric",
       month: "long",
       day: "numeric"
     };
-    const createdAt = new Intl.DateTimeFormat("en-US", options).format(
+    return new Intl.DateTimeFormat("en-US", options).format(
       new Date(assembly.timecreated)
     );
-    const avatarChar = assembly.name.charAt(0).toUpperCase();
-    const randomColor = colors[getRandomInt(1, 3)];
-    const avatarStyle = {
-      "background-color": randomColor
+  };
+
+  getAssemblyMembers = async assembly => {
+    const token = sessionStorage.getItem("jwtToken");
+    const url =
+      config.baseUrl + "api/assembly/" + assembly.assemblyId + "/users";
+    const auth = {
+      headers: { Authorization: "Bearer " + token }
     };
+
+    return axios.get(url, auth);
+  };
+
+  handleShowPolls = () => {
+    const showPolls = !this.state.showPolls;
+    this.setState({ showPolls: showPolls });
+  };
+
+  handleShowMembers = () => {
+    const showMembers = !this.state.showMembers;
+    this.setState({ showMembers: showMembers });
+  };
+
+  buildMembersList = (members, classes) => {
+    return members.map(member => {
+      return (
+        <ListItem alignItems="flex-start">
+          <ListItemAvatar>
+            <Avatar>{`${member.name
+              .charAt(0)
+              .toUpperCase()}${member.lastName
+              .charAt(0)
+              .toUpperCase()}`}</Avatar>
+          </ListItemAvatar>
+          <ListItemText
+            primary={`${member.name} ${member.lastName} `}
+            secondary={
+              <React.Fragment>
+                <Typography
+                  component="span"
+                  className={classes.inline}
+                  color="textPrimary"
+                >
+                  {`@${member.nickname}`}
+                </Typography>
+                {member.email}
+              </React.Fragment>
+            }
+          />
+        </ListItem>
+      );
+    });
+  };
+
+  async componentDidMount() {
+    this.setState({ loading: true });
+    const { data: members } = await this.getAssemblyMembers(
+      this.props.assembly
+    );
+    if (members) {
+      this.setState({
+        loading: false,
+        members: members.content
+      });
+    }
+  }
+
+  render() {
+    const { classes, assembly } = this.props;
+    const showHidePolls = this.state.showPolls ? "Hide" : "Show";
+    const showHideMembers = this.state.showMembers ? "Hide" : "Show";
+    const cardActions = (
+      <CardActions>
+        <Button size="small" color="primary" onClick={this.handleShowPolls}>
+          {showHidePolls} polls
+        </Button>
+        <Button size="small" color="primary" onClick={this.handleShowMembers}>
+          {showHideMembers} members
+        </Button>
+      </CardActions>
+    );
+
+    const membersList = this.state.showMembers && (
+      <List className={classes.root}>
+        {this.buildMembersList(this.state.members, classes)}
+      </List>
+    );
+    const pollList = this.state.showPolls && (
+      <div>
+        <p>Poll list</p>
+      </div>
+    );
     return (
       <React.Fragment>
-        <CssBaseline />
         <Card className={classes.card}>
-          {/* <CardHeader
-            avatar={
-              <Avatar aria-label="Recipe" style={avatarStyle}>
-                {avatarChar}
-              </Avatar>
-            }
-            title={assembly.name}
-            subheader={`Created on ${createdAt}`}
-          /> */}
           <CardContent>
             <Typography gutterBottom variant="h5" component="h2">
               {assembly.name}
             </Typography>
             <Typography className={classes.pos} color="textSecondary">
-              Created at {createdAt}
+              Created at {this.getFormattedDate(assembly)}
             </Typography>
 
             <Typography component="p">
@@ -77,14 +150,9 @@ class Assembly extends React.Component {
               {assembly.pollCount}
             </Typography>
           </CardContent>
-          <CardActions>
-            <Button size="small" color="primary">
-              Show polls
-            </Button>
-            <Button size="small" color="primary">
-              Show members
-            </Button>
-          </CardActions>
+          {cardActions}
+          {membersList}
+          {pollList}
         </Card>
       </React.Fragment>
     );
@@ -102,6 +170,14 @@ const styles = theme => ({
   },
   pos: {
     marginBottom: 12
+  },
+  root: {
+    width: "100%",
+    maxWidth: 360,
+    backgroundColor: theme.palette.background.paper
+  },
+  inline: {
+    display: "inline"
   }
 });
 
