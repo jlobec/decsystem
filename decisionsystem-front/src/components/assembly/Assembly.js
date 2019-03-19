@@ -1,7 +1,5 @@
 import React from "react";
-import { withStyles } from "@material-ui/core";
-import Paper from "@material-ui/core/Paper";
-import CssBaseline from "@material-ui/core/CssBaseline";
+import { withStyles, Divider } from "@material-ui/core";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -16,6 +14,10 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import pink from "@material-ui/core/colors/pink";
 import green from "@material-ui/core/colors/green";
 import red from "@material-ui/core/colors/red";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import axios from "axios";
 
 import { config } from "../../config";
@@ -63,15 +65,33 @@ class Assembly extends React.Component {
     this.setState({ showMembers: showMembers });
   };
 
-  buildMembersList = members => {
+  buildMembersList = (members, classes) => {
     return members.map(member => {
       return (
-        <li>
-          <p>Name: {member.name}</p>
-          <p>Name: {member.lastName}</p>
-          <p>Name: {member.nickname}</p>
-          <p>Name: {member.email}</p>
-        </li>
+        <ListItem alignItems="flex-start">
+          <ListItemAvatar>
+            <Avatar>{`${member.name
+              .charAt(0)
+              .toUpperCase()}${member.lastName
+              .charAt(0)
+              .toUpperCase()}`}</Avatar>
+          </ListItemAvatar>
+          <ListItemText
+            primary={`${member.name} ${member.lastName} `}
+            secondary={
+              <React.Fragment>
+                <Typography
+                  component="span"
+                  className={classes.inline}
+                  color="textPrimary"
+                >
+                  {`@${member.nickname}`}
+                </Typography>
+                {member.email}
+              </React.Fragment>
+            }
+          />
+        </ListItem>
       );
     });
   };
@@ -91,7 +111,6 @@ class Assembly extends React.Component {
 
   render() {
     const { classes, assembly } = this.props;
-    const showCardActions = !(this.state.showMembers || this.state.showPolls);
     const showHidePolls = this.state.showPolls ? "Hide" : "Show";
     const showHideMembers = this.state.showMembers ? "Hide" : "Show";
     const cardActions = (
@@ -106,9 +125,9 @@ class Assembly extends React.Component {
     );
 
     const membersList = this.state.showMembers && (
-      <div>
-        <ul>{this.buildMembersList(this.state.members)}</ul>
-      </div>
+      <List className={classes.root}>
+        {this.buildMembersList(this.state.members, classes)}
+      </List>
     );
     const pollList = this.state.showPolls && (
       <div>
@@ -151,6 +170,14 @@ const styles = theme => ({
   },
   pos: {
     marginBottom: 12
+  },
+  root: {
+    width: "100%",
+    maxWidth: 360,
+    backgroundColor: theme.palette.background.paper
+  },
+  inline: {
+    display: "inline"
   }
 });
 
