@@ -1,23 +1,18 @@
 import React from "react";
-import { withStyles, Divider } from "@material-ui/core";
+import { withStyles } from "@material-ui/core";
 import Card from "@material-ui/core/Card";
-import CardActionArea from "@material-ui/core/CardActionArea";
-import CardHeader from "@material-ui/core/CardHeader";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
-import CardMedia from "@material-ui/core/CardMedia";
+import DeleteIcon from "@material-ui/icons/Delete";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
-import pink from "@material-ui/core/colors/pink";
-import green from "@material-ui/core/colors/green";
-import red from "@material-ui/core/colors/red";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import axios from "axios";
 
 import { config } from "../../config";
@@ -44,15 +39,26 @@ class Assembly extends React.Component {
     );
   };
 
-  getAssemblyMembers = async assembly => {
+  getAuth = () => {
     const token = sessionStorage.getItem("jwtToken");
-    const url =
-      config.baseUrl + "api/assembly/" + assembly.assemblyId + "/users";
     const auth = {
       headers: { Authorization: "Bearer " + token }
     };
+    return auth;
+  };
 
-    return axios.get(url, auth);
+  getAssemblyMembers = async assembly => {
+    const url =
+      config.baseUrl + "api/assembly/" + assembly.assemblyId + "/users";
+
+    return axios.get(url, this.getAuth());
+  };
+
+  removeMember = async (assembly, memberId) => {
+    const url =
+      config.baseUrl + "api/assembly/" + assembly.assemblyId + "/deleteuser";
+    const body = { userId: memberId };
+    return axios.post(url, body, this.getAuth());
   };
 
   handleShowPolls = () => {
@@ -65,10 +71,20 @@ class Assembly extends React.Component {
     this.setState({ showMembers: showMembers });
   };
 
-  buildMembersList = (members, classes) => {
+  handleRemoveMember = async (assembly, memberId) => {
+    const { data: removeResult } = await this.removeMember(assembly, memberId);
+    console.log(removeResult);
+    if (removeResult) {
+      const newMembers = this.state.members.slice();
+      newMembers.filter(member => member.userId !== memberId);
+      this.setState({ members: newMembers });
+    }
+  };
+
+  buildMembersList = (assembly, members, classes) => {
     return members.map(member => {
       return (
-        <ListItem alignItems="flex-start">
+        <ListItem alignItems="flex-start" key={member.userId}>
           <ListItemAvatar>
             <Avatar>{`${member.name
               .charAt(0)
@@ -90,6 +106,16 @@ class Assembly extends React.Component {
               </React.Fragment>
             }
           />
+          <ListItemSecondaryAction>
+            <IconButton
+              aria-label="Delete"
+              onClick={() => {
+                this.handleRemoveMember(assembly, member.userId);
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </ListItemSecondaryAction>
         </ListItem>
       );
     });
@@ -125,7 +151,7 @@ class Assembly extends React.Component {
 
     const membersList = this.state.showMembers && (
       <List className={classes.root}>
-        {this.buildMembersList(this.state.members, classes)}
+        {this.buildMembersList(assembly, this.state.members, classes)}
       </List>
     );
     const pollList = this.state.showPolls && (
