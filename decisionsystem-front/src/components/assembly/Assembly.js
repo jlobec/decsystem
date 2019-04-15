@@ -14,6 +14,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import AddMember from "./AddMember";
+import CustomizedSnackbar from "../common/CustomizedSnackbar";
 import axios from "axios";
 
 import { config } from "../../config";
@@ -28,6 +29,11 @@ const initialState = {
 
 class Assembly extends React.Component {
   state = { ...initialState };
+
+  constructor(props) {
+    super(props);
+    this.snack = React.createRef();
+  }
 
   getFormattedDate = assembly => {
     const options = {
@@ -62,6 +68,18 @@ class Assembly extends React.Component {
     return axios.post(url, body, this.getAuth());
   };
 
+  addMember = member => {
+    this.setState({
+      members: [...this.state.members, member]
+    });
+    const snackbarAddedMember = {
+      open: true,
+      variant: "success",
+      message: "User " + member.name + " added successfully"
+    };
+    this.snack.openWith(snackbarAddedMember);
+  };
+
   handleShowPolls = () => {
     const showPolls = !this.state.showPolls;
     this.setState({ showPolls: showPolls });
@@ -72,13 +90,20 @@ class Assembly extends React.Component {
     this.setState({ showMembers: showMembers });
   };
 
-  handleRemoveMember = async (assembly, memberId) => {
+  handleRemoveMember = async (assembly, member) => {
+    const memberId = member.userId;
     const { data: removeResult } = await this.removeMember(assembly, memberId);
     if (removeResult) {
       const newMembers = this.state.members
         .slice()
         .filter(member => member.userId !== memberId);
       this.setState({ members: newMembers });
+      const snackbarRemovedMember = {
+        open: true,
+        variant: "success",
+        message: "User " + member.name + " removed successfully"
+      };
+      this.snack.openWith(snackbarRemovedMember);
     }
   };
 
@@ -111,7 +136,7 @@ class Assembly extends React.Component {
             <IconButton
               aria-label="Delete"
               onClick={() => {
-                this.handleRemoveMember(assembly, member.userId);
+                this.handleRemoveMember(assembly, member);
               }}
             >
               <DeleteIcon />
@@ -152,7 +177,7 @@ class Assembly extends React.Component {
 
     const membersList = this.state.showMembers && (
       <div>
-        <AddMember />
+        <AddMember assembly={assembly} addMember={this.addMember} />
         <List className={classes.root}>
           {this.buildMembersList(assembly, this.state.members, classes)}
         </List>
@@ -183,6 +208,7 @@ class Assembly extends React.Component {
           {membersList}
           {pollList}
         </Card>
+        <CustomizedSnackbar innerRef={ref => (this.snack = ref)} />
       </React.Fragment>
     );
   }

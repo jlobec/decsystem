@@ -7,7 +7,6 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import CustomizedSnackbar from "../common/CustomizedSnackbar";
 import axios from "axios";
 
 import { config } from "../../config";
@@ -15,6 +14,7 @@ import { config } from "../../config";
 const initialState = {
   open: false,
   fullScreen: false,
+  usernameOrEmail: "",
   snackbar: {
     open: false,
     variant: "success",
@@ -25,21 +25,28 @@ const initialState = {
 class AddMember extends React.Component {
   state = { ...initialState };
 
-  constructor(props) {
-    super(props);
-    this.snack = React.createRef();
-  }
+  getAuth = () => {
+    const token = sessionStorage.getItem("jwtToken");
+    const auth = {
+      headers: { Authorization: "Bearer " + token }
+    };
+    return auth;
+  };
+
+  getUser = async usernameOrEmail => {
+    const url = config.baseUrl + "api/user?usernameOrEmail=" + usernameOrEmail;
+    return axios.get(url, this.getAuth());
+  };
+
+  addUser = async (assembly, user) => {
+    const url =
+      config.baseUrl + "api/assembly/" + assembly.assemblyId + "/adduser";
+    const body = { userId: user.userId };
+    return axios.post(url, body, this.getAuth());
+  };
 
   async componentDidMount() {
     this.setState({ loading: true });
-    // const { data: assemblies } = await this.getAssemblies();
-    // if (assemblies) {
-    //   // console.log(assemblies);
-    //   this.setState({
-    //     loading: false,
-    //     assemblies: assemblies.content
-    //   });
-    // }
   }
 
   componentWillUnmount() {
@@ -54,14 +61,27 @@ class AddMember extends React.Component {
     this.setState({ open: false });
   };
 
-  handleAddMember = () => {
-    // If everything is OK we show success message
-    const snackbarAddedMember = {
-      open: true,
-      variant: "success",
-      message: "User added successfully"
-    };
-    this.snack.openWith(snackbarAddedMember);
+  handleChange = event => {
+    this.setState({
+      usernameOrEmail: event.currentTarget.value
+    });
+  };
+
+  handleAddMember = async () => {
+    const { data: userFound } = await this.getUser(this.state.usernameOrEmail);
+    console.log("find user result");
+    console.log(userFound);
+    if (userFound) {
+      // Add user
+      const { data: addUserResponse } = await this.addUser(
+        this.props.assembly,
+        userFound
+      );
+      if (addUserResponse) {
+        this.props.addMember(userFound);
+        this.handleClose();
+      }
+    }
   };
 
   render() {
@@ -93,6 +113,8 @@ class AddMember extends React.Component {
               id="name"
               label="Email or username"
               type="email"
+              value={this.state.usernameOrEmail}
+              onChange={this.handleChange}
               fullWidth
             />
           </DialogContent>
@@ -105,7 +127,6 @@ class AddMember extends React.Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <CustomizedSnackbar innerRef={ref => (this.snack = ref)} />
       </div>
     );
   }
