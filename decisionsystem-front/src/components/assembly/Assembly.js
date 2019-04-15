@@ -13,6 +13,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import AddMember from "./AddMember";
 import axios from "axios";
 
 import { config } from "../../config";
@@ -150,9 +151,12 @@ class Assembly extends React.Component {
     );
 
     const membersList = this.state.showMembers && (
-      <List className={classes.root}>
-        {this.buildMembersList(assembly, this.state.members, classes)}
-      </List>
+      <div>
+        <AddMember />
+        <List className={classes.root}>
+          {this.buildMembersList(assembly, this.state.members, classes)}
+        </List>
+      </div>
     );
     const pollList = this.state.showPolls && (
       <div>
