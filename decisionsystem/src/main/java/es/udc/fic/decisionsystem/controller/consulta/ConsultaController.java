@@ -44,7 +44,7 @@ public class ConsultaController {
 
 	@Autowired
 	private ConsultaOpcionRepository consultaOpcionRepository;
-	
+
 	@Autowired
 	private UsuarioRepository usuarioRepository;
 
@@ -68,18 +68,20 @@ public class ConsultaController {
 
 		return consultaOpcionRepository.findByConsulta(consulta);
 	}
-	
+
 	@GetMapping("/api/poll/open")
-	public Page<PollSummaryResponse> getOpenPolls(Pageable pageable, Principal principal){
-		
+	public Page<PollSummaryResponse> getOpenPolls(Pageable pageable, Principal principal) {
+
 		Optional<Usuario> loggedUser = usuarioRepository.findByNickname(principal.getName());
 		if (loggedUser.isPresent()) {
 			Long userId = loggedUser.get().getIdUsuario();
 			return consultaRepository.findByUser(pageable, userId).map(poll -> {
 				PollSummaryResponse pollSummary = new PollSummaryResponse();
-				pollSummary.setPollTitle(poll.getTitulo());
-				pollSummary.setStartedAt(poll.getFechaHoraInicio().getTime());
+				pollSummary.setTitle(poll.getTitulo());
+				pollSummary.setDescription(poll.getDescripcion());
+				pollSummary.setStartsAt(poll.getFechaHoraInicio().getTime());
 				pollSummary.setEndsAt(poll.getFechaHoraFin().getTime());
+				pollSummary.setPollSystem(poll.getSistemaConsulta().getNombre());
 				return pollSummary;
 			});
 		}

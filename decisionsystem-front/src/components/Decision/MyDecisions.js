@@ -1,7 +1,7 @@
 import React from "react";
 import { withStyles } from "@material-ui/core";
 import axios from "axios";
-import Poll from "../dashboard/Poll";
+import Poll from "./Poll";
 
 import { config } from "../../config";
 
@@ -41,13 +41,12 @@ class MyDecisions extends React.Component {
 
   render() {
     const openPolls = this.state.polls.map((poll, index) => {
-      return <Poll key={index} pollInfo={poll} />;
+      return <Poll key={index} poll={poll} />;
     });
     return (
-      <div>
-        <p>My open decisions: </p>
-        {openPolls}
-      </div>
+      <React.Fragment>
+        <div>{openPolls}</div>
+      </React.Fragment>
     );
   }
 }

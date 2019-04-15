@@ -68,16 +68,23 @@ class Assembly extends React.Component {
     return axios.post(url, body, this.getAuth());
   };
 
-  addMember = member => {
-    this.setState({
-      members: [...this.state.members, member]
-    });
-    const snackbarAddedMember = {
+  addMember = (success, member) => {
+    let snackbarOptions = {
       open: true,
-      variant: "success",
-      message: "User " + member.name + " added successfully"
+      variant: "error",
+      message: "Could not add member"
     };
-    this.snack.openWith(snackbarAddedMember);
+    if (success) {
+      this.setState({
+        members: [...this.state.members, member]
+      });
+      snackbarOptions = {
+        open: true,
+        variant: "success",
+        message: `User @${member.name} added successfully`
+      };
+    }
+    this.snack.openWith(snackbarOptions);
   };
 
   handleShowPolls = () => {
@@ -101,7 +108,7 @@ class Assembly extends React.Component {
       const snackbarRemovedMember = {
         open: true,
         variant: "success",
-        message: "User " + member.name + " removed successfully"
+        message: `User @${member.name} removed successfully`
       };
       this.snack.openWith(snackbarRemovedMember);
     }

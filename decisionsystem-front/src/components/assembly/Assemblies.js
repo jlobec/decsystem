@@ -28,7 +28,6 @@ class Assemblies extends React.Component {
     this.setState({ loading: true });
     const { data: assemblies } = await this.getAssemblies();
     if (assemblies) {
-      // console.log(assemblies);
       this.setState({
         loading: false,
         assemblies: assemblies.content
