@@ -69,6 +69,7 @@ public class AsambleaController {
 	public Page<AssemblyUserResponse> getAsambleaUsers(Pageable pageable, @PathVariable Integer asambleaId) {
 		return usuarioRepository.findByIdAsamblea(pageable, asambleaId).map(u -> {
 			AssemblyUserResponse user = new AssemblyUserResponse();
+			user.setUserId(u.getIdUsuario());
 			user.setName(u.getNombre());
 			user.setLastName(u.getApellido());
 			user.setNickname(u.getNickname());

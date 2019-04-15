@@ -1,23 +1,20 @@
 import React from "react";
-import { withStyles, Divider } from "@material-ui/core";
+import { withStyles } from "@material-ui/core";
 import Card from "@material-ui/core/Card";
-import CardActionArea from "@material-ui/core/CardActionArea";
-import CardHeader from "@material-ui/core/CardHeader";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
-import CardMedia from "@material-ui/core/CardMedia";
+import DeleteIcon from "@material-ui/icons/Delete";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
-import pink from "@material-ui/core/colors/pink";
-import green from "@material-ui/core/colors/green";
-import red from "@material-ui/core/colors/red";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import AddMember from "./AddMember";
+import CustomizedSnackbar from "../common/CustomizedSnackbar";
 import axios from "axios";
 
 import { config } from "../../config";
@@ -33,6 +30,11 @@ const initialState = {
 class Assembly extends React.Component {
   state = { ...initialState };
 
+  constructor(props) {
+    super(props);
+    this.snack = React.createRef();
+  }
+
   getFormattedDate = assembly => {
     const options = {
       year: "numeric",
@@ -44,15 +46,38 @@ class Assembly extends React.Component {
     );
   };
 
-  getAssemblyMembers = async assembly => {
+  getAuth = () => {
     const token = sessionStorage.getItem("jwtToken");
-    const url =
-      config.baseUrl + "api/assembly/" + assembly.assemblyId + "/users";
     const auth = {
       headers: { Authorization: "Bearer " + token }
     };
+    return auth;
+  };
 
-    return axios.get(url, auth);
+  getAssemblyMembers = async assembly => {
+    const url =
+      config.baseUrl + "api/assembly/" + assembly.assemblyId + "/users";
+
+    return axios.get(url, this.getAuth());
+  };
+
+  removeMember = async (assembly, memberId) => {
+    const url =
+      config.baseUrl + "api/assembly/" + assembly.assemblyId + "/deleteuser";
+    const body = { userId: memberId };
+    return axios.post(url, body, this.getAuth());
+  };
+
+  addMember = member => {
+    this.setState({
+      members: [...this.state.members, member]
+    });
+    const snackbarAddedMember = {
+      open: true,
+      variant: "success",
+      message: "User " + member.name + " added successfully"
+    };
+    this.snack.openWith(snackbarAddedMember);
   };
 
   handleShowPolls = () => {
@@ -65,10 +90,27 @@ class Assembly extends React.Component {
     this.setState({ showMembers: showMembers });
   };
 
-  buildMembersList = (members, classes) => {
+  handleRemoveMember = async (assembly, member) => {
+    const memberId = member.userId;
+    const { data: removeResult } = await this.removeMember(assembly, memberId);
+    if (removeResult) {
+      const newMembers = this.state.members
+        .slice()
+        .filter(member => member.userId !== memberId);
+      this.setState({ members: newMembers });
+      const snackbarRemovedMember = {
+        open: true,
+        variant: "success",
+        message: "User " + member.name + " removed successfully"
+      };
+      this.snack.openWith(snackbarRemovedMember);
+    }
+  };
+
+  buildMembersList = (assembly, members, classes) => {
     return members.map(member => {
       return (
-        <ListItem alignItems="flex-start">
+        <ListItem alignItems="flex-start" key={member.userId}>
           <ListItemAvatar>
             <Avatar>{`${member.name
               .charAt(0)
@@ -85,12 +127,21 @@ class Assembly extends React.Component {
                   className={classes.inline}
                   color="textPrimary"
                 >
-                  {`@${member.nickname}`}
+                  {`@${member.nickname} `}
                 </Typography>
-                {member.email}
               </React.Fragment>
             }
           />
+          <ListItemSecondaryAction>
+            <IconButton
+              aria-label="Delete"
+              onClick={() => {
+                this.handleRemoveMember(assembly, member);
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </ListItemSecondaryAction>
         </ListItem>
       );
     });
@@ -125,9 +176,12 @@ class Assembly extends React.Component {
     );
 
     const membersList = this.state.showMembers && (
-      <List className={classes.root}>
-        {this.buildMembersList(this.state.members, classes)}
-      </List>
+      <div>
+        <AddMember assembly={assembly} addMember={this.addMember} />
+        <List className={classes.root}>
+          {this.buildMembersList(assembly, this.state.members, classes)}
+        </List>
+      </div>
     );
     const pollList = this.state.showPolls && (
       <div>
@@ -154,6 +208,7 @@ class Assembly extends React.Component {
           {membersList}
           {pollList}
         </Card>
+        <CustomizedSnackbar innerRef={ref => (this.snack = ref)} />
       </React.Fragment>
     );
   }
