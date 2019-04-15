@@ -73,10 +73,10 @@ class Assembly extends React.Component {
 
   handleRemoveMember = async (assembly, memberId) => {
     const { data: removeResult } = await this.removeMember(assembly, memberId);
-    console.log(removeResult);
     if (removeResult) {
-      const newMembers = this.state.members.slice();
-      newMembers.filter(member => member.userId !== memberId);
+      const newMembers = this.state.members
+        .slice()
+        .filter(member => member.userId !== memberId);
       this.setState({ members: newMembers });
     }
   };
