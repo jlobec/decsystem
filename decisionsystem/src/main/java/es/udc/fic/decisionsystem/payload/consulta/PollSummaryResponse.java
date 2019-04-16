@@ -2,11 +2,20 @@ package es.udc.fic.decisionsystem.payload.consulta;
 
 public class PollSummaryResponse {
 
+	private Long pollId;
 	private String title;
 	private String description;
 	private Long startsAt;
 	private Long endsAt;
 	private String pollSystem;
+
+	public Long getPollId() {
+		return pollId;
+	}
+
+	public void setPollId(Long pollId) {
+		this.pollId = pollId;
+	}
 
 	public String getTitle() {
 		return title;

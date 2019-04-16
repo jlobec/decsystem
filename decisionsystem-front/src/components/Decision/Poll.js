@@ -9,11 +9,20 @@ import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import CustomizedSnackbar from "../common/CustomizedSnackbar";
+import List from "@material-ui/core/List";
+import PollOption from "./PollOption";
 import axios from "axios";
 
 import { config } from "../../config";
 
+const initialState = {
+  loading: false,
+  pollOptions: []
+};
+
 class Poll extends React.Component {
+  state = { ...initialState };
+
   constructor(props) {
     super(props);
     this.snack = React.createRef();
@@ -31,8 +40,42 @@ class Poll extends React.Component {
     return new Intl.DateTimeFormat("en-US", options).format(new Date(time));
   };
 
+  getAuth = () => {
+    const token = sessionStorage.getItem("jwtToken");
+    const auth = {
+      headers: { Authorization: "Bearer " + token }
+    };
+    return auth;
+  };
+
+  getPollOptions = async () => {
+    const poll = this.props.poll;
+    const url = config.baseUrl + "api/poll/" + poll.pollId + "/options";
+
+    return axios.get(url, this.getAuth());
+  };
+
+  async componentDidMount() {
+    const { data: pollOptions } = await this.getPollOptions();
+    if (pollOptions) {
+      this.setState({
+        pollOptions: pollOptions
+      });
+    }
+  }
+
   render() {
     const { classes, poll } = this.props;
+    const pollOptionsComponent = this.state.pollOptions.map(pollOption => {
+      return (
+        <PollOption
+          key={pollOption.pollOptionId}
+          id={pollOption.pollOptionId}
+          poll={poll}
+          pollOption={pollOption}
+        />
+      );
+    });
     return (
       <React.Fragment>
         <CssBaseline />
@@ -46,8 +89,10 @@ class Poll extends React.Component {
                 poll.startsAt
               )} to ${this.getFormattedDate(poll.endsAt)}`}
             </Typography>
-
             <Typography component="p">{poll.description}</Typography>
+            <List className={classes.pollOptionList}>
+              {pollOptionsComponent}
+            </List>
           </CardContent>
         </Card>
         <CustomizedSnackbar innerRef={ref => (this.snack = ref)} />
@@ -56,24 +101,19 @@ class Poll extends React.Component {
   }
 }
 const styles = theme => ({
-  root: {
-    padding: theme.spacing.unit * 3,
-    width: "100%",
-    overflowX: "auto"
-  },
   card: {
     minWidth: 275
   },
   pos: {
     marginBottom: 12
   },
-  root: {
-    width: "100%",
-    maxWidth: 360,
-    backgroundColor: theme.palette.background.paper
-  },
   inline: {
     display: "inline"
+  },
+  pollOptionList: {
+    width: "100%",
+    maxWidth: 720,
+    backgroundColor: theme.palette.background.paper
   }
 });
 

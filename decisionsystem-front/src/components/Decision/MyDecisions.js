@@ -27,7 +27,6 @@ class MyDecisions extends React.Component {
     this.setState({ loading: true });
     const { data: openPolls } = await this.getOpenPolls();
     if (openPolls) {
-      console.log(openPolls);
       this.setState({
         loading: false,
         polls: openPolls.content
