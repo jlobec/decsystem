@@ -52,7 +52,7 @@ class PollOption extends React.Component {
             tabIndex={-1}
             disableRipple
           />
-          <ListItemText primary={`${pollOption.name}`} />
+          <ListItemText primary={`${pollOption.name} `} />
           <ListItemText secondary={`${pollOption.description}`} />
           <ListItemSecondaryAction>
             <IconButton aria-label="Comments">
