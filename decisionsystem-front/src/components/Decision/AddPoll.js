@@ -10,7 +10,12 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import InputLabel from "@material-ui/core/InputLabel";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
+import Divider from "@material-ui/core/Divider";
+import ListItem from "@material-ui/core/ListItem";
+import List from "@material-ui/core/List";
+import Typography from "@material-ui/core/Typography";
 import axios from "axios";
+import withMobileDialog from "@material-ui/core/withMobileDialog";
 
 import { config } from "../../config";
 
@@ -21,7 +26,8 @@ const initialState = {
   title: "",
   description: "",
   pollType: "",
-  assemblyId: 0
+  assemblyId: 0,
+  pollOptions: [{ name: "name", description: "desc" }]
 };
 
 class AddPoll extends React.Component {
@@ -78,6 +84,84 @@ class AddPoll extends React.Component {
     });
   };
 
+  handlePollOptions = classes => {
+    let drawRemoveBtn = this.state.pollOptions.length > 1;
+    const optionInputs = this.state.pollOptions.map((option, index) => {
+      const now = new Date().getTime();
+      // Solo pintar el boton de eliminar si
+      // hay mas de un elemento o no es el ultimo
+      drawRemoveBtn =
+        drawRemoveBtn && index !== this.state.pollOptions.length - 1;
+      return (
+        <ListItem>
+          <TextField
+            autoFocus
+            margin="dense"
+            id={`${now}${option.name}`}
+            name={option.name}
+            label="Option name"
+            type="text"
+            value={option.name}
+            // onChange={this.handleChange(option)}
+            fullWidth
+          />
+          <TextField
+            autoFocus
+            margin="dense"
+            id={`${now}${option.description}`}
+            name={option.description}
+            label="Option description"
+            type="text"
+            value={option.description}
+            // onChange={this.handleChange(option)}
+            fullWidth
+          />
+          {drawRemoveBtn && (
+            <Button
+              className={classes.btnAddOption}
+              variant="contained"
+              color="secondary"
+              onClick={this.handleClickRemoveOption(index)}
+            >
+              Remove option
+            </Button>
+          )}
+        </ListItem>
+      );
+    });
+    return (
+      <div>
+        <Button
+          className={classes.btnAddOption}
+          variant="contained"
+          color="secondary"
+          onClick={this.handleClickAddOption}
+        >
+          Add option
+        </Button>
+        <List>{optionInputs}</List>
+      </div>
+    );
+  };
+
+  handleClickAddOption = () => {
+    const newOption = {
+      name: "",
+      description: ""
+    };
+    this.setState({
+      pollOptions: [...this.state.pollOptions, newOption]
+    });
+  };
+
+  handleClickRemoveOption = index => {
+    console.log("remove at index " + index);
+    // const newPollOptions = [...this.state.pollOptions].splice(index, 1);
+    // this.setState({
+    //   pollOptions: newPollOptions
+    // });
+  };
+
   handleCreatePoll = async () => {
     // let successful = false;
     // const { data: userFound } = await this.getUser(this.state.usernameOrEmail);
@@ -106,6 +190,7 @@ class AddPoll extends React.Component {
         </option>
       );
     });
+    const pollOptions = this.handlePollOptions(classes);
     return (
       <div>
         <Dialog
@@ -200,6 +285,12 @@ class AddPoll extends React.Component {
                 {assemblyOptions}
               </Select>
             </FormControl>
+
+            {/* <Divider variant="middle" /> */}
+            <Typography gutterBottom variant="body1">
+              Poll options
+            </Typography>
+            {pollOptions}
           </DialogContent>
           <DialogActions>
             <Button onClick={this.handleClose} color="primary">
@@ -216,6 +307,17 @@ class AddPoll extends React.Component {
 }
 
 const styles = theme => ({
+  dialog: {
+    [theme.breakpoints.down("sm")]: {
+      fullScreen: true
+    },
+    [theme.breakpoints.up("md")]: {
+      fullScreen: false
+    },
+    [theme.breakpoints.up("lg")]: {
+      fullScreen: false
+    }
+  },
   dateTimePicker: {
     marginTop: theme.spacing.unit,
     marginRight: theme.spacing.unit * 2,
