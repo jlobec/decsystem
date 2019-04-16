@@ -68,6 +68,7 @@ class AddMember extends React.Component {
   };
 
   handleAddMember = async () => {
+    let successful = false;
     const { data: userFound } = await this.getUser(this.state.usernameOrEmail);
     console.log("find user result");
     console.log(userFound);
@@ -78,10 +79,11 @@ class AddMember extends React.Component {
         userFound
       );
       if (addUserResponse) {
-        this.props.addMember(userFound);
-        this.handleClose();
+        successful = true;
       }
     }
+    this.props.addMember(successful, userFound);
+    this.handleClose();
   };
 
   render() {
