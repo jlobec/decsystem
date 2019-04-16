@@ -3,6 +3,7 @@ package es.udc.fic.decisionsystem.controller.consulta;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -27,6 +28,7 @@ import es.udc.fic.decisionsystem.model.util.DateUtil;
 import es.udc.fic.decisionsystem.payload.ApiResponse;
 import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
 import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
+import es.udc.fic.decisionsystem.payload.consulta.PollOptionResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
 import es.udc.fic.decisionsystem.repository.consultaopcion.ConsultaOpcionRepository;
@@ -61,12 +63,18 @@ public class ConsultaController {
 	}
 
 	@GetMapping("/api/poll/{consultaId}/options")
-	public List<ConsultaOpcion> getPollOptions(@PathVariable Long consultaId) {
+	public List<PollOptionResponse> getPollOptions(@PathVariable Long consultaId) {
 		Consulta consulta = consultaRepository.findById(consultaId).map(c -> {
 			return c;
 		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
 
-		return consultaOpcionRepository.findByConsulta(consulta);
+		return consultaOpcionRepository.findByConsulta(consulta).stream().map(opt -> {
+			PollOptionResponse option = new PollOptionResponse();
+			option.setPollOptionId(opt.getIdConsultaOpcion());
+			option.setName(opt.getNombre());
+			option.setDescription(opt.getDescripcion());
+			return option;
+		}).collect(Collectors.toList());
 	}
 
 	@GetMapping("/api/poll/open")
@@ -77,6 +85,7 @@ public class ConsultaController {
 			Long userId = loggedUser.get().getIdUsuario();
 			return consultaRepository.findByUser(pageable, userId).map(poll -> {
 				PollSummaryResponse pollSummary = new PollSummaryResponse();
+				pollSummary.setPollId(poll.getIdConsulta());
 				pollSummary.setTitle(poll.getTitulo());
 				pollSummary.setDescription(poll.getDescripcion());
 				pollSummary.setStartsAt(poll.getFechaHoraInicio().getTime());
