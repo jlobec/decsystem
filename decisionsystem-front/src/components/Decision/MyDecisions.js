@@ -5,6 +5,7 @@ import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";
 import axios from "axios";
 import Poll from "./Poll";
+import AddPoll from "./AddPoll";
 
 import { config } from "../../config";
 
@@ -16,6 +17,11 @@ const initialState = {
 class MyDecisions extends React.Component {
   state = { ...initialState };
 
+  constructor(props) {
+    super(props);
+    this.addPoll = React.createRef();
+  }
+
   getOpenPolls = async () => {
     const token = sessionStorage.getItem("jwtToken");
     const url = config.baseUrl + "api/poll/open";
@@ -24,6 +30,10 @@ class MyDecisions extends React.Component {
     };
 
     return axios.get(url, auth);
+  };
+
+  handleShowAddPoll = async () => {
+    this.addPoll.handleClickOpen();
   };
 
   async componentDidMount() {
@@ -49,7 +59,13 @@ class MyDecisions extends React.Component {
     return (
       <React.Fragment>
         <List>{openPolls}</List>
-        <Fab color="secondary" aria-label="Add" className={classes.fab}>
+        <AddPoll innerRef={ref => (this.addPoll = ref)} />
+        <Fab
+          color="secondary"
+          aria-label="Add"
+          className={classes.fab}
+          onClick={this.handleShowAddPoll}
+        >
           <AddIcon />
         </Fab>
       </React.Fragment>

@@ -14,12 +14,7 @@ import { config } from "../../config";
 const initialState = {
   open: false,
   fullScreen: false,
-  usernameOrEmail: "",
-  snackbar: {
-    open: false,
-    variant: "success",
-    message: ""
-  }
+  usernameOrEmail: ""
 };
 
 class AddMember extends React.Component {
