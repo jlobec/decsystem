@@ -132,7 +132,6 @@ class AddPoll extends React.Component {
         <ListItem key={`${index}${now}`}>
           <TextField
             required
-            autoFocus
             margin="dense"
             id={`${now}${option.name}`}
             name="name"
@@ -143,7 +142,6 @@ class AddPoll extends React.Component {
             fullWidth
           />
           <TextField
-            autoFocus
             margin="dense"
             id={`${now}${option.description}`}
             name="description"
@@ -200,9 +198,8 @@ class AddPoll extends React.Component {
     });
   };
 
-  handleCreatePoll = async () => {
-    console.log("Create the poll");
-    const pollToCreate = {
+  handleCreatePoll = () => {
+    this.props.savePoll({
       title: this.state.title,
       description: this.state.description,
       startTime: this.state.startTime,
@@ -210,23 +207,7 @@ class AddPoll extends React.Component {
       pollType: this.state.pollType,
       assemblyId: this.state.assemblyId,
       options: this.state.pollOptions
-    };
-    console.log(pollToCreate);
-    // let successful = false;
-    // const { data: userFound } = await this.getUser(this.state.usernameOrEmail);
-    // console.log("find user result");
-    // console.log(userFound);
-    // if (userFound) {
-    //   // Add user
-    //   const { data: addUserResponse } = await this.addUser(
-    //     this.props.assembly,
-    //     userFound
-    //   );
-    //   if (addUserResponse) {
-    //     successful = true;
-    //   }
-    // }
-    // this.props.addMember(successful, userFound);
+    });
     this.handleClose();
   };
 
@@ -267,7 +248,6 @@ class AddPoll extends React.Component {
                 fullWidth
               />
               <TextField
-                autoFocus
                 margin="dense"
                 id="description"
                 name="description"

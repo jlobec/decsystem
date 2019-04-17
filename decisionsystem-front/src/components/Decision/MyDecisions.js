@@ -3,11 +3,10 @@ import { withStyles } from "@material-ui/core";
 import List from "@material-ui/core/List";
 import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";
-import axios from "axios";
 import Poll from "./Poll";
 import AddPoll from "./AddPoll";
-
-import { config } from "../../config";
+import CustomizedSnackbar from "../common/CustomizedSnackbar";
+import PollActions from "../../actions/poll/PollActions";
 
 const initialState = {
   loading: false,
@@ -20,16 +19,38 @@ class MyDecisions extends React.Component {
   constructor(props) {
     super(props);
     this.addPoll = React.createRef();
+    this.snack = React.createRef();
   }
 
-  getOpenPolls = async () => {
-    const token = sessionStorage.getItem("jwtToken");
-    const url = config.baseUrl + "api/poll/open";
-    const auth = {
-      headers: { Authorization: "Bearer " + token }
-    };
+  doSavePoll = async poll => {};
 
-    return axios.get(url, auth);
+  savePoll = async poll => {
+    // TODO
+    console.log(poll);
+
+    let successful = false;
+    const { data: userFound } = await this.getUser(this.state.usernameOrEmail);
+    console.log("find user result");
+    console.log(userFound);
+    if (userFound) {
+      // Add user
+      const { data: addUserResponse } = await this.addUser(
+        this.props.assembly,
+        userFound
+      );
+      if (addUserResponse) {
+        successful = true;
+      }
+    }
+    this.props.addMember(successful, userFound);
+    this.handleClose();
+
+    const snackbarPollAdded = {
+      open: true,
+      variant: "success",
+      message: `Poll '${poll.title}' added successfully`
+    };
+    this.snack.openWith(snackbarPollAdded);
   };
 
   handleShowAddPoll = async () => {
@@ -38,7 +59,7 @@ class MyDecisions extends React.Component {
 
   async componentDidMount() {
     this.setState({ loading: true });
-    const { data: openPolls } = await this.getOpenPolls();
+    const { data: openPolls } = await PollActions.doGetOpenPolls();
     if (openPolls) {
       this.setState({
         loading: false,
@@ -59,7 +80,10 @@ class MyDecisions extends React.Component {
     return (
       <React.Fragment>
         <List>{openPolls}</List>
-        <AddPoll innerRef={ref => (this.addPoll = ref)} />
+        <AddPoll
+          innerRef={ref => (this.addPoll = ref)}
+          savePoll={this.savePoll}
+        />
         <Fab
           color="secondary"
           aria-label="Add"
@@ -68,6 +92,7 @@ class MyDecisions extends React.Component {
         >
           <AddIcon />
         </Fab>
+        <CustomizedSnackbar innerRef={ref => (this.snack = ref)} />
       </React.Fragment>
     );
   }
