@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
+import es.udc.fic.decisionsystem.model.asamblea.Asamblea;
 import es.udc.fic.decisionsystem.model.consulta.Consulta;
+import es.udc.fic.decisionsystem.model.consultaasamblea.ConsultaAsamblea;
 import es.udc.fic.decisionsystem.model.consultaopcion.ConsultaOpcion;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsulta;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
@@ -30,7 +32,9 @@ import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
 import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
+import es.udc.fic.decisionsystem.repository.asamblea.AsambleaRepository;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
+import es.udc.fic.decisionsystem.repository.consultaasamblea.ConsultaAsambleaRepository;
 import es.udc.fic.decisionsystem.repository.consultaopcion.ConsultaOpcionRepository;
 import es.udc.fic.decisionsystem.repository.sistemaconsulta.SistemaConsultaRepository;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
@@ -49,6 +53,12 @@ public class ConsultaController {
 
 	@Autowired
 	private UsuarioRepository usuarioRepository;
+
+	@Autowired
+	private AsambleaRepository asambleaRepository;
+
+	@Autowired
+	private ConsultaAsambleaRepository consultaAsambleaRepository;
 
 	@GetMapping("/api/poll/{consultaId}")
 	public Consulta getConsulta(@PathVariable Long consultaId) {
@@ -99,18 +109,51 @@ public class ConsultaController {
 	}
 
 	@PostMapping("/api/poll")
-	public Consulta createConsulta(@Valid @RequestBody CreatePollRequest poll) {
+	public PollSummaryResponse createConsulta(@Valid @RequestBody CreatePollRequest poll) {
 
-		Optional<SistemaConsulta> pollSystem = sistemaConsultaRepository.findById(poll.getIdPollSystem());
+		Optional<SistemaConsulta> pollSystem = sistemaConsultaRepository.findById(poll.getPollSystemId());
 		if (pollSystem.isPresent()) {
+			// Save poll
 			Consulta newPoll = new Consulta();
 			newPoll.setTitulo(poll.getTitle());
 			newPoll.setDescripcion(poll.getDescription());
-			newPoll.setFechaHoraInicio(DateUtil.toDate(poll.getStartsAt()));
-			newPoll.setFechaHoraFin(DateUtil.toDate(poll.getFinishesAt()));
+			newPoll.setFechaHoraInicio(DateUtil.toDate(poll.getStartTime()));
+			newPoll.setFechaHoraFin(DateUtil.toDate(poll.getEndTime()));
 			newPoll.setSistemaConsulta(pollSystem.get());
+			Consulta savedPoll = consultaRepository.save(newPoll);
 
-			return consultaRepository.save(newPoll);
+			// Save options
+			for (AddPollOptionRequest pollOption : poll.getPollOptions()) {
+				ConsultaOpcion option = new ConsultaOpcion();
+				option.setConsulta(savedPoll);
+				option.setNombre(pollOption.getName());
+				option.setDescripcion(pollOption.getDescription());
+				consultaOpcionRepository.save(option);
+			}
+
+			// Relate to assembly
+			Asamblea asamblea = asambleaRepository.findById(poll.getAssemblyId()).map(a -> {
+				return a;
+			}).orElseThrow(() -> new ResourceNotFoundException("Assembly not found with id " + poll.getAssemblyId()));
+
+			if (consultaAsambleaRepository.findByConsultaAndAsamblea(savedPoll, asamblea).isPresent()) {
+				throw new ResourceNotFoundException("Relation already exists");
+			}
+
+			ConsultaAsamblea toAdd = new ConsultaAsamblea();
+			toAdd.setAsamblea(asamblea);
+			toAdd.setConsulta(savedPoll);
+			consultaAsambleaRepository.save(toAdd);
+
+			PollSummaryResponse response = new PollSummaryResponse();
+			response.setPollId(savedPoll.getIdConsulta());
+			response.setTitle(savedPoll.getTitulo());
+			response.setDescription(savedPoll.getDescripcion());
+			response.setStartsAt(savedPoll.getFechaHoraInicio().getTime());
+			response.setEndsAt(savedPoll.getFechaHoraFin().getTime());
+			response.setPollSystem(pollSystem.get().getNombre());
+
+			return response;
 		} else {
 			throw new ResourceNotFoundException("Poll system not found");
 		}

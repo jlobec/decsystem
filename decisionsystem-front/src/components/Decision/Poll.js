@@ -23,11 +23,6 @@ const initialState = {
 class Poll extends React.Component {
   state = { ...initialState };
 
-  constructor(props) {
-    super(props);
-    this.snack = React.createRef();
-  }
-
   getFormattedDate = time => {
     const options = {
       year: "numeric",
@@ -77,32 +72,27 @@ class Poll extends React.Component {
       );
     });
     return (
-      <React.Fragment>
-        <CssBaseline />
-        <Card className={classes.card}>
-          <CardContent>
-            <Typography gutterBottom variant="h5" component="h2">
-              {poll.title}
-            </Typography>
-            <Typography className={classes.pos} color="textSecondary">
-              {`From ${this.getFormattedDate(
-                poll.startsAt
-              )} to ${this.getFormattedDate(poll.endsAt)}`}
-            </Typography>
-            <Typography component="p">{poll.description}</Typography>
-            <List className={classes.pollOptionList}>
-              {pollOptionsComponent}
-            </List>
-          </CardContent>
-        </Card>
-        <CustomizedSnackbar innerRef={ref => (this.snack = ref)} />
-      </React.Fragment>
+      <Card className={classes.card}>
+        <CardContent>
+          <Typography gutterBottom variant="h5" component="h2">
+            {poll.title}
+          </Typography>
+          <Typography className={classes.pos} color="textSecondary">
+            {`From ${this.getFormattedDate(
+              poll.startsAt
+            )} to ${this.getFormattedDate(poll.endsAt)}`}
+          </Typography>
+          <Typography component="p">{poll.description}</Typography>
+          <List className={classes.pollOptionList}>{pollOptionsComponent}</List>
+        </CardContent>
+      </Card>
     );
   }
 }
 const styles = theme => ({
   card: {
-    minWidth: 275
+    minWidth: 275,
+    marginBottom: theme.spacing.unit * 2
   },
   pos: {
     marginBottom: 12

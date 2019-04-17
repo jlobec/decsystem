@@ -1,9 +1,8 @@
 package es.udc.fic.decisionsystem.payload.consulta;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.util.List;
 
-import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -20,14 +19,20 @@ public class CreatePollRequest {
 	private String description;
 
 	@NotNull
-	@FutureOrPresent
-	private Timestamp startsAt;
+	private Timestamp startTime;
 
-	private Timestamp finishesAt;
+	@NotNull
+	private Timestamp endTime;
 
 	@NotNull
 	@Positive
-	private Integer idPollSystem;
+	private Integer pollSystemId;
+
+	@NotNull
+	@Positive
+	private Integer assemblyId;
+
+	private List<AddPollOptionRequest> pollOptions;
 
 	public String getTitle() {
 		return title;
@@ -45,28 +50,44 @@ public class CreatePollRequest {
 		this.description = description;
 	}
 
-	public Timestamp getStartsAt() {
-		return startsAt;
+	public Timestamp getStartTime() {
+		return startTime;
 	}
 
-	public void setStartsAt(Timestamp startsAt) {
-		this.startsAt = startsAt;
+	public void setStartTime(Timestamp startTime) {
+		this.startTime = startTime;
 	}
 
-	public Timestamp getFinishesAt() {
-		return finishesAt;
+	public Timestamp getEndTime() {
+		return endTime;
 	}
 
-	public void setFinishesAt(Timestamp finishesAt) {
-		this.finishesAt = finishesAt;
+	public void setEndTime(Timestamp endTime) {
+		this.endTime = endTime;
 	}
 
-	public Integer getIdPollSystem() {
-		return idPollSystem;
+	public Integer getPollSystemId() {
+		return pollSystemId;
 	}
 
-	public void setIdPollSystem(Integer idPollSystem) {
-		this.idPollSystem = idPollSystem;
+	public void setPollSystemId(Integer pollSystemId) {
+		this.pollSystemId = pollSystemId;
+	}
+
+	public Integer getAssemblyId() {
+		return assemblyId;
+	}
+
+	public void setAssemblyId(Integer assemblyId) {
+		this.assemblyId = assemblyId;
+	}
+
+	public List<AddPollOptionRequest> getPollOptions() {
+		return pollOptions;
+	}
+
+	public void setPollOptions(List<AddPollOptionRequest> pollOptions) {
+		this.pollOptions = pollOptions;
 	}
 
 }

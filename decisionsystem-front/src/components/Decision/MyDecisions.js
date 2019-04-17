@@ -3,11 +3,10 @@ import { withStyles } from "@material-ui/core";
 import List from "@material-ui/core/List";
 import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";
-import axios from "axios";
 import Poll from "./Poll";
 import AddPoll from "./AddPoll";
-
-import { config } from "../../config";
+import CustomizedSnackbar from "../common/CustomizedSnackbar";
+import PollActions from "../../actions/poll/PollActions";
 
 const initialState = {
   loading: false,
@@ -20,16 +19,35 @@ class MyDecisions extends React.Component {
   constructor(props) {
     super(props);
     this.addPoll = React.createRef();
+    this.snack = React.createRef();
   }
 
-  getOpenPolls = async () => {
-    const token = sessionStorage.getItem("jwtToken");
-    const url = config.baseUrl + "api/poll/open";
-    const auth = {
-      headers: { Authorization: "Bearer " + token }
-    };
+  savePoll = async poll => {
+    console.log(poll);
+    const { data: savePollResult } = await PollActions.doSavePoll(poll);
+    console.log("save poll result");
+    console.log(savePollResult);
+    if (savePollResult) {
+      this.setState({
+        polls: [...this.state.polls, savePollResult]
+      });
+    }
+    this.handleShowSnackbarForSavePoll(savePollResult, poll);
+  };
 
-    return axios.get(url, auth);
+  handleShowSnackbarForSavePoll = (successful, poll) => {
+    const okMessage = {
+      open: true,
+      variant: "success",
+      message: `Poll '${poll.title}' added successfully`
+    };
+    const errorMessage = {
+      open: true,
+      variant: "error",
+      message: `Poll could not be added`
+    };
+    const messageToShow = successful ? okMessage : errorMessage;
+    this.snack.openWith(messageToShow);
   };
 
   handleShowAddPoll = async () => {
@@ -38,7 +56,7 @@ class MyDecisions extends React.Component {
 
   async componentDidMount() {
     this.setState({ loading: true });
-    const { data: openPolls } = await this.getOpenPolls();
+    const { data: openPolls } = await PollActions.doGetOpenPolls();
     if (openPolls) {
       this.setState({
         loading: false,
@@ -54,12 +72,15 @@ class MyDecisions extends React.Component {
   render() {
     const { classes } = this.props;
     const openPolls = this.state.polls.map((poll, index) => {
-      return <Poll key={index} poll={poll} />;
+      return <Poll className={classes.poll} key={index} poll={poll} />;
     });
     return (
       <React.Fragment>
         <List>{openPolls}</List>
-        <AddPoll innerRef={ref => (this.addPoll = ref)} />
+        <AddPoll
+          innerRef={ref => (this.addPoll = ref)}
+          savePoll={this.savePoll}
+        />
         <Fab
           color="secondary"
           aria-label="Add"
@@ -68,6 +89,7 @@ class MyDecisions extends React.Component {
         >
           <AddIcon />
         </Fab>
+        <CustomizedSnackbar innerRef={ref => (this.snack = ref)} />
       </React.Fragment>
     );
   }
@@ -88,6 +110,9 @@ const styles = theme => ({
       bottom: theme.spacing.unit * 6,
       right: theme.spacing.unit * 6
     }
+  },
+  poll: {
+    marginTop: theme.spacing.unit * 3
   }
 });
 
