@@ -101,16 +101,12 @@ class AddPoll extends React.Component {
   };
 
   handleOptionChange = (event, index) => {
-    // console.log("handle option change");
-    // console.log(event.currentTarget.name);
-    // console.log(event.currentTarget.value);
-
     let optionChanged = { ...this.state.pollOptions[index] };
     optionChanged[event.currentTarget.name] = event.currentTarget.value;
-    // console.log(optionChanged);
+
     let newOptions = [...this.state.pollOptions];
     newOptions[index] = optionChanged;
-    // console.log(newOptions);
+
     this.setState({
       pollOptions: newOptions
     });
@@ -128,8 +124,8 @@ class AddPoll extends React.Component {
     let drawRemoveBtn = this.state.pollOptions.length > 1;
     const optionInputs = this.state.pollOptions.map((option, index) => {
       const now = new Date().getTime();
-      // Solo pintar el boton de eliminar si
-      // hay mas de un elemento o no es el ultimo
+      // Only draw button if there is only an element
+      // or it is not the last one on the list
       drawRemoveBtn =
         drawRemoveBtn && index !== this.state.pollOptions.length - 1;
       return (
@@ -196,12 +192,9 @@ class AddPoll extends React.Component {
   };
 
   handleClickRemoveOption = index => {
-    // console.log("remove at index " + index);
     const newPollOptions = [...this.state.pollOptions].filter((el, idx) => {
       if (idx !== index) return el;
     });
-
-    // console.log(newPollOptions);
     this.setState({
       pollOptions: newPollOptions
     });
