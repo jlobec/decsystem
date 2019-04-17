@@ -72,7 +72,7 @@ class MyDecisions extends React.Component {
   render() {
     const { classes } = this.props;
     const openPolls = this.state.polls.map((poll, index) => {
-      return <Poll className={classes.poll} key={index} poll={poll} />;
+      return <Poll key={index} poll={poll} />;
     });
     return (
       <React.Fragment>
@@ -110,9 +110,6 @@ const styles = theme => ({
       bottom: theme.spacing.unit * 6,
       right: theme.spacing.unit * 6
     }
-  },
-  poll: {
-    marginTop: theme.spacing.unit * 3
   }
 });
 
