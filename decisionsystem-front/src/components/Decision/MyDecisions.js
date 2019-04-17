@@ -24,14 +24,18 @@ class MyDecisions extends React.Component {
 
   savePoll = async poll => {
     console.log(poll);
-
     const { data: savePollResult } = await PollActions.doSavePoll(poll);
     console.log("save poll result");
-    console.log(savePollResult, poll);
-    this.handleShowSavePoll(savePollResult);
+    console.log(savePollResult);
+    if (savePollResult) {
+      this.setState({
+        polls: [...this.state.polls, savePollResult]
+      });
+    }
+    this.handleShowSnackbarForSavePoll(savePollResult, poll);
   };
 
-  handleShowSavePoll = (successful, poll) => {
+  handleShowSnackbarForSavePoll = (successful, poll) => {
     const okMessage = {
       open: true,
       variant: "success",
@@ -68,7 +72,7 @@ class MyDecisions extends React.Component {
   render() {
     const { classes } = this.props;
     const openPolls = this.state.polls.map((poll, index) => {
-      return <Poll key={index} poll={poll} />;
+      return <Poll className={classes.poll} key={index} poll={poll} />;
     });
     return (
       <React.Fragment>
@@ -106,6 +110,9 @@ const styles = theme => ({
       bottom: theme.spacing.unit * 6,
       right: theme.spacing.unit * 6
     }
+  },
+  poll: {
+    marginTop: theme.spacing.unit * 3
   }
 });
 

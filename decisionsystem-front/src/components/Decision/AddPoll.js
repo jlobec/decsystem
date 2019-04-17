@@ -206,9 +206,10 @@ class AddPoll extends React.Component {
       endTime: this.state.endTime,
       pollTypeId: this.state.pollTypeId,
       assemblyId: this.state.assemblyId,
-      options: this.state.pollOptions
+      pollOptions: this.state.pollOptions
     });
     this.handleClose();
+    this.setState({ ...initialState });
   };
 
   render() {

@@ -20,11 +20,11 @@ class PollActions {
       description: poll.description,
       startTime: poll.startTime,
       endTime: poll.endTime,
-      pollTypeId: poll.pollTypeId,
+      pollSystemId: poll.pollTypeId,
       assemblyId: poll.assemblyId,
-      options: poll.pollOptions
+      pollOptions: poll.pollOptions
     };
-    // return axios.post(url, requestBody, AuthUtil.getHeaders());
+    return axios.post(url, requestBody, AuthUtil.getHeaders());
   };
 }
 
