@@ -84,6 +84,22 @@ class AddPoll extends React.Component {
     });
   };
 
+  handleOptionChange = (event, index) => {
+    // console.log("handle option change");
+    // console.log(event.currentTarget.name);
+    // console.log(event.currentTarget.value);
+
+    let optionChanged = { ...this.state.pollOptions[index] };
+    optionChanged[event.currentTarget.name] = event.currentTarget.value;
+    // console.log(optionChanged);
+    let newOptions = [...this.state.pollOptions];
+    newOptions[index] = optionChanged;
+    // console.log(newOptions);
+    this.setState({
+      pollOptions: newOptions
+    });
+  };
+
   handlePollOptions = classes => {
     let drawRemoveBtn = this.state.pollOptions.length > 1;
     const optionInputs = this.state.pollOptions.map((option, index) => {
@@ -98,22 +114,22 @@ class AddPoll extends React.Component {
             autoFocus
             margin="dense"
             id={`${now}${option.name}`}
-            name={option.name}
+            name="name"
             label="Option name"
             type="text"
             value={option.name}
-            // onChange={this.handleChange(option)}
+            onChange={event => this.handleOptionChange(event, index)}
             fullWidth
           />
           <TextField
             autoFocus
             margin="dense"
             id={`${now}${option.description}`}
-            name={option.description}
+            name="description"
             label="Option description"
             type="text"
             value={option.description}
-            // onChange={this.handleChange(option)}
+            onChange={event => this.handleOptionChange(event, index)}
             fullWidth
           />
           {drawRemoveBtn && (
@@ -121,7 +137,7 @@ class AddPoll extends React.Component {
               className={classes.btnAddOption}
               variant="contained"
               color="secondary"
-              onClick={this.handleClickRemoveOption(index)}
+              onClick={() => this.handleClickRemoveOption(index)}
             >
               Remove option
             </Button>
@@ -155,14 +171,28 @@ class AddPoll extends React.Component {
   };
 
   handleClickRemoveOption = index => {
-    console.log("remove at index " + index);
-    // const newPollOptions = [...this.state.pollOptions].splice(index, 1);
-    // this.setState({
-    //   pollOptions: newPollOptions
-    // });
+    // console.log("remove at index " + index);
+    const newPollOptions = [...this.state.pollOptions].filter((el, idx) => {
+      if (idx !== index) return el;
+    });
+
+    // console.log(newPollOptions);
+    this.setState({
+      pollOptions: newPollOptions
+    });
   };
 
   handleCreatePoll = async () => {
+    console.log("Create the poll");
+    const pollToCreate = {
+      title: this.state.title,
+      description: this.state.description,
+      startTime: "",
+      endTime: "",
+      pollType: this.state.pollType,
+      assemblyId: this.state.assemblyId,
+      options: this.state.pollOptions
+    };
     // let successful = false;
     // const { data: userFound } = await this.getUser(this.state.usernameOrEmail);
     // console.log("find user result");
