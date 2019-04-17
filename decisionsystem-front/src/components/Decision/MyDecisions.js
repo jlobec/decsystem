@@ -22,35 +22,28 @@ class MyDecisions extends React.Component {
     this.snack = React.createRef();
   }
 
-  doSavePoll = async poll => {};
-
   savePoll = async poll => {
-    // TODO
     console.log(poll);
 
-    let successful = false;
-    const { data: userFound } = await this.getUser(this.state.usernameOrEmail);
-    console.log("find user result");
-    console.log(userFound);
-    if (userFound) {
-      // Add user
-      const { data: addUserResponse } = await this.addUser(
-        this.props.assembly,
-        userFound
-      );
-      if (addUserResponse) {
-        successful = true;
-      }
-    }
-    this.props.addMember(successful, userFound);
-    this.handleClose();
+    const { data: savePollResult } = await PollActions.doSavePoll(poll);
+    console.log("save poll result");
+    console.log(savePollResult, poll);
+    this.handleShowSavePoll(savePollResult);
+  };
 
-    const snackbarPollAdded = {
+  handleShowSavePoll = (successful, poll) => {
+    const okMessage = {
       open: true,
       variant: "success",
       message: `Poll '${poll.title}' added successfully`
     };
-    this.snack.openWith(snackbarPollAdded);
+    const errorMessage = {
+      open: true,
+      variant: "error",
+      message: `Poll could not be added`
+    };
+    const messageToShow = successful ? okMessage : errorMessage;
+    this.snack.openWith(messageToShow);
   };
 
   handleShowAddPoll = async () => {

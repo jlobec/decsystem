@@ -1,9 +1,7 @@
 package es.udc.fic.decisionsystem.payload.consulta;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 
-import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -20,9 +18,9 @@ public class CreatePollRequest {
 	private String description;
 
 	@NotNull
-	@FutureOrPresent
 	private Timestamp startsAt;
 
+	@NotNull
 	private Timestamp finishesAt;
 
 	@NotNull

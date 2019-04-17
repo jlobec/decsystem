@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsulta;
+import es.udc.fic.decisionsystem.payload.pollsystem.PollSystemResponse;
 import es.udc.fic.decisionsystem.repository.sistemaconsulta.SistemaConsultaRepository;
 
 @RestController
@@ -22,23 +23,28 @@ public class SistemaConsultaController {
 
 	@Autowired
 	private SistemaConsultaRepository sistemaConsultaRepository;
-	
+
 	@GetMapping("/api/pollsystem")
-    public Page<SistemaConsulta> getSistemaConsulta(Pageable pageable) {
-        return sistemaConsultaRepository.findAll(pageable);
-    }
-	
+	public Page<PollSystemResponse> getSistemaConsulta(Pageable pageable) {
+		return sistemaConsultaRepository.findAll(pageable).map(ps -> {
+			PollSystemResponse res = new PollSystemResponse();
+			res.setPollTypeId(ps.getIdSistemaConsulta());
+			res.setName(ps.getNombre());
+			res.setDescription(ps.getDescripcion());
+			return res;
+		});
+	}
+
 	@PostMapping("/api/pollsystem")
-	public SistemaConsulta createAsamblea(@Valid @RequestBody SistemaConsulta sistemaConsulta) {
+	public SistemaConsulta createPollSystem(@Valid @RequestBody SistemaConsulta sistemaConsulta) {
 		return sistemaConsultaRepository.save(sistemaConsulta);
 	}
-	
+
 	@DeleteMapping("/api/pollsystem/{sistConsultaId}")
 	public ResponseEntity<?> deleteAsamblea(@PathVariable Integer sistConsultaId) {
-        return sistemaConsultaRepository.findById(sistConsultaId)
-                .map(sistConsulta -> {
-                	sistemaConsultaRepository.delete(sistConsulta);
-                    return ResponseEntity.ok().build();
-                }).orElseThrow(() -> new ResourceNotFoundException("Sistema consulta not found with id " + sistConsultaId));
-    }
+		return sistemaConsultaRepository.findById(sistConsultaId).map(sistConsulta -> {
+			sistemaConsultaRepository.delete(sistConsulta);
+			return ResponseEntity.ok().build();
+		}).orElseThrow(() -> new ResourceNotFoundException("Sistema consulta not found with id " + sistConsultaId));
+	}
 }

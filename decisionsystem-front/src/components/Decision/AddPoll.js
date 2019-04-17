@@ -10,7 +10,6 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import InputLabel from "@material-ui/core/InputLabel";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
-import Divider from "@material-ui/core/Divider";
 import ListItem from "@material-ui/core/ListItem";
 import List from "@material-ui/core/List";
 import Typography from "@material-ui/core/Typography";
@@ -22,6 +21,7 @@ import {
 } from "material-ui-pickers";
 import axios from "axios";
 
+import PollActions from "../../actions/poll/PollActions";
 import { config } from "../../config";
 
 const getStartDefaultValue = () => {
@@ -38,11 +38,12 @@ const initialState = {
   open: false,
   fullScreen: false,
   assemblyOptions: [],
+  pollTypeOptions: [],
   title: "",
   description: "",
   startTime: "",
   endTime: "",
-  pollType: "",
+  pollTypeId: 0,
   assemblyId: 0,
   pollOptions: [{ name: "", description: "" }]
 };
@@ -61,11 +62,6 @@ class AddPoll extends React.Component {
     return auth;
   };
 
-  getUser = async usernameOrEmail => {
-    const url = config.baseUrl + "api/user?usernameOrEmail=" + usernameOrEmail;
-    return axios.get(url, this.getAuth());
-  };
-
   getUserAssemblies = async () => {
     const url = config.baseUrl + "api/assembly/mine";
     return axios.get(url, this.getAuth());
@@ -75,10 +71,14 @@ class AddPoll extends React.Component {
     this.setState({ loading: true });
     const { data: assemblies } = await this.getUserAssemblies();
     if (assemblies) {
-      this.setState({
-        loading: false,
-        assemblyOptions: assemblies.content
-      });
+      const { data: pollTypes } = await PollActions.doGetPollTypes();
+      if (pollTypes) {
+        this.setState({
+          loading: false,
+          assemblyOptions: assemblies.content,
+          pollTypeOptions: pollTypes.content
+        });
+      }
     }
   }
 
@@ -204,7 +204,7 @@ class AddPoll extends React.Component {
       description: this.state.description,
       startTime: this.state.startTime,
       endTime: this.state.endTime,
-      pollType: this.state.pollType,
+      pollTypeId: this.state.pollTypeId,
       assemblyId: this.state.assemblyId,
       options: this.state.pollOptions
     });
@@ -217,6 +217,13 @@ class AddPoll extends React.Component {
       return (
         <option key={assembly.assemblyId} value={assembly.assemblyId}>
           {assembly.name}
+        </option>
+      );
+    });
+    const pollTypeOptions = this.state.pollTypeOptions.map(pollType => {
+      return (
+        <option key={pollType.pollTypeId} value={pollType.pollTypeId}>
+          {pollType.name}
         </option>
       );
     });
@@ -296,12 +303,12 @@ class AddPoll extends React.Component {
                   value={this.state.pollType}
                   onChange={this.handleChange}
                   inputProps={{
-                    name: "pollType",
-                    id: "pollType"
+                    name: "pollTypeId",
+                    id: "pollTypeId"
                   }}
                 >
                   <option value="" />
-                  <option value={"simple"}>Single option</option>
+                  {pollTypeOptions}
                 </Select>
               </FormControl>
               <FormControl
