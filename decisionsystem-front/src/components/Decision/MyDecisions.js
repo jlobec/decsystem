@@ -1,6 +1,7 @@
 import React from "react";
 import { withStyles } from "@material-ui/core";
 import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
 import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";
 import Poll from "./Poll";
@@ -72,7 +73,11 @@ class MyDecisions extends React.Component {
   render() {
     const { classes } = this.props;
     const openPolls = this.state.polls.map((poll, index) => {
-      return <Poll key={index} poll={poll} />;
+      return (
+        <ListItem className={classes.pollListItem}>
+          <Poll key={index} poll={poll} />
+        </ListItem>
+      );
     });
     return (
       <React.Fragment>
@@ -110,6 +115,9 @@ const styles = theme => ({
       bottom: theme.spacing.unit * 6,
       right: theme.spacing.unit * 6
     }
+  },
+  pollListItem: {
+    alignItems: "center"
   }
 });
 

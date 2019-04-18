@@ -49,11 +49,11 @@ class PollOption extends React.Component {
           <Checkbox checked={checked} tabIndex={-1} disableRipple />
           <ListItemText primary={`${pollOption.name} `} />
           <ListItemText secondary={`${pollOption.description}`} />
-          <ListItemSecondaryAction>
+          {/* <ListItemSecondaryAction>
             <IconButton aria-label="Comments">
               <CommentIcon />
             </IconButton>
-          </ListItemSecondaryAction>
+          </ListItemSecondaryAction> */}
         </ListItem>
       </React.Fragment>
     );

@@ -2,18 +2,18 @@ import React from "react";
 import PropTypes from "prop-types";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
-import CssBaseline from "@material-ui/core/CssBaseline";
+import List from "@material-ui/core/List";
 import Typography from "@material-ui/core/Typography";
 import withStyles from "@material-ui/core/styles/withStyles";
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
-import CustomizedSnackbar from "../common/CustomizedSnackbar";
-import List from "@material-ui/core/List";
-import PollOption from "./PollOption";
-import axios from "axios";
+import IconButton from "@material-ui/core/IconButton";
+import CommentIcon from "@material-ui/icons/Comment";
+import AssignmentTurnedInIcon from "@material-ui/icons/AssignmentTurnedIn";
+import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
 
-import { config } from "../../config";
+import PollOption from "./PollOption";
 
 const initialState = {
   loading: false,
@@ -40,6 +40,7 @@ class Poll extends React.Component {
   }
 
   handleSelectOption = pollOptionId => {
+    // TODO en funcion del tipo de consulta la seleccion podra ser multiple o no
     const { selectedOptions } = this.state;
     const currentIndex = selectedOptions.indexOf(pollOptionId);
     const newSelectedOptions = [...selectedOptions];
@@ -84,6 +85,14 @@ class Poll extends React.Component {
           <Typography component="p">{poll.description}</Typography>
           <List className={classes.pollOptionList}>{pollOptionsComponent}</List>
         </CardContent>
+        <CardActions className={classes.actions} disableActionSpacing>
+          <IconButton aria-label="Comments">
+            <CommentIcon />
+          </IconButton>
+          <IconButton aria-label="Vote">
+            <AssignmentTurnedInIcon />
+          </IconButton>
+        </CardActions>
       </Card>
     );
   }
@@ -91,7 +100,22 @@ class Poll extends React.Component {
 const styles = theme => ({
   card: {
     minWidth: 275,
-    marginBottom: theme.spacing.unit * 2
+    [theme.breakpoints.down("sm")]: {
+      marginBottom: theme.spacing.unit,
+      width: "100%"
+    },
+    [theme.breakpoints.up("md")]: {
+      marginBottom: theme.spacing.unit * 2,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    },
+    [theme.breakpoints.up("lg")]: {
+      marginBottom: theme.spacing.unit * 2,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    }
   },
   pos: {
     marginBottom: 12
@@ -103,6 +127,10 @@ const styles = theme => ({
     width: "100%",
     maxWidth: 720,
     backgroundColor: theme.palette.background.paper
+  },
+  actions: {
+    display: "flex",
+    alignContent: "flex-end"
   }
 });
 
