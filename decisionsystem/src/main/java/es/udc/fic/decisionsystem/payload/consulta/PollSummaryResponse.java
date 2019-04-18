@@ -1,5 +1,7 @@
 package es.udc.fic.decisionsystem.payload.consulta;
 
+import java.util.List;
+
 public class PollSummaryResponse {
 
 	private Long pollId;
@@ -8,6 +10,7 @@ public class PollSummaryResponse {
 	private Long startsAt;
 	private Long endsAt;
 	private String pollSystem;
+	private List<PollOptionResponse> pollOptions;
 
 	public Long getPollId() {
 		return pollId;
@@ -55,6 +58,14 @@ public class PollSummaryResponse {
 
 	public void setPollSystem(String pollSystem) {
 		this.pollSystem = pollSystem;
+	}
+
+	public List<PollOptionResponse> getPollOptions() {
+		return pollOptions;
+	}
+
+	public void setPollOptions(List<PollOptionResponse> pollOptions) {
+		this.pollOptions = pollOptions;
 	}
 
 }

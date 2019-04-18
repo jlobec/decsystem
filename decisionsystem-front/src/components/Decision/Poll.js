@@ -17,7 +17,7 @@ import { config } from "../../config";
 
 const initialState = {
   loading: false,
-  pollOptions: []
+  selectedOptions: []
 };
 
 class Poll extends React.Component {
@@ -35,39 +35,38 @@ class Poll extends React.Component {
     return new Intl.DateTimeFormat("en-US", options).format(new Date(time));
   };
 
-  getAuth = () => {
-    const token = sessionStorage.getItem("jwtToken");
-    const auth = {
-      headers: { Authorization: "Bearer " + token }
-    };
-    return auth;
-  };
-
-  getPollOptions = async () => {
-    const poll = this.props.poll;
-    const url = config.baseUrl + "api/poll/" + poll.pollId + "/options";
-
-    return axios.get(url, this.getAuth());
-  };
-
   async componentDidMount() {
-    const { data: pollOptions } = await this.getPollOptions();
-    if (pollOptions) {
-      this.setState({
-        pollOptions: pollOptions
-      });
-    }
+    // TODO
   }
+
+  handleSelectOption = pollOptionId => {
+    const { selectedOptions } = this.state;
+    const currentIndex = selectedOptions.indexOf(pollOptionId);
+    const newSelectedOptions = [...selectedOptions];
+
+    if (currentIndex === -1) {
+      newSelectedOptions.push(pollOptionId);
+    } else {
+      newSelectedOptions.splice(currentIndex, 1);
+    }
+
+    this.setState({
+      selectedOptions: newSelectedOptions
+    });
+  };
 
   render() {
     const { classes, poll } = this.props;
-    const pollOptionsComponent = this.state.pollOptions.map(pollOption => {
+    const pollOptionsComponent = poll.pollOptions.map(pollOption => {
       return (
         <PollOption
           key={pollOption.pollOptionId}
           id={pollOption.pollOptionId}
-          poll={poll}
           pollOption={pollOption}
+          checked={
+            this.state.selectedOptions.indexOf(pollOption.pollOptionId) !== -1
+          }
+          handleSelectOption={this.handleSelectOption}
         />
       );
     });
