@@ -11,6 +11,7 @@ public class PollSummaryResponse {
 	private String description;
 	private Long startsAt;
 	private Long endsAt;
+	private boolean votedByUser;
 	private PollSystemResponse pollSystem;
 	private List<PollOptionResponse> pollOptions;
 
@@ -52,6 +53,14 @@ public class PollSummaryResponse {
 
 	public void setEndsAt(Long endsAt) {
 		this.endsAt = endsAt;
+	}
+
+	public boolean isVotedByUser() {
+		return votedByUser;
+	}
+
+	public void setVotedByUser(boolean votedByUser) {
+		this.votedByUser = votedByUser;
 	}
 
 	public PollSystemResponse getPollSystem() {
