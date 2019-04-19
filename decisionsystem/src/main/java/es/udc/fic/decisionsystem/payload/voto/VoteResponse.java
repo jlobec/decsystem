@@ -2,16 +2,16 @@ package es.udc.fic.decisionsystem.payload.voto;
 
 import java.util.List;
 
-public class VoteRequest {
+public class VoteResponse {
 
-	private List<VoteOptionRequest> options;
+	private List<VoteOptionResponse> options;
 	private Long pollId;
 
-	public List<VoteOptionRequest> getOptions() {
+	public List<VoteOptionResponse> getOptions() {
 		return options;
 	}
 
-	public void setOptions(List<VoteOptionRequest> options) {
+	public void setOptions(List<VoteOptionResponse> options) {
 		this.options = options;
 	}
 

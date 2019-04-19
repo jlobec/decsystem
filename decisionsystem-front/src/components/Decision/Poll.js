@@ -2,22 +2,22 @@ import React from "react";
 import PropTypes from "prop-types";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
-import CssBaseline from "@material-ui/core/CssBaseline";
+import List from "@material-ui/core/List";
 import Typography from "@material-ui/core/Typography";
 import withStyles from "@material-ui/core/styles/withStyles";
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
-import CustomizedSnackbar from "../common/CustomizedSnackbar";
-import List from "@material-ui/core/List";
-import PollOption from "./PollOption";
-import axios from "axios";
+import IconButton from "@material-ui/core/IconButton";
+import CommentIcon from "@material-ui/icons/Comment";
+import AssignmentTurnedInIcon from "@material-ui/icons/AssignmentTurnedIn";
+import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
 
-import { config } from "../../config";
+import PollOption from "./PollOption";
 
 const initialState = {
   loading: false,
-  pollOptions: []
+  selectedOptions: []
 };
 
 class Poll extends React.Component {
@@ -35,39 +35,44 @@ class Poll extends React.Component {
     return new Intl.DateTimeFormat("en-US", options).format(new Date(time));
   };
 
-  getAuth = () => {
-    const token = sessionStorage.getItem("jwtToken");
-    const auth = {
-      headers: { Authorization: "Bearer " + token }
-    };
-    return auth;
-  };
-
-  getPollOptions = async () => {
-    const poll = this.props.poll;
-    const url = config.baseUrl + "api/poll/" + poll.pollId + "/options";
-
-    return axios.get(url, this.getAuth());
-  };
-
   async componentDidMount() {
-    const { data: pollOptions } = await this.getPollOptions();
-    if (pollOptions) {
-      this.setState({
-        pollOptions: pollOptions
-      });
-    }
+    // TODO
   }
+
+  handleSelectOption = pollOptionId => {
+    // TODO en funcion del tipo de consulta la seleccion
+    // podra ser multiple o no, o preferencial (con valor asignado)
+    const { selectedOptions } = this.state;
+    const currentIndex = selectedOptions.indexOf(pollOptionId);
+    const newSelectedOptions = [...selectedOptions];
+
+    if (currentIndex === -1) {
+      newSelectedOptions.push(pollOptionId);
+    } else {
+      newSelectedOptions.splice(currentIndex, 1);
+    }
+
+    this.setState({
+      selectedOptions: newSelectedOptions
+    });
+  };
+
+  handleClickVote = () => {
+    this.props.handleVote(this.props.poll, [...this.state.selectedOptions]);
+  };
 
   render() {
     const { classes, poll } = this.props;
-    const pollOptionsComponent = this.state.pollOptions.map(pollOption => {
+    const pollOptionsComponent = poll.pollOptions.map(pollOption => {
       return (
         <PollOption
           key={pollOption.pollOptionId}
           id={pollOption.pollOptionId}
-          poll={poll}
           pollOption={pollOption}
+          checked={
+            this.state.selectedOptions.indexOf(pollOption.pollOptionId) !== -1
+          }
+          handleSelectOption={this.handleSelectOption}
         />
       );
     });
@@ -85,6 +90,20 @@ class Poll extends React.Component {
           <Typography component="p">{poll.description}</Typography>
           <List className={classes.pollOptionList}>{pollOptionsComponent}</List>
         </CardContent>
+        <CardActions className={classes.actions} disableActionSpacing>
+          <Button size="small" color="primary">
+            Comments
+          </Button>
+          <Button size="small" color="primary" onClick={this.handleClickVote}>
+            Vote
+          </Button>
+          {/* <IconButton aria-label="Comments">
+            <CommentIcon />
+          </IconButton> */}
+          {/* <IconButton aria-label="Vote">
+            <AssignmentTurnedInIcon />
+          </IconButton> */}
+        </CardActions>
       </Card>
     );
   }
@@ -92,7 +111,22 @@ class Poll extends React.Component {
 const styles = theme => ({
   card: {
     minWidth: 275,
-    marginBottom: theme.spacing.unit * 2
+    [theme.breakpoints.down("sm")]: {
+      marginBottom: theme.spacing.unit,
+      width: "100%"
+    },
+    [theme.breakpoints.up("md")]: {
+      marginBottom: theme.spacing.unit * 2,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    },
+    [theme.breakpoints.up("lg")]: {
+      marginBottom: theme.spacing.unit * 2,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    }
   },
   pos: {
     marginBottom: 12
@@ -104,6 +138,10 @@ const styles = theme => ({
     width: "100%",
     maxWidth: 720,
     backgroundColor: theme.palette.background.paper
+  },
+  actions: {
+    display: "flex",
+    alignContent: "flex-end"
   }
 });
 

@@ -1,6 +1,7 @@
 package es.udc.fic.decisionsystem.controller.consulta;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
 import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
+import es.udc.fic.decisionsystem.payload.pollsystem.PollSystemResponse;
 import es.udc.fic.decisionsystem.repository.asamblea.AsambleaRepository;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
 import es.udc.fic.decisionsystem.repository.consultaasamblea.ConsultaAsambleaRepository;
@@ -61,10 +63,34 @@ public class ConsultaController {
 	private ConsultaAsambleaRepository consultaAsambleaRepository;
 
 	@GetMapping("/api/poll/{consultaId}")
-	public Consulta getConsulta(@PathVariable Long consultaId) {
+	public PollSummaryResponse getConsulta(@PathVariable Long consultaId) {
 		return consultaRepository.findById(consultaId).map(consulta -> {
-			return consulta;
-		}).orElseThrow(() -> new ResourceNotFoundException("Consulta not found with id " + consultaId));
+			PollSummaryResponse response = new PollSummaryResponse();
+
+			PollSystemResponse pollSystem = new PollSystemResponse();
+			pollSystem.setPollTypeId(consulta.getSistemaConsulta().getIdSistemaConsulta());
+			pollSystem.setName(consulta.getSistemaConsulta().getNombre());
+			pollSystem.setDescription(consulta.getSistemaConsulta().getDescripcion());
+
+			List<PollOptionResponse> pollOptions = consultaOpcionRepository.findByConsulta(consulta).stream()
+					.map(opt -> {
+						PollOptionResponse option = new PollOptionResponse();
+						option.setPollOptionId(opt.getIdConsultaOpcion());
+						option.setName(opt.getNombre());
+						option.setDescription(opt.getDescripcion());
+						return option;
+					}).collect(Collectors.toList());
+
+			response.setPollId(consulta.getIdConsulta());
+			response.setTitle(consulta.getTitulo());
+			response.setDescription(consulta.getDescripcion());
+			response.setStartsAt(consulta.getFechaHoraInicio().getTime());
+			response.setEndsAt(consulta.getFechaHoraFin().getTime());
+			response.setPollSystem(pollSystem);
+			response.setPollOptions(pollOptions);
+
+			return response;
+		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
 	}
 
 	@GetMapping("/api/poll")
@@ -94,13 +120,31 @@ public class ConsultaController {
 		if (loggedUser.isPresent()) {
 			Long userId = loggedUser.get().getIdUsuario();
 			return consultaRepository.findByUser(pageable, userId).map(poll -> {
+
+				// Get options
+				List<PollOptionResponse> pollOptions = consultaOpcionRepository.findByConsulta(poll).stream()
+						.map(opt -> {
+							PollOptionResponse option = new PollOptionResponse();
+							option.setPollOptionId(opt.getIdConsultaOpcion());
+							option.setName(opt.getNombre());
+							option.setDescription(opt.getDescripcion());
+							return option;
+						}).collect(Collectors.toList());
+
+				PollSystemResponse pollSystem = new PollSystemResponse();
+				pollSystem.setPollTypeId(poll.getSistemaConsulta().getIdSistemaConsulta());
+				pollSystem.setName(poll.getSistemaConsulta().getNombre());
+				pollSystem.setDescription(poll.getSistemaConsulta().getDescripcion());
+
 				PollSummaryResponse pollSummary = new PollSummaryResponse();
 				pollSummary.setPollId(poll.getIdConsulta());
 				pollSummary.setTitle(poll.getTitulo());
 				pollSummary.setDescription(poll.getDescripcion());
 				pollSummary.setStartsAt(poll.getFechaHoraInicio().getTime());
 				pollSummary.setEndsAt(poll.getFechaHoraFin().getTime());
-				pollSummary.setPollSystem(poll.getSistemaConsulta().getNombre());
+				pollSummary.setPollSystem(pollSystem);
+				pollSummary.setPollOptions(pollOptions);
+
 				return pollSummary;
 			});
 		}
@@ -123,13 +167,21 @@ public class ConsultaController {
 			Consulta savedPoll = consultaRepository.save(newPoll);
 
 			// Save options
+			List<ConsultaOpcion> pollOptionsSaved = new ArrayList<>();
 			for (AddPollOptionRequest pollOption : poll.getPollOptions()) {
 				ConsultaOpcion option = new ConsultaOpcion();
 				option.setConsulta(savedPoll);
 				option.setNombre(pollOption.getName());
 				option.setDescripcion(pollOption.getDescription());
-				consultaOpcionRepository.save(option);
+				pollOptionsSaved.add(consultaOpcionRepository.save(option));
 			}
+			List<PollOptionResponse> pollOptions = pollOptionsSaved.stream().map(opt -> {
+				PollOptionResponse option = new PollOptionResponse();
+				option.setPollOptionId(opt.getIdConsultaOpcion());
+				option.setName(opt.getNombre());
+				option.setDescription(opt.getDescripcion());
+				return option;
+			}).collect(Collectors.toList());
 
 			// Relate to assembly
 			Asamblea asamblea = asambleaRepository.findById(poll.getAssemblyId()).map(a -> {
@@ -145,13 +197,19 @@ public class ConsultaController {
 			toAdd.setConsulta(savedPoll);
 			consultaAsambleaRepository.save(toAdd);
 
+			PollSystemResponse pollSystemResponse = new PollSystemResponse();
+			pollSystemResponse.setPollTypeId(pollSystem.get().getIdSistemaConsulta());
+			pollSystemResponse.setName(pollSystem.get().getNombre());
+			pollSystemResponse.setDescription(pollSystem.get().getDescripcion());
+
 			PollSummaryResponse response = new PollSummaryResponse();
 			response.setPollId(savedPoll.getIdConsulta());
 			response.setTitle(savedPoll.getTitulo());
 			response.setDescription(savedPoll.getDescripcion());
 			response.setStartsAt(savedPoll.getFechaHoraInicio().getTime());
 			response.setEndsAt(savedPoll.getFechaHoraFin().getTime());
-			response.setPollSystem(pollSystem.get().getNombre());
+			response.setPollSystem(pollSystemResponse);
+			response.setPollOptions(pollOptions);
 
 			return response;
 		} else {

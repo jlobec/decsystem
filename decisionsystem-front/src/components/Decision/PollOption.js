@@ -18,19 +18,18 @@ class PollOption extends React.Component {
   state = { ...initialState };
 
   handleToggle = value => () => {
-    const { checked } = this.state;
-    const currentIndex = checked.indexOf(value);
-    const newChecked = [...checked];
-
-    if (currentIndex === -1) {
-      newChecked.push(value);
-    } else {
-      newChecked.splice(currentIndex, 1);
-    }
-
-    this.setState({
-      checked: newChecked
-    });
+    this.props.handleSelectOption(value);
+    // const { checked } = this.state;
+    // const currentIndex = checked.indexOf(value);
+    // const newChecked = [...checked];
+    // if (currentIndex === -1) {
+    //   newChecked.push(value);
+    // } else {
+    //   newChecked.splice(currentIndex, 1);
+    // }
+    // this.setState({
+    //   checked: newChecked
+    // });
   };
 
   async componentDidMount() {}
@@ -38,7 +37,7 @@ class PollOption extends React.Component {
   componentWillUnmount() {}
 
   render() {
-    const { classes, poll, pollOption } = this.props;
+    const { classes, pollOption, checked } = this.props;
     return (
       <React.Fragment>
         <ListItem
@@ -47,18 +46,14 @@ class PollOption extends React.Component {
           button
           onClick={this.handleToggle(pollOption.pollOptionId)}
         >
-          <Checkbox
-            checked={this.state.checked.indexOf(pollOption.pollOptionId) !== -1}
-            tabIndex={-1}
-            disableRipple
-          />
+          <Checkbox checked={checked} tabIndex={-1} disableRipple />
           <ListItemText primary={`${pollOption.name} `} />
           <ListItemText secondary={`${pollOption.description}`} />
-          <ListItemSecondaryAction>
+          {/* <ListItemSecondaryAction>
             <IconButton aria-label="Comments">
               <CommentIcon />
             </IconButton>
-          </ListItemSecondaryAction>
+          </ListItemSecondaryAction> */}
         </ListItem>
       </React.Fragment>
     );

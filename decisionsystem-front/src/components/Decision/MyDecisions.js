@@ -1,6 +1,7 @@
 import React from "react";
 import { withStyles } from "@material-ui/core";
 import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
 import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";
 import Poll from "./Poll";
@@ -33,6 +34,38 @@ class MyDecisions extends React.Component {
       });
     }
     this.handleShowSnackbarForSavePoll(savePollResult, poll);
+  };
+
+  votePoll = async (poll, votedOptionsIds) => {
+    const options = [...votedOptionsIds].map(optId => {
+      return {
+        optionId: optId,
+        preferenceValue: 0,
+        motivation: ""
+      };
+    });
+    const { data: doVoteResponse } = await PollActions.doVote(poll, options);
+    if (doVoteResponse) {
+      console.log("doVoteResponse");
+      console.log(doVoteResponse);
+      // Actualizar poll
+    }
+    this.handleShowSnackbarForVotePoll(doVoteResponse, poll);
+  };
+
+  handleShowSnackbarForVotePoll = (successful, poll) => {
+    const okMessage = {
+      open: true,
+      variant: "success",
+      message: `Poll '${poll.title}' voted successfully`
+    };
+    const errorMessage = {
+      open: true,
+      variant: "error",
+      message: `Poll could not be voted`
+    };
+    const messageToShow = successful ? okMessage : errorMessage;
+    this.snack.openWith(messageToShow);
   };
 
   handleShowSnackbarForSavePoll = (successful, poll) => {
@@ -72,7 +105,14 @@ class MyDecisions extends React.Component {
   render() {
     const { classes } = this.props;
     const openPolls = this.state.polls.map((poll, index) => {
-      return <Poll className={classes.poll} key={index} poll={poll} />;
+      return (
+        <ListItem
+          key={`${index}${new Date().getTime()}`}
+          className={classes.pollListItem}
+        >
+          <Poll poll={poll} handleVote={this.votePoll} />
+        </ListItem>
+      );
     });
     return (
       <React.Fragment>
@@ -111,8 +151,8 @@ const styles = theme => ({
       right: theme.spacing.unit * 6
     }
   },
-  poll: {
-    marginTop: theme.spacing.unit * 3
+  pollListItem: {
+    alignItems: "center"
   }
 });
 
