@@ -38,29 +38,66 @@ public class ConsultaServiceImpl implements ConsultaService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PollSummaryResponse getPollById(Long consultaId) {
+	public PollSummaryResponse getPollById(Long consultaId, Usuario user) {
 		return consultaRepository.findById(consultaId).map(consulta -> {
 			PollSummaryResponse response = new PollSummaryResponse();
+
+			List<ConsultaOpcion> options = consultaOpcionRepository.findByConsulta(consulta);
+
+			// Check for voted options
+			List<Voto> optionVotes = new ArrayList<>();
+			for (ConsultaOpcion pollOption : options) {
+				Optional<Voto> optionalVote = votoRepository.findByConsultaOpcionAndUsuario(pollOption, user);
+				if (optionalVote.isPresent()) {
+					optionVotes.add(optionalVote.get());
+				}
+			}
+
+			List<PollOptionResponse> pollOptions = options.stream().map(opt -> {
+				PollOptionResponse option = new PollOptionResponse();
+				option.setPollOptionId(opt.getIdConsultaOpcion());
+				option.setName(opt.getNombre());
+				option.setDescription(opt.getDescripcion());
+
+				PollOptionVotedResponse votedOption = new PollOptionVotedResponse();
+				votedOption.setVoted(false);
+				votedOption.setPreferenceValue(0);
+				votedOption.setMotivation("");
+				for (Voto vote : optionVotes) {
+					if (opt.getIdConsultaOpcion().equals(vote.getConsultaOpcion().getIdConsultaOpcion())) {
+						votedOption.setVoted(true);
+						votedOption.setPreferenceValue(0); // field non existent yet
+						votedOption.setMotivation(vote.getMotivacion());
+						break;
+					}
+				}
+
+				option.setUserVote(votedOption);
+				return option;
+			}).collect(Collectors.toList());
+
+			// Check if the poll can be considered voted by user
+			// It will depend on poll system
+			// so this block must be placed in a separate service by pollsystem
+			boolean votedByUser = false;
+			for (PollOptionResponse pollOption : pollOptions) {
+				if (pollOption.getUserVote().isVoted()) {
+					votedByUser = true;
+					break;
+				}
+			}
 
 			PollSystemResponse pollSystem = new PollSystemResponse();
 			pollSystem.setPollTypeId(consulta.getSistemaConsulta().getIdSistemaConsulta());
 			pollSystem.setName(consulta.getSistemaConsulta().getNombre());
 			pollSystem.setDescription(consulta.getSistemaConsulta().getDescripcion());
 
-			List<PollOptionResponse> pollOptions = consultaOpcionRepository.findByConsulta(consulta).stream()
-					.map(opt -> {
-						PollOptionResponse option = new PollOptionResponse();
-						option.setPollOptionId(opt.getIdConsultaOpcion());
-						option.setName(opt.getNombre());
-						option.setDescription(opt.getDescripcion());
-						return option;
-					}).collect(Collectors.toList());
-
 			response.setPollId(consulta.getIdConsulta());
 			response.setTitle(consulta.getTitulo());
 			response.setDescription(consulta.getDescripcion());
 			response.setStartsAt(consulta.getFechaHoraInicio().getTime());
 			response.setEndsAt(consulta.getFechaHoraFin().getTime());
+			response.setVotedByUser(votedByUser);
 			response.setPollSystem(pollSystem);
 			response.setPollOptions(pollOptions);
 

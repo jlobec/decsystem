@@ -68,8 +68,13 @@ public class ConsultaController {
 	private ConsultaService consultaService;
 
 	@GetMapping("/api/poll/{consultaId}")
-	public PollSummaryResponse getConsulta(@PathVariable Long consultaId) {
-		return consultaService.getPollById(consultaId);
+	public PollSummaryResponse getConsulta(@PathVariable Long consultaId, Principal principal) {
+		Optional<Usuario> loggedUser = usuarioRepository.findByNickname(principal.getName());
+		if (loggedUser.isPresent()) {
+			return consultaService.getPollById(consultaId, loggedUser.get());
+		}
+		// Actually unlikely
+		throw new ResourceNotFoundException("No logged user");
 	}
 
 	@GetMapping("/api/poll")

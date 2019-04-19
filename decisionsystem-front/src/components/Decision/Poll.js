@@ -39,22 +39,40 @@ class Poll extends React.Component {
     // TODO
   }
 
-  handleSelectOption = pollOptionId => {
-    // TODO en funcion del tipo de consulta la seleccion
-    // podra ser multiple o no, o preferencial (con valor asignado)
-    const { selectedOptions } = this.state;
-    const currentIndex = selectedOptions.indexOf(pollOptionId);
-    const newSelectedOptions = [...selectedOptions];
+  handleIsDisabled = () => {
+    return this.props.poll.votedByUser;
+  };
 
-    if (currentIndex === -1) {
-      newSelectedOptions.push(pollOptionId);
+  handleIsSelected = pollOption => {
+    const poll = this.props.poll;
+    if (!poll.votedByUser) {
+      return this.state.selectedOptions.indexOf(pollOption.pollOptionId) !== -1;
     } else {
-      newSelectedOptions.splice(currentIndex, 1);
+      console.log(pollOption);
+      console.log(pollOption.userVote.voted);
+      return pollOption.userVote.voted;
     }
+  };
 
-    this.setState({
-      selectedOptions: newSelectedOptions
-    });
+  handleSelectOption = pollOptionId => {
+    const poll = this.props.poll;
+    if (!poll.votedByUser) {
+      // TODO en funcion del tipo de consulta la seleccion
+      // podra ser multiple o no, o preferencial (con valor asignado)
+      const { selectedOptions } = this.state;
+      const currentIndex = selectedOptions.indexOf(pollOptionId);
+      const newSelectedOptions = [...selectedOptions];
+
+      if (currentIndex === -1) {
+        newSelectedOptions.push(pollOptionId);
+      } else {
+        newSelectedOptions.splice(currentIndex, 1);
+      }
+
+      this.setState({
+        selectedOptions: newSelectedOptions
+      });
+    }
   };
 
   handleClickVote = () => {
@@ -69,9 +87,8 @@ class Poll extends React.Component {
           key={pollOption.pollOptionId}
           id={pollOption.pollOptionId}
           pollOption={pollOption}
-          checked={
-            this.state.selectedOptions.indexOf(pollOption.pollOptionId) !== -1
-          }
+          disabled={this.handleIsDisabled}
+          checked={this.handleIsSelected(pollOption)}
           handleSelectOption={this.handleSelectOption}
         />
       );
@@ -94,9 +111,23 @@ class Poll extends React.Component {
           <Button size="small" color="primary">
             Comments
           </Button>
-          <Button size="small" color="primary" onClick={this.handleClickVote}>
-            Vote
-          </Button>
+          {!poll.votedByUser && (
+            <Button size="small" color="primary" onClick={this.handleClickVote}>
+              Vote
+            </Button>
+          )}
+          {poll.votedByUser && (
+            <Button
+              size="small"
+              color="secondary"
+              onClick={this.handleClickVote}
+            >
+              Voted
+              <IconButton aria-label="Voted">
+                <CheckCircleOutlineIcon />
+              </IconButton>
+            </Button>
+          )}
           {/* <IconButton aria-label="Comments">
             <CommentIcon />
           </IconButton> */}
