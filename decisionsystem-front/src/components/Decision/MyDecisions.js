@@ -36,6 +36,38 @@ class MyDecisions extends React.Component {
     this.handleShowSnackbarForSavePoll(savePollResult, poll);
   };
 
+  votePoll = async (poll, votedOptionsIds) => {
+    const options = [...votedOptionsIds].map(optId => {
+      return {
+        optionId: optId,
+        preferenceValue: 0,
+        motivation: ""
+      };
+    });
+    const { data: doVoteResponse } = await PollActions.doVote(poll, options);
+    if (doVoteResponse) {
+      console.log("doVoteResponse");
+      console.log(doVoteResponse);
+      // Actualizar poll
+    }
+    this.handleShowSnackbarForVotePoll(doVoteResponse, poll);
+  };
+
+  handleShowSnackbarForVotePoll = (successful, poll) => {
+    const okMessage = {
+      open: true,
+      variant: "success",
+      message: `Poll '${poll.title}' voted successfully`
+    };
+    const errorMessage = {
+      open: true,
+      variant: "error",
+      message: `Poll could not be voted`
+    };
+    const messageToShow = successful ? okMessage : errorMessage;
+    this.snack.openWith(messageToShow);
+  };
+
   handleShowSnackbarForSavePoll = (successful, poll) => {
     const okMessage = {
       open: true,
@@ -74,8 +106,11 @@ class MyDecisions extends React.Component {
     const { classes } = this.props;
     const openPolls = this.state.polls.map((poll, index) => {
       return (
-        <ListItem className={classes.pollListItem}>
-          <Poll key={index} poll={poll} />
+        <ListItem
+          key={`${index}${new Date().getTime()}`}
+          className={classes.pollListItem}
+        >
+          <Poll poll={poll} handleVote={this.votePoll} />
         </ListItem>
       );
     });

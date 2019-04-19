@@ -40,7 +40,8 @@ class Poll extends React.Component {
   }
 
   handleSelectOption = pollOptionId => {
-    // TODO en funcion del tipo de consulta la seleccion podra ser multiple o no
+    // TODO en funcion del tipo de consulta la seleccion
+    // podra ser multiple o no, o preferencial (con valor asignado)
     const { selectedOptions } = this.state;
     const currentIndex = selectedOptions.indexOf(pollOptionId);
     const newSelectedOptions = [...selectedOptions];
@@ -54,6 +55,10 @@ class Poll extends React.Component {
     this.setState({
       selectedOptions: newSelectedOptions
     });
+  };
+
+  handleClickVote = () => {
+    this.props.handleVote(this.props.poll, [...this.state.selectedOptions]);
   };
 
   render() {
@@ -86,12 +91,18 @@ class Poll extends React.Component {
           <List className={classes.pollOptionList}>{pollOptionsComponent}</List>
         </CardContent>
         <CardActions className={classes.actions} disableActionSpacing>
-          <IconButton aria-label="Comments">
+          <Button size="small" color="primary">
+            Comments
+          </Button>
+          <Button size="small" color="primary" onClick={this.handleClickVote}>
+            Vote
+          </Button>
+          {/* <IconButton aria-label="Comments">
             <CommentIcon />
-          </IconButton>
-          <IconButton aria-label="Vote">
+          </IconButton> */}
+          {/* <IconButton aria-label="Vote">
             <AssignmentTurnedInIcon />
-          </IconButton>
+          </IconButton> */}
         </CardActions>
       </Card>
     );

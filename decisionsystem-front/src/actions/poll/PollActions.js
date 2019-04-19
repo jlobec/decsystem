@@ -13,6 +13,11 @@ class PollActions {
     return axios.get(url, AuthUtil.getHeaders());
   };
 
+  static doGetPollById = async pollId => {
+    const url = config.baseUrl + "api/poll/" + pollId;
+    return axios.get(url, AuthUtil.getHeaders());
+  };
+
   static doSavePoll = async poll => {
     const url = config.baseUrl + "api/poll";
     const requestBody = {
@@ -23,6 +28,22 @@ class PollActions {
       pollSystemId: poll.pollTypeId,
       assemblyId: poll.assemblyId,
       pollOptions: poll.pollOptions
+    };
+    return axios.post(url, requestBody, AuthUtil.getHeaders());
+  };
+
+  static doVote = async (poll, options) => {
+    const url = config.baseUrl + "api/vote";
+    const requestBodyOptions = [...options].map(opt => {
+      return {
+        optionId: opt.optionId,
+        preferenceValue: opt.preferenceValue,
+        motivation: opt.motivation
+      };
+    });
+    const requestBody = {
+      options: requestBodyOptions,
+      pollId: poll.pollId
     };
     return axios.post(url, requestBody, AuthUtil.getHeaders());
   };
