@@ -5,6 +5,7 @@ public class PollOptionResponse {
 	private Long pollOptionId;
 	private String name;
 	private String description;
+	private PollOptionVotedResponse userVote;
 
 	public Long getPollOptionId() {
 		return pollOptionId;
@@ -28,6 +29,14 @@ public class PollOptionResponse {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public PollOptionVotedResponse getUserVote() {
+		return userVote;
+	}
+
+	public void setUserVote(PollOptionVotedResponse userVote) {
+		this.userVote = userVote;
 	}
 
 }
