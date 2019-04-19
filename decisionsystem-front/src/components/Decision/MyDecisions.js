@@ -48,7 +48,24 @@ class MyDecisions extends React.Component {
     if (doVoteResponse) {
       console.log("doVoteResponse");
       console.log(doVoteResponse);
-      // Actualizar poll
+      const { data: updatedPoll } = await PollActions.doGetPollById(
+        poll.pollId
+      );
+      if (updatedPoll) {
+        let newPolls = [...this.state.polls];
+        let pollIndex = -1;
+        newPolls.forEach((poll, idx) => {
+          if (poll.pollId === updatedPoll.pollId) {
+            pollIndex = idx;
+          }
+        });
+        console.log("index of modified poll");
+        newPolls[pollIndex] = updatedPoll;
+        console.log(newPolls);
+        this.setState({
+          polls: newPolls
+        });
+      }
     }
     this.handleShowSnackbarForVotePoll(doVoteResponse, poll);
   };
