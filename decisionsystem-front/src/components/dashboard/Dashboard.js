@@ -146,6 +146,24 @@ class Dashboard extends React.Component {
     });
   };
 
+  componentDidMount = () => {
+    const pathname = this.props.location.pathname;
+    if (pathname) {
+      if ("/decisions" === pathname) {
+        this.handleSection("onDecisions");
+      }
+      if ("/assemblies" === pathname) {
+        this.handleSection("onAssemblies");
+      }
+      if ("/settings" === pathname) {
+        this.handleSection("onSettings");
+      }
+      if ("/notifications" === pathname) {
+        this.handleSection("onNotifications");
+      }
+    }
+  };
+
   render() {
     const { classes } = this.props;
 

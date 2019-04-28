@@ -15,6 +15,7 @@ import withStyles from "@material-ui/core/styles/withStyles";
 import { Link as RouterLink } from "react-router-dom";
 import Link from "@material-ui/core/Link";
 import axios from "axios";
+import AuthUtil from "../../actions/auth/AuthUtil";
 
 import { config } from "../../config";
 
@@ -53,7 +54,7 @@ class SignIn extends React.Component {
       this.setState({ error: false });
       this.clearForm();
       sessionStorage.setItem("jwtToken", signInResult.accessToken);
-      this.props.history.push("/my");
+      this.props.history.push("/decisions");
     } catch (error) {
       this.clearForm();
       sessionStorage.removeItem("jwtToken");
@@ -62,7 +63,11 @@ class SignIn extends React.Component {
   };
 
   componentDidMount() {
-    sessionStorage.removeItem("jwtToken");
+    if (AuthUtil.isLoggedUser()) {
+      this.props.history.push("/decisions");
+    } else {
+      this.props.history.push("/signin");
+    }
   }
 
   render() {

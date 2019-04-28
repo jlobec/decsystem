@@ -10,14 +10,16 @@ import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import IconButton from "@material-ui/core/IconButton";
 import CommentIcon from "@material-ui/icons/Comment";
-import AssignmentTurnedInIcon from "@material-ui/icons/AssignmentTurnedIn";
 import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
-
+import Link from "@material-ui/core/Link";
 import PollOption from "./PollOption";
+import Comments from "./Comments";
 
 const initialState = {
   loading: false,
-  selectedOptions: []
+  selectedOptions: [],
+  detailedView: false,
+  comments: []
 };
 
 class Poll extends React.Component {
@@ -79,9 +81,18 @@ class Poll extends React.Component {
     this.props.handleVote(this.props.poll, [...this.state.selectedOptions]);
   };
 
-  render() {
-    const { classes, poll } = this.props;
-    const pollOptionsComponent = poll.pollOptions.map(pollOption => {
+  handleClickComment = () => {
+    // TODO show modal
+  };
+
+  handleClickTitle = () => {
+    // TODO hide other polls
+    // Show detailed view of this one
+    this.setState({ detailedView: true });
+  };
+
+  renderPollOptions = pollOptions => {
+    return pollOptions.map(pollOption => {
       return (
         <PollOption
           key={pollOption.pollOptionId}
@@ -93,11 +104,25 @@ class Poll extends React.Component {
         />
       );
     });
+  };
+
+  render() {
+    const dudUrl = "javascript:;";
+    const { classes, poll } = this.props;
+    const pollOptionsComponent = this.renderPollOptions(poll.pollOptions);
+
     return (
       <Card className={classes.card}>
         <CardContent>
-          <Typography gutterBottom variant="h5" component="h2">
-            {poll.title}
+          <Typography
+            gutterBottom
+            variant="h5"
+            component="h2"
+            onClick={this.handleClickTitle}
+          >
+            <Link href={dudUrl} className={classes.link}>
+              {poll.title}
+            </Link>
           </Typography>
           <Typography className={classes.pos} color="textSecondary">
             {`From ${this.getFormattedDate(
@@ -107,10 +132,7 @@ class Poll extends React.Component {
           <Typography component="p">{poll.description}</Typography>
           <List className={classes.pollOptionList}>{pollOptionsComponent}</List>
         </CardContent>
-        <CardActions className={classes.actions} disableActionSpacing>
-          <Button size="small" color="primary">
-            Comments
-          </Button>
+        <CardActions className={classes.actions}>
           {!poll.votedByUser && (
             <Button size="small" color="primary" onClick={this.handleClickVote}>
               Vote
@@ -128,13 +150,12 @@ class Poll extends React.Component {
               </IconButton>
             </Button>
           )}
-          {/* <IconButton aria-label="Comments">
+          <IconButton aria-label="Comment" onClick={this.handleClickComment}>
             <CommentIcon />
-          </IconButton> */}
-          {/* <IconButton aria-label="Vote">
-            <AssignmentTurnedInIcon />
-          </IconButton> */}
+            {1}
+          </IconButton>
         </CardActions>
+        {this.state.detailedView && <Comments comments={this.state.comments} />}
       </Card>
     );
   }

@@ -6,6 +6,11 @@ class Auth {
     };
     return auth;
   };
+
+  static isLoggedUser = () => {
+    const token = sessionStorage.getItem("jwtToken");
+    return token;
+  };
 }
 
 export default Auth;

@@ -127,7 +127,7 @@ class MyDecisions extends React.Component {
           key={`${index}${new Date().getTime()}`}
           className={classes.pollListItem}
         >
-          <Poll poll={poll} handleVote={this.votePoll} />
+          <Poll poll={poll} summarize={true} handleVote={this.votePoll} />
         </ListItem>
       );
     });
