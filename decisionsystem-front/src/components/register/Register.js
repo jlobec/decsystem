@@ -75,7 +75,7 @@ class Register extends React.Component {
           this.setState({ error: false });
           this.clearForm();
           sessionStorage.setItem("jwtToken", signInResult.accessToken);
-          this.props.history.push("/decisions");
+          this.props.history.push("/dashboard/decisions");
         } catch (error) {
           this.clearForm();
           sessionStorage.removeItem("jwtToken");

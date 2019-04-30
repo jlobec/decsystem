@@ -25,6 +25,10 @@ const initialState = {
 class Poll extends React.Component {
   state = { ...initialState };
 
+  stripTrailingSlash = str => {
+    return str.endsWith("/") ? str.slice(0, -1) : str;
+  };
+
   getFormattedDate = time => {
     const options = {
       year: "numeric",
@@ -39,6 +43,8 @@ class Poll extends React.Component {
 
   async componentDidMount() {
     // TODO
+    console.log("poll location");
+    console.log(this.props.location);
   }
 
   handleIsDisabled = () => {
@@ -50,8 +56,6 @@ class Poll extends React.Component {
     if (!poll.votedByUser) {
       return this.state.selectedOptions.indexOf(pollOption.pollOptionId) !== -1;
     } else {
-      console.log(pollOption);
-      console.log(pollOption.userVote.voted);
       return pollOption.userVote.voted;
     }
   };
@@ -85,10 +89,10 @@ class Poll extends React.Component {
     // TODO show modal
   };
 
-  handleClickTitle = () => {
-    // TODO hide other polls
-    // Show detailed view of this one
-    this.setState({ detailedView: true });
+  handleClickTitle = poll => {
+    // Clean possible slash at the end
+    const currentUrl = this.stripTrailingSlash(this.props.match.url);
+    this.props.history.push(`${currentUrl}/${poll.pollId}`);
   };
 
   renderPollOptions = pollOptions => {
@@ -107,10 +111,13 @@ class Poll extends React.Component {
   };
 
   render() {
-    const dudUrl = "javascript:;";
     const { classes, poll } = this.props;
-    const pollOptionsComponent = this.renderPollOptions(poll.pollOptions);
+    if (!poll) {
+      return <p>This is a poll!</p>;
+    }
 
+    const dudUrl = "javascript:;";
+    const pollOptionsComponent = this.renderPollOptions(poll.pollOptions);
     return (
       <Card className={classes.card}>
         <CardContent>
@@ -118,11 +125,9 @@ class Poll extends React.Component {
             gutterBottom
             variant="h5"
             component="h2"
-            onClick={this.handleClickTitle}
+            onClick={() => this.handleClickTitle(poll)}
           >
-            <Link href={dudUrl} className={classes.link}>
-              {poll.title}
-            </Link>
+            {poll.title}
           </Typography>
           <Typography className={classes.pos} color="textSecondary">
             {`From ${this.getFormattedDate(

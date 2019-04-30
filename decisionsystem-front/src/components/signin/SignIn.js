@@ -54,7 +54,7 @@ class SignIn extends React.Component {
       this.setState({ error: false });
       this.clearForm();
       sessionStorage.setItem("jwtToken", signInResult.accessToken);
-      this.props.history.push("/decisions");
+      this.props.history.push("/dashboard/decisions");
     } catch (error) {
       this.clearForm();
       sessionStorage.removeItem("jwtToken");
@@ -64,7 +64,7 @@ class SignIn extends React.Component {
 
   componentDidMount() {
     if (AuthUtil.isLoggedUser()) {
-      this.props.history.push("/decisions");
+      this.props.history.push("/dashboard/decisions");
     } else {
       this.props.history.push("/signin");
     }

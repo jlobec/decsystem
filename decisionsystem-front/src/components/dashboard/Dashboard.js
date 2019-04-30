@@ -28,10 +28,11 @@ import Avatar from "@material-ui/core/Avatar";
 import deepOrange from "@material-ui/core/colors/deepOrange";
 import deepPurple from "@material-ui/core/colors/deepPurple";
 import Grid from "@material-ui/core/Grid";
-
+import { Route } from "react-router-dom";
 import Settings from "../settings/Settings";
 import MyDecisions from "../Decision/MyDecisions";
 import Assemblies from "../assembly/Assemblies";
+import Notifications from "../notifications/Notifications";
 
 const drawerWidth = 240;
 
@@ -116,17 +117,16 @@ const styles = theme => ({
   }
 });
 
-const sections = {
-  onDecisions: true,
-  onAssemblies: false,
-  onSettings: false,
-  onNotifications: false
+const sectionPaths = {
+  decisions: "/dashboard/decisions",
+  assemblies: "/dashboard/assemblies",
+  settings: "/dashboard/settings",
+  notifications: "/dashboard/notifications"
 };
 
 class Dashboard extends React.Component {
   state = {
-    open: true,
-    sections: sections
+    open: true
   };
 
   handleDrawerOpen = () => {
@@ -137,31 +137,13 @@ class Dashboard extends React.Component {
     this.setState({ open: false });
   };
 
-  handleSection = sectionName => {
-    Object.keys(sections).map(key => {
-      sections[key] = key === sectionName;
-    });
-    this.setState({
-      sections
-    });
+  handleSection = sectionPath => {
+    const { match, history } = this.props;
+    history.push(`${match.path}/${sectionPath}`);
   };
 
   componentDidMount = () => {
-    const pathname = this.props.location.pathname;
-    if (pathname) {
-      if ("/decisions" === pathname) {
-        this.handleSection("onDecisions");
-      }
-      if ("/assemblies" === pathname) {
-        this.handleSection("onAssemblies");
-      }
-      if ("/settings" === pathname) {
-        this.handleSection("onSettings");
-      }
-      if ("/notifications" === pathname) {
-        this.handleSection("onNotifications");
-      }
-    }
+    // TODO
   };
 
   render() {
@@ -233,31 +215,19 @@ class Dashboard extends React.Component {
           <Divider />
           <List>
             <div>
-              <ListItem
-                button
-                onClick={() => this.handleSection("onDecisions")}
-              >
+              <ListItem button onClick={() => this.handleSection("decisions")}>
                 <ListItemIcon>
                   <DashboardIcon />
                 </ListItemIcon>
                 <ListItemText primary="My Decisions" />
               </ListItem>
-              <ListItem
-                button
-                onClick={() => this.handleSection("onAssemblies")}
-              >
+              <ListItem button onClick={() => this.handleSection("assemblies")}>
                 <ListItemIcon>
                   <PeopleIcon />
                 </ListItemIcon>
                 <ListItemText primary="Assemblies" />
               </ListItem>
-              {/* <ListItem button onClick={() => this.handleSection("onReports")}>
-                <ListItemIcon>
-                  <BarChartIcon />
-                </ListItemIcon>
-                <ListItemText primary="Reports" />
-              </ListItem> */}
-              <ListItem button onClick={() => this.handleSection("onSettings")}>
+              <ListItem button onClick={() => this.handleSection("settings")}>
                 <ListItemIcon>
                   <SettingsIcon />
                 </ListItemIcon>
@@ -265,7 +235,7 @@ class Dashboard extends React.Component {
               </ListItem>
               <ListItem
                 button
-                onClick={() => this.handleSection("onNotifications")}
+                onClick={() => this.handleSection("notifications")}
               >
                 <ListItemIcon>
                   <Badge badgeContent={4} color="secondary">
@@ -279,15 +249,14 @@ class Dashboard extends React.Component {
         </Drawer>
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
-          <Typography variant="h4" gutterBottom component="h2">
-            {this.state.sections.onDecisions && <MyDecisions />}
-            {this.state.sections.onAssemblies && <Assemblies />}
-            {/* {this.state.sections.onReports && <p>Reports Section</p>} */}
-            {this.state.sections.onSettings && <Settings />}
-            {this.state.sections.onNotifications && (
-              <p>Notifications Section</p>
-            )}
-          </Typography>
+
+          <Route path={`${sectionPaths.decisions}`} component={MyDecisions} />
+          <Route path={`${sectionPaths.assemblies}`} component={Assemblies} />
+          <Route path={`${sectionPaths.settings}`} component={Settings} />
+          <Route
+            path={`${sectionPaths.notifications}`}
+            component={Notifications}
+          />
 
           {/* <Typography component="div" className={classes.chartContainer}>
             <SimpleLineChart />

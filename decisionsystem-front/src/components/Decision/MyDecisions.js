@@ -8,6 +8,8 @@ import Poll from "./Poll";
 import AddPoll from "./AddPoll";
 import CustomizedSnackbar from "../common/CustomizedSnackbar";
 import PollActions from "../../actions/poll/PollActions";
+import { Route } from "react-router-dom";
+import Link from "@material-ui/core/Link";
 
 const initialState = {
   loading: false,
@@ -119,34 +121,61 @@ class MyDecisions extends React.Component {
     this.setState({ ...initialState });
   }
 
-  render() {
-    const { classes } = this.props;
-    const openPolls = this.state.polls.map((poll, index) => {
+  getOpenPolls = (classes, routeProps) => {
+    return this.state.polls.map((poll, index) => {
       return (
         <ListItem
           key={`${index}${new Date().getTime()}`}
           className={classes.pollListItem}
         >
-          <Poll poll={poll} summarize={true} handleVote={this.votePoll} />
+          <Poll
+            {...routeProps}
+            poll={poll}
+            summarize={true}
+            handleVote={this.votePoll}
+          />
         </ListItem>
       );
     });
+  };
+
+  render() {
+    const { classes, match } = this.props;
     return (
       <React.Fragment>
-        <List>{openPolls}</List>
-        <AddPoll
-          innerRef={ref => (this.addPoll = ref)}
-          savePoll={this.savePoll}
+        <Route
+          exact
+          path="/dashboard/decisions/"
+          render={routeProps => (
+            <React.Fragment>
+              <List>{this.getOpenPolls(classes, routeProps)}</List>
+              <AddPoll
+                innerRef={ref => (this.addPoll = ref)}
+                savePoll={this.savePoll}
+              />
+              <Fab
+                color="secondary"
+                aria-label="Add"
+                className={classes.fab}
+                onClick={this.handleShowAddPoll}
+              >
+                <AddIcon />
+              </Fab>
+              <CustomizedSnackbar innerRef={ref => (this.snack = ref)} />
+            </React.Fragment>
+          )}
         />
-        <Fab
-          color="secondary"
-          aria-label="Add"
-          className={classes.fab}
-          onClick={this.handleShowAddPoll}
-        >
-          <AddIcon />
-        </Fab>
-        <CustomizedSnackbar innerRef={ref => (this.snack = ref)} />
+        <Route
+          exact
+          path="/dashboard/decisions/:pollId"
+          render={routeProps => (
+            <Poll
+              {...routeProps}
+              summarize={false}
+              handleVote={this.votePoll}
+            />
+          )}
+        />
       </React.Fragment>
     );
   }

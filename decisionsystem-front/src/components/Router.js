@@ -14,11 +14,7 @@ const Router = () => (
         <Route exact path="/" component={SignIn} />
         <Route exact path="/signin" component={SignIn} />
         <Route exact path="/register" component={Register} />
-        <Route
-          exact
-          path="/(decisions|assemblies|settings|notifications)"
-          component={Dashboard}
-        />
+        <Route path="/dashboard" component={Dashboard} />
         <Route component={NotFound} />
       </Switch>
     </BrowserRouter>
