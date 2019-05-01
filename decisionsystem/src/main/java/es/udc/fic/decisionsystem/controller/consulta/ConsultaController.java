@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ import es.udc.fic.decisionsystem.model.rol.Rol;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsulta;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.util.DateUtil;
+import es.udc.fic.decisionsystem.model.voto.Voto;
 import es.udc.fic.decisionsystem.payload.ApiResponse;
 import es.udc.fic.decisionsystem.payload.comentario.CommentResponse;
 import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
@@ -38,6 +40,9 @@ import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionVotedResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
+import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultOption;
+import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResults;
+import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultsItem;
 import es.udc.fic.decisionsystem.payload.pollsystem.PollSystemResponse;
 import es.udc.fic.decisionsystem.payload.usuario.UserDto;
 import es.udc.fic.decisionsystem.repository.asamblea.AsambleaRepository;
@@ -47,6 +52,7 @@ import es.udc.fic.decisionsystem.repository.consultaasamblea.ConsultaAsambleaRep
 import es.udc.fic.decisionsystem.repository.consultaopcion.ConsultaOpcionRepository;
 import es.udc.fic.decisionsystem.repository.sistemaconsulta.SistemaConsultaRepository;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
+import es.udc.fic.decisionsystem.repository.voto.VotoRepository;
 import es.udc.fic.decisionsystem.service.consulta.ConsultaService;
 
 @RestController
@@ -72,6 +78,9 @@ public class ConsultaController {
 	
 	@Autowired
 	private ComentarioRepository comentarioRepository;
+	
+	@Autowired
+	private VotoRepository votoRepository;
 
 	@Autowired
 	private ConsultaService consultaService;
@@ -145,6 +154,56 @@ public class ConsultaController {
 			response.setContent(comentario.getContenido());
 			return response;
 		});
+	}
+	
+	@GetMapping("/api/poll/{consultaId}/results")
+	public List<PollResults> getPollResults(@PathVariable Long consultaId) {
+		List<PollResults> pollResults = new ArrayList<>();
+		List<Voto> pollVotes = new ArrayList<>();
+		pollVotes = votoRepository.findByConsulta(consultaId);
+		Map<ConsultaOpcion, List<Voto>> groupByPollOption = pollVotes.stream().collect(Collectors.groupingBy(v -> v.getConsultaOpcion()));
+		
+		
+		for (Map.Entry<ConsultaOpcion, List<Voto>> entry : groupByPollOption.entrySet()) {
+			PollResults results = new PollResults();
+			ConsultaOpcion pollOption = entry.getKey();
+			List<Voto> pollOptionVotes = entry.getValue();
+					
+			// Option
+			PollResultOption resultsOption = new PollResultOption();
+			resultsOption.setOptionId(pollOption.getIdConsultaOpcion());
+			resultsOption.setName(pollOption.getNombre());
+			resultsOption.setDescription(pollOption.getDescripcion());
+			
+			// Vote info
+			List<PollResultsItem> resultsItems = new ArrayList<>();
+			for (Voto v : pollOptionVotes) {
+				PollResultsItem resultsItem = new PollResultsItem();
+				UserDto resultsItemUser = new UserDto();
+				Set<String> roles = new HashSet<>();
+				
+				resultsItemUser.setUserId(v.getUsuario().getIdUsuario());
+				resultsItemUser.setName(v.getUsuario().getNombre());
+				resultsItemUser.setLastName(v.getUsuario().getApellido());
+				resultsItemUser.setNickname(v.getUsuario().getNickname());
+				resultsItemUser.setEmail(v.getUsuario().getEmail());
+				resultsItemUser.setRoles(roles);
+				for (Rol r : v.getUsuario().getRoles()) {
+					roles.add(r.getNombre().name());
+				}
+				resultsItemUser.setRoles(roles);
+				
+				resultsItem.setMotivation(v.getMotivacion());
+				resultsItem.setUser(resultsItemUser);
+				resultsItems.add(resultsItem);
+			}
+			
+			results.setOption(resultsOption);
+			results.setItems(resultsItems);
+			pollResults.add(results);
+		}
+		
+		return pollResults;
 	}
 
 	@PostMapping("/api/poll")

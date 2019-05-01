@@ -1,6 +1,5 @@
 import React from "react";
 import { withStyles } from "@material-ui/core";
-import Divider from "@material-ui/core/Divider";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
@@ -37,7 +36,6 @@ class Comments extends React.Component {
         // <Card className={classes.card}>
         <ListItem className={classes.comment} key={`${comment.commentId}}`}>
           <Comment comment={comment} handleReply={this.replyComment} />
-          <Divider />
         </ListItem>
         // </Card>
       );
