@@ -30,9 +30,9 @@ import deepPurple from "@material-ui/core/colors/deepPurple";
 import Grid from "@material-ui/core/Grid";
 import { Route } from "react-router-dom";
 import Settings from "../settings/Settings";
-import MyDecisions from "../Decision/MyDecisions";
 import Assemblies from "../assembly/Assemblies";
 import Notifications from "../notifications/Notifications";
+import Decisions from "../Decision/Decisions";
 
 const drawerWidth = 240;
 
@@ -250,7 +250,7 @@ class Dashboard extends React.Component {
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
 
-          <Route path={`${sectionPaths.decisions}`} component={MyDecisions} />
+          <Route path={`${sectionPaths.decisions}`} component={Decisions} />
           <Route path={`${sectionPaths.assemblies}`} component={Assemblies} />
           <Route path={`${sectionPaths.settings}`} component={Settings} />
           <Route

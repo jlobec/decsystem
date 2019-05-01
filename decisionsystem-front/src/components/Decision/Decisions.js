@@ -4,6 +4,7 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";
+import PollSummary from "./PollSummary";
 import Poll from "./Poll";
 import AddPoll from "./AddPoll";
 import CustomizedSnackbar from "../common/CustomizedSnackbar";
@@ -16,7 +17,7 @@ const initialState = {
   polls: []
 };
 
-class MyDecisions extends React.Component {
+class Decisions extends React.Component {
   state = { ...initialState };
 
   constructor(props) {
@@ -128,11 +129,11 @@ class MyDecisions extends React.Component {
           key={`${index}${new Date().getTime()}`}
           className={classes.pollListItem}
         >
-          <Poll
+          <PollSummary
             {...routeProps}
             poll={poll}
-            summarize={true}
             handleVote={this.votePoll}
+            routingAvailable={true}
           />
         </ListItem>
       );
@@ -140,7 +141,7 @@ class MyDecisions extends React.Component {
   };
 
   render() {
-    const { classes, match } = this.props;
+    const { classes } = this.props;
     return (
       <React.Fragment>
         <Route
@@ -169,11 +170,7 @@ class MyDecisions extends React.Component {
           exact
           path="/dashboard/decisions/:pollId"
           render={routeProps => (
-            <Poll
-              {...routeProps}
-              summarize={false}
-              handleVote={this.votePoll}
-            />
+            <Poll {...routeProps} handleVote={this.votePoll} />
           )}
         />
       </React.Fragment>
@@ -202,4 +199,4 @@ const styles = theme => ({
   }
 });
 
-export default withStyles(styles)(MyDecisions);
+export default withStyles(styles)(Decisions);

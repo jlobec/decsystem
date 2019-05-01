@@ -1,205 +1,50 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Avatar from "@material-ui/core/Avatar";
-import Button from "@material-ui/core/Button";
-import List from "@material-ui/core/List";
-import Typography from "@material-ui/core/Typography";
 import withStyles from "@material-ui/core/styles/withStyles";
-import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import IconButton from "@material-ui/core/IconButton";
-import CommentIcon from "@material-ui/icons/Comment";
-import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
-import Link from "@material-ui/core/Link";
 import PollOption from "./PollOption";
 import Comments from "./Comments";
+import PollActions from "../../actions/poll/PollActions";
+import PollSummary from "./PollSummary";
+import CommonUtils from "../../actions/util/CommonUtils";
 
 const initialState = {
   loading: false,
-  selectedOptions: [],
-  detailedView: false,
+  poll: {},
   comments: []
 };
 
 class Poll extends React.Component {
   state = { ...initialState };
 
-  stripTrailingSlash = str => {
-    return str.endsWith("/") ? str.slice(0, -1) : str;
-  };
-
-  getFormattedDate = time => {
-    const options = {
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: false
-    };
-    return new Intl.DateTimeFormat("en-US", options).format(new Date(time));
-  };
-
   async componentDidMount() {
-    // TODO
-    console.log("poll location");
-    console.log(this.props.location);
+    this.setState({ loading: true });
+    const pollId = this.props.match.params.pollId;
+    if (pollId) {
+      const foundPoll = await PollActions.doGetPollById(pollId);
+      if (foundPoll) {
+        this.setState({ poll: foundPoll.data, loading: false });
+      }
+    }
   }
 
-  handleIsDisabled = () => {
-    return this.props.poll.votedByUser;
-  };
-
-  handleIsSelected = pollOption => {
-    const poll = this.props.poll;
-    if (!poll.votedByUser) {
-      return this.state.selectedOptions.indexOf(pollOption.pollOptionId) !== -1;
-    } else {
-      return pollOption.userVote.voted;
-    }
-  };
-
-  handleSelectOption = pollOptionId => {
-    const poll = this.props.poll;
-    if (!poll.votedByUser) {
-      // TODO en funcion del tipo de consulta la seleccion
-      // podra ser multiple o no, o preferencial (con valor asignado)
-      const { selectedOptions } = this.state;
-      const currentIndex = selectedOptions.indexOf(pollOptionId);
-      const newSelectedOptions = [...selectedOptions];
-
-      if (currentIndex === -1) {
-        newSelectedOptions.push(pollOptionId);
-      } else {
-        newSelectedOptions.splice(currentIndex, 1);
-      }
-
-      this.setState({
-        selectedOptions: newSelectedOptions
-      });
-    }
-  };
-
-  handleClickVote = () => {
-    this.props.handleVote(this.props.poll, [...this.state.selectedOptions]);
-  };
-
-  handleClickComment = () => {
-    // TODO show modal
-  };
-
-  handleClickTitle = poll => {
-    // Clean possible slash at the end
-    const currentUrl = this.stripTrailingSlash(this.props.match.url);
-    this.props.history.push(`${currentUrl}/${poll.pollId}`);
-  };
-
-  renderPollOptions = pollOptions => {
-    return pollOptions.map(pollOption => {
-      return (
-        <PollOption
-          key={pollOption.pollOptionId}
-          id={pollOption.pollOptionId}
-          pollOption={pollOption}
-          disabled={this.handleIsDisabled}
-          checked={this.handleIsSelected(pollOption)}
-          handleSelectOption={this.handleSelectOption}
-        />
-      );
-    });
-  };
-
   render() {
-    const { classes, poll } = this.props;
-    if (!poll) {
-      return <p>This is a poll!</p>;
-    }
-
-    const dudUrl = "javascript:;";
-    const pollOptionsComponent = this.renderPollOptions(poll.pollOptions);
     return (
-      <Card className={classes.card}>
-        <CardContent>
-          <Typography
-            gutterBottom
-            variant="h5"
-            component="h2"
-            onClick={() => this.handleClickTitle(poll)}
+      <React.Fragment>
+        {!CommonUtils.isEmptyObj(this.state.poll) && (
+          <PollSummary
+            poll={this.state.poll}
+            handleVote={this.props.handleVote}
+            routingAvailable={false}
           >
-            {poll.title}
-          </Typography>
-          <Typography className={classes.pos} color="textSecondary">
-            {`From ${this.getFormattedDate(
-              poll.startsAt
-            )} to ${this.getFormattedDate(poll.endsAt)}`}
-          </Typography>
-          <Typography component="p">{poll.description}</Typography>
-          <List className={classes.pollOptionList}>{pollOptionsComponent}</List>
-        </CardContent>
-        <CardActions className={classes.actions}>
-          {!poll.votedByUser && (
-            <Button size="small" color="primary" onClick={this.handleClickVote}>
-              Vote
-            </Button>
-          )}
-          {poll.votedByUser && (
-            <Button
-              size="small"
-              color="secondary"
-              onClick={this.handleClickVote}
-            >
-              Voted
-              <IconButton aria-label="Voted">
-                <CheckCircleOutlineIcon />
-              </IconButton>
-            </Button>
-          )}
-          <IconButton aria-label="Comment" onClick={this.handleClickComment}>
-            <CommentIcon />
-            {1}
-          </IconButton>
-        </CardActions>
-        {this.state.detailedView && <Comments comments={this.state.comments} />}
-      </Card>
+            {!CommonUtils.isEmptyArray(this.state.comments) && (
+              <Comments comments={this.state.comments} />
+            )}
+          </PollSummary>
+        )}
+      </React.Fragment>
     );
   }
 }
-const styles = theme => ({
-  card: {
-    minWidth: 275,
-    [theme.breakpoints.down("sm")]: {
-      marginBottom: theme.spacing.unit,
-      width: "100%"
-    },
-    [theme.breakpoints.up("md")]: {
-      marginBottom: theme.spacing.unit * 2,
-      width: "80%",
-      marginRigth: "10%",
-      marginLeft: "10%"
-    },
-    [theme.breakpoints.up("lg")]: {
-      marginBottom: theme.spacing.unit * 2,
-      width: "80%",
-      marginRigth: "10%",
-      marginLeft: "10%"
-    }
-  },
-  pos: {
-    marginBottom: 12
-  },
-  inline: {
-    display: "inline"
-  },
-  pollOptionList: {
-    width: "100%",
-    maxWidth: 720,
-    backgroundColor: theme.palette.background.paper
-  },
-  actions: {
-    display: "flex",
-    alignContent: "flex-end"
-  }
-});
+const styles = theme => ({});
 
 export default withStyles(styles)(Poll);
