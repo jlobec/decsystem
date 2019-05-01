@@ -7,8 +7,10 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Checkbox from "@material-ui/core/Checkbox";
 import IconButton from "@material-ui/core/IconButton";
 import CommentIcon from "@material-ui/icons/Comment";
+import Typography from "@material-ui/core/Typography";
 import axios from "axios";
 import Comment from "./Comment";
+import Card from "@material-ui/core/Card";
 
 import { config } from "../../config";
 const initialState = {};
@@ -30,31 +32,61 @@ class Comments extends React.Component {
     const { classes, comments } = this.props;
     const commentList = comments.map((comment, index) => {
       return (
-        <ListItem key={`${comment.commentId}}`}>
-          <List>
+        <Card className={classes.card}>
+          <ListItem key={`${comment.commentId}}`}>
             <Comment comment={comment} handleReply={this.replyComment} />
-          </List>
-        </ListItem>
+          </ListItem>
+        </Card>
       );
     });
     return (
-      <List>
-        {commentList}
-        {/* <ListItem
-          role={undefined}
-          dense
-          button
-          onClick={this.handleToggle(pollOption.pollOptionId)}
-        >
-          <Checkbox checked={checked} tabIndex={-1} disableRipple />
-          <ListItemText primary={`${pollOption.name} `} />
-          <ListItemText secondary={`${pollOption.description}`} />
-        </ListItem> */}
-      </List>
+      <React.Fragment>
+        <Typography className={classes.commentsTitle} variant="h6" gutterBottom>
+          {`${comments.length} Comments`}
+        </Typography>
+        <List>{commentList}</List>
+      </React.Fragment>
     );
   }
 }
 
-const styles = theme => ({});
+const styles = theme => ({
+  commentsTitle: {
+    marginTop: "5%",
+    marginLeft: "2%",
+    [theme.breakpoints.down("sm")]: {
+      width: "100%"
+    },
+    [theme.breakpoints.up("md")]: {
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    },
+    [theme.breakpoints.up("lg")]: {
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    }
+  },
+  card: {
+    minWidth: 275,
+    [theme.breakpoints.down("sm")]: {
+      marginBottom: theme.spacing.unit,
+      width: "100%"
+    },
+    [theme.breakpoints.up("md")]: {
+      marginBottom: theme.spacing.unit,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    },
+    [theme.breakpoints.up("lg")]: {
+      marginBottom: theme.spacing.unit,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    }
+  }
+});
 
 export default withStyles(styles)(Comments);

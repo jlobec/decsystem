@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import withStyles from "@material-ui/core/styles/withStyles";
 import PollOption from "./PollOption";
+import Card from "@material-ui/core/Card";
 import Comments from "./Comments";
 import PollActions from "../../actions/poll/PollActions";
 import PollSummary from "./PollSummary";
@@ -37,6 +38,8 @@ class Poll extends React.Component {
   }
 
   render() {
+    const { classes } = this.props;
+
     return (
       !CommonUtils.isEmptyObj(this.state.poll) && (
         <React.Fragment>
@@ -45,12 +48,34 @@ class Poll extends React.Component {
             handleVote={this.props.handleVote}
             routingAvailable={false}
           />
-          <Comments comments={this.state.comments} />
+          {!CommonUtils.isEmptyArray(this.state.comments) && (
+            <Comments comments={this.state.comments} />
+          )}
         </React.Fragment>
       )
     );
   }
 }
-const styles = theme => ({});
+const styles = theme => ({
+  card: {
+    minWidth: 275,
+    [theme.breakpoints.down("sm")]: {
+      marginBottom: theme.spacing.unit,
+      width: "100%"
+    },
+    [theme.breakpoints.up("md")]: {
+      marginBottom: theme.spacing.unit,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    },
+    [theme.breakpoints.up("lg")]: {
+      marginBottom: theme.spacing.unit,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    }
+  }
+});
 
 export default withStyles(styles)(Poll);
