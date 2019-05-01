@@ -1,5 +1,6 @@
 import React from "react";
 import { withStyles } from "@material-ui/core";
+import Divider from "@material-ui/core/Divider";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
@@ -33,11 +34,12 @@ class Comments extends React.Component {
     const { classes, comments } = this.props;
     const commentList = comments.map((comment, index) => {
       return (
-        <Card className={classes.card}>
-          <ListItem key={`${comment.commentId}}`}>
-            <Comment comment={comment} handleReply={this.replyComment} />
-          </ListItem>
-        </Card>
+        // <Card className={classes.card}>
+        <ListItem className={classes.comment} key={`${comment.commentId}}`}>
+          <Comment comment={comment} handleReply={this.replyComment} />
+          <Divider />
+        </ListItem>
+        // </Card>
       );
     });
     return (
@@ -52,41 +54,25 @@ class Comments extends React.Component {
 }
 
 const styles = theme => ({
-  commentsTitle: {
-    marginTop: "5%",
-    marginLeft: "2%",
-    [theme.breakpoints.down("sm")]: {
-      width: "100%"
-    },
-    [theme.breakpoints.up("md")]: {
-      width: "80%",
-      marginRigth: "10%",
-      marginLeft: "10%"
-    },
-    [theme.breakpoints.up("lg")]: {
-      width: "80%",
-      marginRigth: "10%",
-      marginLeft: "10%"
-    }
-  },
+  comment: {},
   card: {
-    minWidth: 275,
-    [theme.breakpoints.down("sm")]: {
-      marginBottom: theme.spacing.unit,
-      width: "100%"
-    },
-    [theme.breakpoints.up("md")]: {
-      marginBottom: theme.spacing.unit,
-      width: "80%",
-      marginRigth: "10%",
-      marginLeft: "10%"
-    },
-    [theme.breakpoints.up("lg")]: {
-      marginBottom: theme.spacing.unit,
-      width: "80%",
-      marginRigth: "10%",
-      marginLeft: "10%"
-    }
+    // minWidth: 275,
+    // [theme.breakpoints.down("sm")]: {
+    //   marginBottom: theme.spacing.unit,
+    //   width: "100%"
+    // },
+    // [theme.breakpoints.up("md")]: {
+    //   marginBottom: theme.spacing.unit,
+    //   width: "80%",
+    //   marginRigth: "10%",
+    //   marginLeft: "10%"
+    // },
+    // [theme.breakpoints.up("lg")]: {
+    //   marginBottom: theme.spacing.unit,
+    //   width: "80%",
+    //   marginRigth: "10%",
+    //   marginLeft: "10%"
+    // }
   }
 });
 

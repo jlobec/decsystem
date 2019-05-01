@@ -1,22 +1,37 @@
 import React from "react";
 import PropTypes from "prop-types";
 import withStyles from "@material-ui/core/styles/withStyles";
-import PollOption from "./PollOption";
-import Card from "@material-ui/core/Card";
+import Paper from "@material-ui/core/Paper";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
+import Typography from "@material-ui/core/Typography";
 import Comments from "./Comments";
 import PollActions from "../../actions/poll/PollActions";
 import PollSummary from "./PollSummary";
 import CommonUtils from "../../actions/util/CommonUtils";
 
+function TabContainer(props) {
+  return (
+    <Typography component="div" style={{ padding: 8 * 3 }}>
+      {props.children}
+    </Typography>
+  );
+}
+
 const initialState = {
   loadingPoll: true,
   loadingComments: true,
+  tabValue: 0,
   poll: {},
   comments: []
 };
 
 class Poll extends React.Component {
   state = { ...initialState };
+
+  handleTabChange = (event, tabValue) => {
+    this.setState({ tabValue });
+  };
 
   async componentDidMount() {
     const pollId = this.props.match.params.pollId;
@@ -38,7 +53,7 @@ class Poll extends React.Component {
 
   render() {
     const { classes } = this.props;
-
+    const { tabValue } = this.state;
     return (
       !CommonUtils.isEmptyObj(this.state.poll) && (
         <React.Fragment>
@@ -48,15 +63,50 @@ class Poll extends React.Component {
             onDetails={true}
             commentsNumber={this.state.comments.length}
           />
-          {!this.state.loadingComments && (
-            <Comments comments={this.state.comments} />
-          )}
+          <Paper className={classes.pollDetailPaper}>
+            <Tabs
+              value={tabValue}
+              indicatorColor="primary"
+              textColor="primary"
+              onChange={this.handleTabChange}
+            >
+              <Tab label="Comments" />
+              <Tab label="Results" />
+            </Tabs>
+            {tabValue === 0 && (
+              <TabContainer>
+                {!this.state.loadingComments && (
+                  <Comments comments={this.state.comments} />
+                )}
+              </TabContainer>
+            )}
+            {tabValue === 1 && <TabContainer>Results section</TabContainer>}
+          </Paper>
         </React.Fragment>
       )
     );
   }
 }
 const styles = theme => ({
+  pollDetailPaper: {
+    minWidth: 275,
+    [theme.breakpoints.down("sm")]: {
+      marginBottom: theme.spacing.unit,
+      width: "100%"
+    },
+    [theme.breakpoints.up("md")]: {
+      marginBottom: theme.spacing.unit,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    },
+    [theme.breakpoints.up("lg")]: {
+      marginBottom: theme.spacing.unit,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    }
+  },
   card: {
     minWidth: 275,
     [theme.breakpoints.down("sm")]: {
