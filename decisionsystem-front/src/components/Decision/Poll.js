@@ -8,7 +8,8 @@ import PollSummary from "./PollSummary";
 import CommonUtils from "../../actions/util/CommonUtils";
 
 const initialState = {
-  loading: false,
+  loadingPoll: false,
+  loadingComments: false,
   poll: {},
   comments: []
 };
@@ -17,31 +18,36 @@ class Poll extends React.Component {
   state = { ...initialState };
 
   async componentDidMount() {
-    this.setState({ loading: true });
+    this.setState({ loadingPoll: true, loadingComments: true });
     const pollId = this.props.match.params.pollId;
     if (pollId) {
       const foundPoll = await PollActions.doGetPollById(pollId);
       if (foundPoll) {
-        this.setState({ poll: foundPoll.data, loading: false });
+        this.setState({ poll: foundPoll.data, loadingPoll: false });
+      }
+      const comments = await PollActions.doGetPollComments(pollId);
+      console.log(comments);
+      if (comments) {
+        this.setState({
+          comments: comments.data.content,
+          loadingComments: false
+        });
       }
     }
   }
 
   render() {
     return (
-      <React.Fragment>
-        {!CommonUtils.isEmptyObj(this.state.poll) && (
+      !CommonUtils.isEmptyObj(this.state.poll) && (
+        <React.Fragment>
           <PollSummary
             poll={this.state.poll}
             handleVote={this.props.handleVote}
             routingAvailable={false}
-          >
-            {!CommonUtils.isEmptyArray(this.state.comments) && (
-              <Comments comments={this.state.comments} />
-            )}
-          </PollSummary>
-        )}
-      </React.Fragment>
+          />
+          <Comments comments={this.state.comments} />
+        </React.Fragment>
+      )
     );
   }
 }

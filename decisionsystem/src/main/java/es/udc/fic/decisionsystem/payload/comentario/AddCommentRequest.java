@@ -8,7 +8,7 @@ public class AddCommentRequest {
 
 	@NotNull
 	@Positive
-	private Long voteId;
+	private Long pollId;
 
 	@NotNull
 	@Positive
@@ -25,12 +25,12 @@ public class AddCommentRequest {
 		this.userId = userId;
 	}
 
-	public Long getVoteId() {
-		return voteId;
+	public Long getPollId() {
+		return pollId;
 	}
 
-	public void setVoteId(Long voteId) {
-		this.voteId = voteId;
+	public void setPollId(Long pollId) {
+		this.pollId = pollId;
 	}
 
 	public String getContent() {
