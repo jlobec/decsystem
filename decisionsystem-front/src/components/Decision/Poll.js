@@ -9,8 +9,8 @@ import PollSummary from "./PollSummary";
 import CommonUtils from "../../actions/util/CommonUtils";
 
 const initialState = {
-  loadingPoll: false,
-  loadingComments: false,
+  loadingPoll: true,
+  loadingComments: true,
   poll: {},
   comments: []
 };
@@ -19,7 +19,6 @@ class Poll extends React.Component {
   state = { ...initialState };
 
   async componentDidMount() {
-    this.setState({ loadingPoll: true, loadingComments: true });
     const pollId = this.props.match.params.pollId;
     if (pollId) {
       const foundPoll = await PollActions.doGetPollById(pollId);
@@ -46,9 +45,10 @@ class Poll extends React.Component {
           <PollSummary
             poll={this.state.poll}
             handleVote={this.props.handleVote}
-            routingAvailable={false}
+            onDetails={true}
+            commentsNumber={this.state.comments.length}
           />
-          {!CommonUtils.isEmptyArray(this.state.comments) && (
+          {!this.state.loadingComments && (
             <Comments comments={this.state.comments} />
           )}
         </React.Fragment>
