@@ -93,7 +93,10 @@ class Poll extends React.Component {
             {tabValue === 1 && (
               <TabContainer>
                 {!this.state.loadingResults && (
-                  <Results results={this.state.results} />
+                  <Results
+                    poll={this.state.poll}
+                    results={this.state.results}
+                  />
                 )}
               </TabContainer>
             )}
