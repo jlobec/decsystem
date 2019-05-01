@@ -133,7 +133,7 @@ class Decisions extends React.Component {
             {...routeProps}
             poll={poll}
             handleVote={this.votePoll}
-            routingAvailable={true}
+            onDetails={false}
           />
         </ListItem>
       );

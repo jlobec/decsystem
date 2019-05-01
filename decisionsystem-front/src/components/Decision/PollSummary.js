@@ -78,8 +78,8 @@ class PollSummary extends React.Component {
     // TODO show modal
   };
 
-  handleClickTitle = (poll, routingAvailable) => {
-    if (routingAvailable) {
+  handleClickTitle = (poll, onDetails) => {
+    if (!onDetails) {
       // Clean possible slash at the end
       const currentUrl = CommonUtils.stripTrailingSlash(this.props.match.url);
       this.props.history.push(`${currentUrl}/${poll.pollId}`);
@@ -102,7 +102,7 @@ class PollSummary extends React.Component {
   };
 
   render() {
-    const { classes, poll, routingAvailable } = this.props;
+    const { classes, poll, onDetails } = this.props;
     const pollOptionsComponent = this.renderPollOptions(poll.pollOptions);
     return (
       <Card className={classes.card}>
@@ -111,7 +111,7 @@ class PollSummary extends React.Component {
             gutterBottom
             variant="h5"
             component="h2"
-            onClick={() => this.handleClickTitle(poll, routingAvailable)}
+            onClick={() => this.handleClickTitle(poll, onDetails)}
           >
             {poll.title}
           </Typography>
@@ -143,10 +143,12 @@ class PollSummary extends React.Component {
               </IconButton>
             </div>
           )}
-          <IconButton aria-label="Comment" onClick={this.handleClickComment}>
-            <CommentIcon />
-            {1}
-          </IconButton>
+          {!onDetails && (
+            <IconButton aria-label="Comment" onClick={this.handleClickComment}>
+              <CommentIcon />
+              {this.props.commentsNumber ? this.props.commentsNumber : 0}
+            </IconButton>
+          )}
         </CardActions>
       </Card>
     );
