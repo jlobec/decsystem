@@ -8,6 +8,7 @@ import Typography from "@material-ui/core/Typography";
 import Comments from "./Comments";
 import PollActions from "../../actions/poll/PollActions";
 import PollSummary from "./PollSummary";
+import Results from "./Results";
 import CommonUtils from "../../actions/util/CommonUtils";
 
 function TabContainer(props) {
@@ -21,9 +22,11 @@ function TabContainer(props) {
 const initialState = {
   loadingPoll: true,
   loadingComments: true,
+  loadingResults: true,
   tabValue: 0,
   poll: {},
-  comments: []
+  comments: [],
+  results: []
 };
 
 class Poll extends React.Component {
@@ -41,11 +44,18 @@ class Poll extends React.Component {
         this.setState({ poll: foundPoll.data, loadingPoll: false });
       }
       const comments = await PollActions.doGetPollComments(pollId);
-      console.log(comments);
       if (comments) {
         this.setState({
           comments: comments.data.content,
           loadingComments: false
+        });
+      }
+      const results = await PollActions.doGetPollResults(pollId);
+      console.log(results);
+      if (results) {
+        this.setState({
+          results: results.data,
+          loadingResults: false
         });
       }
     }
@@ -80,7 +90,13 @@ class Poll extends React.Component {
                 )}
               </TabContainer>
             )}
-            {tabValue === 1 && <TabContainer>Results section</TabContainer>}
+            {tabValue === 1 && (
+              <TabContainer>
+                {!this.state.loadingResults && (
+                  <Results results={this.state.results} />
+                )}
+              </TabContainer>
+            )}
           </Paper>
         </React.Fragment>
       )

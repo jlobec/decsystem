@@ -1,5 +1,6 @@
 import React from "react";
 import { withStyles } from "@material-ui/core";
+import TableResults from "./TableResults";
 
 const initialState = {};
 
@@ -13,21 +14,10 @@ class Results extends React.Component {
   }
 
   render() {
-    const { classes, comments } = this.props;
-    const commentList = comments.map((comment, index) => {
-      return (
-        <p>Item</p>
-        // <ListItem className={classes.comment} key={`${comment.commentId}}`}>
-        //   <Comment comment={comment} handleReply={this.replyComment} />
-        // </ListItem>
-      );
-    });
+    const { classes, results } = this.props;
     return (
       <React.Fragment>
-        <Typography className={classes.commentsTitle} variant="h6" gutterBottom>
-          {`${comments.length} Comments`}
-        </Typography>
-        <List>{commentList}</List>
+        <TableResults results={results} />
       </React.Fragment>
     );
   }
