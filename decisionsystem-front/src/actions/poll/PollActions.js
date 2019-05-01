@@ -18,6 +18,12 @@ class PollActions {
     return axios.get(url, AuthUtil.getHeaders());
   };
 
+  static doGetPollComments = async pollId => {
+    const url = `${config.baseUrl}api/poll/${pollId}/comments`;
+    // const url = config.baseUrl + "api/poll/" + pollId + "/comments";
+    return axios.get(url, AuthUtil.getHeaders());
+  };
+
   static doSavePoll = async poll => {
     const url = config.baseUrl + "api/poll";
     const requestBody = {

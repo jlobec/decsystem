@@ -1,5 +1,8 @@
 package es.udc.fic.decisionsystem.controller.comentario;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,20 +20,23 @@ import org.springframework.web.bind.annotation.RestController;
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
 import es.udc.fic.decisionsystem.model.comentario.Comentario;
 import es.udc.fic.decisionsystem.model.comentarioasociacion.ComentarioAsociacion;
+import es.udc.fic.decisionsystem.model.consulta.Consulta;
 import es.udc.fic.decisionsystem.model.reaccion.Reaccion;
+import es.udc.fic.decisionsystem.model.rol.Rol;
 import es.udc.fic.decisionsystem.model.tiporeaccion.TipoReaccion;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
-import es.udc.fic.decisionsystem.model.voto.Voto;
 import es.udc.fic.decisionsystem.payload.ApiResponse;
 import es.udc.fic.decisionsystem.payload.comentario.AddCommentReactionRequest;
 import es.udc.fic.decisionsystem.payload.comentario.AddCommentReplyRequest;
 import es.udc.fic.decisionsystem.payload.comentario.AddCommentRequest;
+import es.udc.fic.decisionsystem.payload.comentario.CommentResponse;
+import es.udc.fic.decisionsystem.payload.usuario.UserDto;
 import es.udc.fic.decisionsystem.repository.comentario.ComentarioRepository;
 import es.udc.fic.decisionsystem.repository.comentarioasociacion.ComentarioAsociacionRepository;
+import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
 import es.udc.fic.decisionsystem.repository.reaccion.ReaccionRepository;
 import es.udc.fic.decisionsystem.repository.tiporeaccion.TipoReaccionRepository;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
-import es.udc.fic.decisionsystem.repository.voto.VotoRepository;
 
 @RestController
 public class ComentarioController {
@@ -42,7 +48,7 @@ public class ComentarioController {
 	private ComentarioAsociacionRepository comentarioAsociacionRepository;
 
 	@Autowired
-	private VotoRepository votoRepository;
+	private ConsultaRepository consultaRepository;
 
 	@Autowired
 	private UsuarioRepository usuarioRepository;
@@ -54,27 +60,65 @@ public class ComentarioController {
 	private TipoReaccionRepository tipoReaccionRepository;
 
 	@GetMapping("/api/comment/{comentarioId}")
-	public Comentario getComentario(@PathVariable Long comentarioId) {
+	public CommentResponse getComentario(@PathVariable Long comentarioId) {
 		return comentarioRepository.findById(comentarioId).map(comentario -> {
-			return comentario;
+			CommentResponse response = new CommentResponse();
+			
+			UserDto user = new UserDto();
+			Set<String> roles = new HashSet<>();
+			user.setUserId(comentario.getUsuario().getIdUsuario());
+			user.setName(comentario.getUsuario().getNombre());
+			user.setLastName(comentario.getUsuario().getApellido());
+			user.setEmail(comentario.getUsuario().getEmail());
+			user.setNickname(comentario.getUsuario().getNickname());
+			for (Rol r : comentario.getUsuario().getRoles()) {
+				roles.add(r.getNombre().name());
+			}
+			user.setRoles(roles);
+			
+			response.setCommentId(comentario.getIdComentario());
+			response.setPollId(comentario.getConsulta().getIdConsulta());
+			response.setUser(user);
+			response.setContent(comentario.getContenido());
+			return response;
 		}).orElseThrow(() -> new ResourceNotFoundException("Comment und with id " + comentarioId));
 	}
 
 	@GetMapping("/api/comment")
-	public Page<Comentario> getComentario(Pageable pageable) {
-		return comentarioRepository.findAll(pageable);
+	public Page<CommentResponse> getComentario(Pageable pageable) {
+		return comentarioRepository.findAll(pageable).map(comentario -> {
+			CommentResponse response = new CommentResponse();
+			
+			UserDto user = new UserDto();
+			Set<String> roles = new HashSet<>();
+			user.setUserId(comentario.getUsuario().getIdUsuario());
+			user.setName(comentario.getUsuario().getNombre());
+			user.setLastName(comentario.getUsuario().getApellido());
+			user.setEmail(comentario.getUsuario().getEmail());
+			user.setNickname(comentario.getUsuario().getNickname());
+			for (Rol r : comentario.getUsuario().getRoles()) {
+				roles.add(r.getNombre().name());
+			}
+			user.setRoles(roles);
+			
+			response.setCommentId(comentario.getIdComentario());
+			response.setPollId(comentario.getConsulta().getIdConsulta());
+			response.setUser(user);
+			response.setContent(comentario.getContenido());
+			return response;
+		});
 	}
 
 	@PostMapping("/api/comment")
-	public Comentario createComentario(@Valid @RequestBody AddCommentRequest addCommentRequest) {
-		Voto vote = votoRepository.findById(addCommentRequest.getVoteId())
-				.orElseThrow(() -> new ResourceNotFoundException("Vote not found"));
+	public CommentResponse createComentario(@Valid @RequestBody AddCommentRequest addCommentRequest) {
+		Consulta consulta = consultaRepository.findById(addCommentRequest.getPollId())
+				.orElseThrow(() -> new ResourceNotFoundException("Poll not found"));
 		Usuario user = usuarioRepository.findById(addCommentRequest.getUserId())
 				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
 		Comentario commentToAdd = new Comentario();
 		commentToAdd.setUsuario(user);
-		commentToAdd.setVoto(vote);
+		commentToAdd.setConsulta(consulta);
 		commentToAdd.setContenido(addCommentRequest.getContent());
 
 		// Add comment entity, then add comment relationship
@@ -87,22 +131,42 @@ public class ComentarioController {
 
 		comentarioAsociacionRepository.save(commentRelationship);
 
-		return commentAdded;
+		// Return result
+		CommentResponse response = new CommentResponse();
+		
+		UserDto userResponse = new UserDto();
+		Set<String> roles = new HashSet<>();
+		userResponse.setUserId(user.getIdUsuario());
+		userResponse.setName(user.getNombre());
+		userResponse.setLastName(user.getApellido());
+		userResponse.setEmail(user.getEmail());
+		userResponse.setNickname(user.getNickname());
+		for (Rol r : user.getRoles()) {
+			roles.add(r.getNombre().name());
+		}
+		userResponse.setRoles(roles);
+		
+		response.setCommentId(commentAdded.getIdComentario());
+		response.setPollId(commentAdded.getConsulta().getIdConsulta());
+		response.setUser(userResponse);
+		response.setContent(commentAdded.getContenido());
+		return response;
+		
 	}
 
 	@PostMapping("/api/comment/{comentarioId}/reply")
-	public Comentario replyComment(@Valid @RequestBody AddCommentReplyRequest addCommentRequest,
+	public CommentResponse replyComment(@Valid @RequestBody AddCommentReplyRequest addCommentRequest,
 			@PathVariable Long comentarioId) {
 		Comentario replyTo = comentarioRepository.findById(comentarioId)
 				.orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
-		Voto vote = votoRepository.findById(replyTo.getVoto().getIdVoto())
-				.orElseThrow(() -> new ResourceNotFoundException("Vote not found"));
+		Consulta consulta = consultaRepository.findById(replyTo.getConsulta().getIdConsulta())
+				.orElseThrow(() -> new ResourceNotFoundException("Poll not found"));
 		Usuario user = usuarioRepository.findById(addCommentRequest.getUserId())
 				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
 		Comentario commentToAdd = new Comentario();
 		commentToAdd.setUsuario(user);
-		commentToAdd.setVoto(vote);
+		commentToAdd.setConsulta(consulta);
 		commentToAdd.setContenido(addCommentRequest.getContent());
 
 		// Add comment entity, then add comment relationship
@@ -115,7 +179,28 @@ public class ComentarioController {
 
 		comentarioAsociacionRepository.save(commentRelationship);
 
-		return commentAdded;
+		// Return result
+		CommentResponse response = new CommentResponse();
+		
+		UserDto userResponse = new UserDto();
+		Set<String> roles = new HashSet<>();
+		userResponse.setUserId(user.getIdUsuario());
+		userResponse.setName(user.getNombre());
+		userResponse.setLastName(user.getApellido());
+		userResponse.setEmail(user.getEmail());
+		userResponse.setNickname(user.getNickname());
+		for (Rol r : user.getRoles()) {
+			roles.add(r.getNombre().name());
+		}
+		userResponse.setRoles(roles);
+		
+		response.setCommentId(commentAdded.getIdComentario());
+		response.setPollId(commentAdded.getConsulta().getIdConsulta());
+		response.setUser(userResponse);
+		response.setContent(commentAdded.getContenido());
+		return response;
+		
+		
 	}
 
 	@PostMapping("/api/comment/{comentarioId}/reaction")

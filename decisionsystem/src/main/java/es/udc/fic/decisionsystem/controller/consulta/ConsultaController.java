@@ -2,8 +2,10 @@ package es.udc.fic.decisionsystem.controller.consulta;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -25,17 +27,21 @@ import es.udc.fic.decisionsystem.model.asamblea.Asamblea;
 import es.udc.fic.decisionsystem.model.consulta.Consulta;
 import es.udc.fic.decisionsystem.model.consultaasamblea.ConsultaAsamblea;
 import es.udc.fic.decisionsystem.model.consultaopcion.ConsultaOpcion;
+import es.udc.fic.decisionsystem.model.rol.Rol;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsulta;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.util.DateUtil;
 import es.udc.fic.decisionsystem.payload.ApiResponse;
+import es.udc.fic.decisionsystem.payload.comentario.CommentResponse;
 import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
 import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionVotedResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.payload.pollsystem.PollSystemResponse;
+import es.udc.fic.decisionsystem.payload.usuario.UserDto;
 import es.udc.fic.decisionsystem.repository.asamblea.AsambleaRepository;
+import es.udc.fic.decisionsystem.repository.comentario.ComentarioRepository;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
 import es.udc.fic.decisionsystem.repository.consultaasamblea.ConsultaAsambleaRepository;
 import es.udc.fic.decisionsystem.repository.consultaopcion.ConsultaOpcionRepository;
@@ -63,6 +69,9 @@ public class ConsultaController {
 
 	@Autowired
 	private ConsultaAsambleaRepository consultaAsambleaRepository;
+	
+	@Autowired
+	private ComentarioRepository comentarioRepository;
 
 	@Autowired
 	private ConsultaService consultaService;
@@ -106,6 +115,36 @@ public class ConsultaController {
 		}
 		// Actually unlikely
 		throw new ResourceNotFoundException("No logged user");
+	}
+	
+	@GetMapping("/api/poll/{consultaId}/comments")
+	public Page<CommentResponse> getPollComments(Pageable pageable, @PathVariable Long consultaId, Principal principal) {
+		
+		Consulta consulta = consultaRepository.findById(consultaId).map(c -> {
+			return c;
+		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
+		
+		return comentarioRepository.findByConsulta(pageable, consulta).map(comentario -> {
+			CommentResponse response = new CommentResponse();
+			
+			UserDto user = new UserDto();
+			Set<String> roles = new HashSet<>();
+			user.setUserId(comentario.getUsuario().getIdUsuario());
+			user.setName(comentario.getUsuario().getNombre());
+			user.setLastName(comentario.getUsuario().getApellido());
+			user.setEmail(comentario.getUsuario().getEmail());
+			user.setNickname(comentario.getUsuario().getNickname());
+			for (Rol r : comentario.getUsuario().getRoles()) {
+				roles.add(r.getNombre().name());
+			}
+			user.setRoles(roles);
+			
+			response.setCommentId(comentario.getIdComentario());
+			response.setPollId(comentario.getConsulta().getIdConsulta());
+			response.setUser(user);
+			response.setContent(comentario.getContenido());
+			return response;
+		});
 	}
 
 	@PostMapping("/api/poll")

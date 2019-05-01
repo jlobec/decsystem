@@ -14,8 +14,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import es.udc.fic.decisionsystem.model.common.AuditModel;
+import es.udc.fic.decisionsystem.model.consulta.Consulta;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
-import es.udc.fic.decisionsystem.model.voto.Voto;
 
 @Entity
 @Table(name = "comentario")
@@ -34,9 +34,9 @@ public class Comentario extends AuditModel {
 	private Usuario usuario;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "id_voto", nullable = false)
+	@JoinColumn(name = "id_consulta", nullable = true)
 	@OnDelete(action = OnDeleteAction.NO_ACTION)
-	private Voto voto;
+	private Consulta consulta;
 
 	@Column(name = "contenido")
 	private String contenido;
@@ -68,12 +68,12 @@ public class Comentario extends AuditModel {
 		this.usuario = usuario;
 	}
 
-	public Voto getVoto() {
-		return voto;
+	public Consulta getConsulta() {
+		return consulta;
 	}
 
-	public void setVoto(Voto voto) {
-		this.voto = voto;
+	public void setConsulta(Consulta consulta) {
+		this.consulta = consulta;
 	}
 
 	public String getContenido() {
