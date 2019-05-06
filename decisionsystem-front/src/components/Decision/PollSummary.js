@@ -8,6 +8,8 @@ import withStyles from "@material-ui/core/styles/withStyles";
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
+import Chip from "@material-ui/core/Chip";
+import Grid from "@material-ui/core/Grid";
 import IconButton from "@material-ui/core/IconButton";
 import CommentIcon from "@material-ui/icons/Comment";
 import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
@@ -104,17 +106,25 @@ class PollSummary extends React.Component {
   render() {
     const { classes, poll, onDetails } = this.props;
     const pollOptionsComponent = this.renderPollOptions(poll.pollOptions);
+    const pollSystem = poll.pollSystem;
     return (
       <Card className={classes.card}>
         <CardContent>
-          <Typography
-            gutterBottom
-            variant="h5"
-            component="h2"
-            onClick={() => this.handleClickTitle(poll, onDetails)}
-          >
-            {poll.title}
-          </Typography>
+          <Grid container spacing={8}>
+            <Grid item xs>
+              <Typography
+                gutterBottom
+                variant="h5"
+                component="h2"
+                onClick={() => this.handleClickTitle(poll, onDetails)}
+              >
+                {poll.title}
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Chip label={`${pollSystem.name}`} color="primary" />
+            </Grid>
+          </Grid>
           <Typography className={classes.pos} color="textSecondary">
             {`From ${this.getFormattedDate(
               poll.startsAt
@@ -173,6 +183,10 @@ const styles = theme => ({
       marginRigth: "10%",
       marginLeft: "10%"
     }
+  },
+  cardTitleContainer: {
+    display: "flex",
+    flexDirection: "row-reverse"
   },
   pos: {
     marginBottom: 12
