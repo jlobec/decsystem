@@ -10,8 +10,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import es.udc.fic.decisionsystem.exception.BadRequestException;
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
 import es.udc.fic.decisionsystem.model.consultaopcion.ConsultaOpcion;
+import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsultaEnum;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.voto.Voto;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionResponse;
@@ -79,14 +81,22 @@ public class ConsultaServiceImpl implements ConsultaService {
 			// Check if the poll can be considered voted by user
 			// It will depend on poll system
 			// so this block must be placed in a separate service by pollsystem
+			SistemaConsultaEnum pollSystemEnum = SistemaConsultaEnum.getByName(consulta.getSistemaConsulta().getNombre());
 			boolean votedByUser = false;
-			for (PollOptionResponse pollOption : pollOptions) {
-				if (pollOption.getUserVote().isVoted()) {
-					votedByUser = true;
+			switch (pollSystemEnum) {
+				case SINGLE_OPTION:
+				case MULTIPLE_OPTION: 
+					for (PollOptionResponse pollOption : pollOptions) {
+						if (pollOption.getUserVote().isVoted()) {
+							votedByUser = true;
+							break;
+						}
+					}
 					break;
-				}
+				default:
+					throw new BadRequestException("Poll system not found");
 			}
-
+			
 			PollSystemResponse pollSystem = new PollSystemResponse();
 			pollSystem.setPollTypeId(consulta.getSistemaConsulta().getIdSistemaConsulta());
 			pollSystem.setName(consulta.getSistemaConsulta().getNombre());
@@ -153,12 +163,20 @@ public class ConsultaServiceImpl implements ConsultaService {
 			// Check if the poll can be considered voted by user
 			// It will depend on poll system
 			// so this block must be placed in a separate service by pollsystem
+			SistemaConsultaEnum pollSystemEnum = SistemaConsultaEnum.getByName(poll.getSistemaConsulta().getNombre());
 			boolean votedByUser = false;
-			for (PollOptionResponse pollOption : pollOptions) {
-				if (pollOption.getUserVote().isVoted()) {
-					votedByUser = true;
+			switch (pollSystemEnum) {
+				case SINGLE_OPTION:
+				case MULTIPLE_OPTION: 
+					for (PollOptionResponse pollOption : pollOptions) {
+						if (pollOption.getUserVote().isVoted()) {
+							votedByUser = true;
+							break;
+						}
+					}
 					break;
-				}
+				default:
+					throw new BadRequestException("Poll system not found");
 			}
 
 			PollSystemResponse pollSystem = new PollSystemResponse();
@@ -180,5 +198,5 @@ public class ConsultaServiceImpl implements ConsultaService {
 		});
 
 	}
-
+	
 }

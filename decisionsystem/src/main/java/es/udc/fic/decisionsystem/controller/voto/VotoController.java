@@ -71,8 +71,10 @@ public class VotoController {
 		// Options to get may be different by pollSystem
 		SistemaConsultaEnum pollSystem = SistemaConsultaEnum.getByName(consulta.getSistemaConsulta().getNombre());
 		switch (pollSystem) {
-		case SINGLE_OTPTION:
+		case SINGLE_OPTION:
 			return voteSingleOption(voteRequest, user);
+		case MULTIPLE_OPTION: 
+			return voteMultipleOption(voteRequest, user);
 		default:
 			throw new BadRequestException("Poll system not found");
 		}
@@ -126,22 +128,61 @@ public class VotoController {
 
 		return response;
 	}
+	
+	/**
+	 * Vote single option.
+	 *
+	 * @param voteRequest the vote request
+	 * @param user        the user
+	 * @return the vote response
+	 */
+	private VoteResponse voteMultipleOption(VoteRequest voteRequest, Usuario user) {
 
-//	@PutMapping("/api/vote/{votoId}")
-//	public ResponseEntity<?> updateVoto(@Valid @RequestBody Voto voto, @PathVariable Long votoId) {
-//		return votoRepository.findById(votoId).map(foundVoto -> {
-//			voto.setIdVoto(votoId);
-//			votoRepository.save(voto);
-//			return ResponseEntity.ok().build();
-//		}).orElseThrow(() -> new ResourceNotFoundException("Vote not found with id " + votoId));
-//	}
+		List<VoteOptionRequest> votedOptions = voteRequest.getOptions();
+		
+		// Validations
+		// - Size of options must be greater than 0
+		// - Poll must exist
+		if (votedOptions != null && votedOptions.size() < 1) {
+			throw new BadRequestException("Size of voted options invalid");
+		}
+		Consulta poll = consultaRepository.findById(voteRequest.getPollId())
+				.orElseThrow(() -> new ResourceNotFoundException(String.format("Poll %d not found", voteRequest.getPollId())));
 
-//	@DeleteMapping("/api/vote/{votoId}")
-//	public ResponseEntity<?> deleteVoto(@PathVariable Long votoId) {
-//		return votoRepository.findById(votoId).map(voto -> {
-//			votoRepository.delete(voto);
-//			return ResponseEntity.ok().build();
-//		}).orElseThrow(() -> new ResourceNotFoundException("Vote not found with id " + votoId));
-//	}
+		// Vote and build response
+		VoteResponse response = new VoteResponse();
+		List<VoteOptionResponse> responseOptions = new ArrayList<>();
+		for (VoteOptionRequest votedOption : votedOptions) {
+			
+			ConsultaOpcion pollOption = consultaOpcionRepository.findById(votedOption.getOptionId()).orElseThrow(
+					() -> new ResourceNotFoundException(String.format("Option %d not found", votedOption.getOptionId())));
+
+			// TODO check the option belongs to a poll which is added to an assembly the
+			// user belongs to.
+
+			// TODO check if the user already has voted this option (not the poll: bear in
+			// mind multiple choice allowed)
+
+			Voto v = new Voto();
+			v.setConsultaOpcion(pollOption);
+			v.setUsuario(user);
+			v.setMotivacion(votedOption.getMotivation());
+
+			Voto savedVote = votoRepository.save(v);
+			
+			VoteOptionResponse responseOption = new VoteOptionResponse();
+			responseOption.setOptionId(savedVote.getConsultaOpcion().getIdConsultaOpcion());
+			responseOption.setMotivation(savedVote.getMotivacion());
+			responseOption.setVoteId(savedVote.getIdVoto());
+			responseOption.setPreferenceValue(0); // no aplica
+			responseOptions.add(responseOption);
+			
+		}
+		
+		response.setPollId(poll.getIdConsulta());
+		response.setOptions(responseOptions);
+
+		return response;
+	}
 
 }

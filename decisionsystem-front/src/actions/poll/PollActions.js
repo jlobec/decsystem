@@ -55,6 +55,8 @@ class PollActions {
       options: requestBodyOptions,
       pollId: poll.pollId
     };
+    console.log("doVote");
+    console.log(requestBody);
     return axios.post(url, requestBody, AuthUtil.getHeaders());
   };
 }
