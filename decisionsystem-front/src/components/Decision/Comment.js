@@ -6,9 +6,9 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import Avatar from "@material-ui/core/Avatar";
 import Typography from "@material-ui/core/Typography";
-import Checkbox from "@material-ui/core/Checkbox";
 import IconButton from "@material-ui/core/IconButton";
-import CommentIcon from "@material-ui/icons/Comment";
+import ReplyIcon from "@material-ui/icons/Reply";
+import Checkbox from "@material-ui/core/Checkbox";
 import axios from "axios";
 
 import { config } from "../../config";
@@ -51,13 +51,16 @@ class Comment extends React.Component {
               <DeleteIcon />
             </IconButton> */}
         </ListItemSecondaryAction>
-        <Typography
+        {/* <Typography
           component="h1"
           variant="body1"
           className={classes.commentAction}
         >
           Reply
-        </Typography>
+        </Typography> */}
+        <IconButton aria-label="Reply">
+          <ReplyIcon />
+        </IconButton>
       </React.Fragment>
     );
   }

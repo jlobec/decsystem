@@ -12,8 +12,8 @@ import axios from "axios";
 import Comment from "./Comment";
 import Card from "@material-ui/core/Card";
 import CommonUtils from "../../actions/util/CommonUtils";
+import AddComment from "./AddComment";
 
-import { config } from "../../config";
 const initialState = {};
 
 class Comments extends React.Component {
@@ -45,6 +45,7 @@ class Comments extends React.Component {
         <Typography className={classes.commentsTitle} variant="h6" gutterBottom>
           {`${comments.length} Comments`}
         </Typography>
+        <AddComment />
         <List>{commentList}</List>
       </React.Fragment>
     );
