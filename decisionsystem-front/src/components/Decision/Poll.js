@@ -9,7 +9,10 @@ import Comments from "./Comments";
 import PollActions from "../../actions/poll/PollActions";
 import PollSummary from "./PollSummary";
 import Results from "./Results";
+import CustomizedSnackbar from "../common/CustomizedSnackbar";
+import CommentActions from "../../actions/poll/CommentActions";
 import CommonUtils from "../../actions/util/CommonUtils";
+import UserActions from "../../actions/user/UserActions";
 
 function TabContainer(props) {
   return (
@@ -19,47 +22,100 @@ function TabContainer(props) {
   );
 }
 
-const initialState = {
-  loadingPoll: true,
-  loadingComments: true,
-  loadingResults: true,
-  tabValue: 0,
-  poll: {},
-  comments: [],
-  results: []
-};
-
 class Poll extends React.Component {
-  state = { ...initialState };
+  state = {
+    loadingPoll: true,
+    loadingComments: true,
+    loadingResults: true,
+    tabValue: 0,
+    poll: {},
+    comments: [],
+    results: [],
+    user: this.props.user
+  };
+
+  constructor(props) {
+    super(props);
+    this.snack = React.createRef();
+  }
 
   handleTabChange = (event, tabValue) => {
     this.setState({ tabValue });
   };
 
   async componentDidMount() {
+    if (CommonUtils.isEmptyObj(this.state.user)) {
+      const { data: loggedUser } = await UserActions.doGetLoggedUser();
+      if (loggedUser) {
+        this.setState({ user: loggedUser });
+      }
+    }
     const pollId = this.props.match.params.pollId;
     if (pollId) {
-      const foundPoll = await PollActions.doGetPollById(pollId);
+      const { data: foundPoll } = await PollActions.doGetPollById(pollId);
       if (foundPoll) {
-        this.setState({ poll: foundPoll.data, loadingPoll: false });
+        this.setState({ poll: foundPoll, loadingPoll: false });
       }
-      const comments = await PollActions.doGetPollComments(pollId);
+      const { data: comments } = await PollActions.doGetPollComments(pollId);
       if (comments) {
         this.setState({
-          comments: comments.data.content,
+          comments: comments.content,
           loadingComments: false
         });
       }
-      const results = await PollActions.doGetPollResults(pollId);
+      const { data: results } = await PollActions.doGetPollResults(pollId);
       console.log(results);
       if (results) {
         this.setState({
-          results: results.data,
+          results: results,
           loadingResults: false
         });
       }
     }
   }
+
+  componentWillUnmount() {
+    this.setState({
+      loadingPoll: true,
+      loadingComments: true,
+      loadingResults: true,
+      tabValue: 0,
+      poll: {},
+      comments: [],
+      results: [],
+      user: this.props.user
+    });
+  }
+
+  addComment = async comment => {
+    const { user, poll } = this.state;
+    const { data: savedComment } = await CommentActions.doAddComment(
+      user.userId,
+      poll.pollId,
+      comment.content
+    );
+    if (savedComment) {
+      this.setState({
+        comments: [...this.state.comments, savedComment]
+      });
+    }
+    this.handleShowSnackbarForAddComment(savedComment);
+  };
+
+  handleShowSnackbarForAddComment = successful => {
+    const okMessage = {
+      open: true,
+      variant: "success",
+      message: `Comment added successfully`
+    };
+    const errorMessage = {
+      open: true,
+      variant: "error",
+      message: `Comment could not be added`
+    };
+    const messageToShow = successful ? okMessage : errorMessage;
+    this.snack.openWith(messageToShow);
+  };
 
   render() {
     const { classes } = this.props;
@@ -86,7 +142,11 @@ class Poll extends React.Component {
             {tabValue === 0 && (
               <TabContainer>
                 {!this.state.loadingComments && (
-                  <Comments comments={this.state.comments} />
+                  <Comments
+                    poll={this.state.poll}
+                    comments={this.state.comments}
+                    addComment={this.addComment}
+                  />
                 )}
               </TabContainer>
             )}
@@ -101,6 +161,7 @@ class Poll extends React.Component {
               </TabContainer>
             )}
           </Paper>
+          <CustomizedSnackbar innerRef={ref => (this.snack = ref)} />
         </React.Fragment>
       )
     );

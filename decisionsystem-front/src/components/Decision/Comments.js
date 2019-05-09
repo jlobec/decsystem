@@ -2,16 +2,8 @@ import React from "react";
 import { withStyles } from "@material-ui/core";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
-import ListItemText from "@material-ui/core/ListItemText";
-import Checkbox from "@material-ui/core/Checkbox";
-import IconButton from "@material-ui/core/IconButton";
-import CommentIcon from "@material-ui/icons/Comment";
 import Typography from "@material-ui/core/Typography";
-import axios from "axios";
 import Comment from "./Comment";
-import Card from "@material-ui/core/Card";
-import CommonUtils from "../../actions/util/CommonUtils";
 import AddComment from "./AddComment";
 
 const initialState = {};
@@ -45,7 +37,7 @@ class Comments extends React.Component {
         <Typography className={classes.commentsTitle} variant="h6" gutterBottom>
           {`${comments.length} Comments`}
         </Typography>
-        <AddComment />
+        <AddComment addComment={this.props.addComment} />
         <List>{commentList}</List>
       </React.Fragment>
     );

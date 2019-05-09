@@ -4,6 +4,7 @@ import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import IconButton from "@material-ui/core/IconButton";
 import SendIcon from "@material-ui/icons/Send";
+import Button from "@material-ui/core/Button";
 
 const initialState = {
   content: ""
@@ -24,9 +25,16 @@ class AddComment extends React.Component {
     });
   };
 
+  handleAddComment = () => {
+    const comment = {
+      content: this.state.content
+    };
+    this.props.addComment(comment);
+    this.setState({ ...initialState });
+  };
+
   render() {
     const { classes } = this.props;
-
     return (
       <React.Fragment>
         <Grid
@@ -50,13 +58,13 @@ class AddComment extends React.Component {
             />
           </Grid>
           <Grid item>
-            <IconButton
+            <Button
+              variant="outlined"
               color="primary"
-              className={classes.button}
-              aria-label="Comment"
+              onClick={this.handleAddComment}
             >
-              <SendIcon />
-            </IconButton>
+              Comment
+            </Button>
           </Grid>
         </Grid>
       </React.Fragment>
