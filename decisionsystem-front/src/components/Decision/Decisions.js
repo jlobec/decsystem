@@ -9,12 +9,14 @@ import Poll from "./Poll";
 import AddPoll from "./AddPoll";
 import CustomizedSnackbar from "../common/CustomizedSnackbar";
 import PollActions from "../../actions/poll/PollActions";
+import UserActions from "../../actions/user/UserActions";
 import { Route } from "react-router-dom";
-import Link from "@material-ui/core/Link";
+import Tooltip from "@material-ui/core/Tooltip";
 
 const initialState = {
   loading: false,
-  polls: []
+  polls: [],
+  user: {}
 };
 
 class Decisions extends React.Component {
@@ -115,6 +117,12 @@ class Decisions extends React.Component {
         loading: false,
         polls: openPolls.content
       });
+      const { data: loggedUser } = await UserActions.doGetLoggedUser();
+      if (loggedUser) {
+        this.setState({
+          user: loggedUser
+        });
+      }
     }
   }
 
@@ -154,14 +162,16 @@ class Decisions extends React.Component {
                 innerRef={ref => (this.addPoll = ref)}
                 savePoll={this.savePoll}
               />
-              <Fab
-                color="secondary"
-                aria-label="Add"
-                className={classes.fab}
-                onClick={this.handleShowAddPoll}
-              >
-                <AddIcon />
-              </Fab>
+              <Tooltip title="Add Poll" aria-label="Add">
+                <Fab
+                  color="secondary"
+                  aria-label="Add"
+                  className={classes.fab}
+                  onClick={this.handleShowAddPoll}
+                >
+                  <AddIcon />
+                </Fab>
+              </Tooltip>
               <CustomizedSnackbar innerRef={ref => (this.snack = ref)} />
             </React.Fragment>
           )}
@@ -170,7 +180,11 @@ class Decisions extends React.Component {
           exact
           path="/dashboard/decisions/:pollId"
           render={routeProps => (
-            <Poll {...routeProps} handleVote={this.votePoll} />
+            <Poll
+              {...routeProps}
+              user={this.state.user}
+              handleVote={this.votePoll}
+            />
           )}
         />
       </React.Fragment>

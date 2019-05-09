@@ -1,17 +1,12 @@
 import React from "react";
 import { withStyles } from "@material-ui/core";
-import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import Avatar from "@material-ui/core/Avatar";
-import Typography from "@material-ui/core/Typography";
-import Checkbox from "@material-ui/core/Checkbox";
 import IconButton from "@material-ui/core/IconButton";
-import CommentIcon from "@material-ui/icons/Comment";
-import axios from "axios";
-
-import { config } from "../../config";
+import ReplyIcon from "@material-ui/icons/Reply";
+import Tooltip from "@material-ui/core/Tooltip";
 
 const initialState = {
   checked: []
@@ -51,13 +46,11 @@ class Comment extends React.Component {
               <DeleteIcon />
             </IconButton> */}
         </ListItemSecondaryAction>
-        <Typography
-          component="h1"
-          variant="body1"
-          className={classes.commentAction}
-        >
-          Reply
-        </Typography>
+        <Tooltip title="Reply" aria-label="Reply">
+          <IconButton>
+            <ReplyIcon />
+          </IconButton>
+        </Tooltip>
       </React.Fragment>
     );
   }
