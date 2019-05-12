@@ -17,12 +17,12 @@ const initialState = {
 class PollOption extends React.Component {
   state = { ...initialState };
 
-  handleToggle = value => () => {
-    this.props.handleSelectOption(value);
+  handleToggle = pollOptionId => () => {
+    this.props.handleSelectOption(pollOptionId);
   };
 
-  handleScoreChange = (event, value) => {
-    this.setState({ value });
+  handleScoreChange = (e, value, pollOptionId) => {
+    this.props.handleSelectOption(pollOptionId, value);
   };
 
   async componentDidMount() {}
@@ -75,9 +75,10 @@ class PollOption extends React.Component {
                 min={1}
                 max={5}
                 step={1}
-                onChange={this.handleScoreChange}
+                onChange={(e, value) => {
+                  this.handleScoreChange(e, value, pollOption.pollOptionId);
+                }}
                 thumb={
-                  // <Badge badgeContent={this.state.value} color="secondary" />
                   <Chip
                     className={classes.chip}
                     label={`${this.state.value}`}
@@ -103,7 +104,7 @@ const styles = theme => ({
     padding: "22px 0px"
   },
   chip: {
-    padding: "10px"
+    padding: "12px"
   }
 });
 

@@ -51,7 +51,7 @@ class PollSummary extends React.Component {
     }
   };
 
-  handleSelectOption = pollOptionId => {
+  handleSelectOption = (pollOptionId, value) => {
     const poll = this.props.poll;
     if (!poll.votedByUser) {
       // TODO en funcion del tipo de consulta la seleccion
