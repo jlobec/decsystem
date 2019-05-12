@@ -41,11 +41,11 @@ class Decisions extends React.Component {
     this.handleShowSnackbarForSavePoll(savePollResult, poll);
   };
 
-  votePoll = async (poll, votedOptionsIds) => {
-    const options = [...votedOptionsIds].map(optId => {
+  votePoll = async (poll, votedOptions) => {
+    const options = [...votedOptions].map(option => {
       return {
-        optionId: optId,
-        preferenceValue: 0,
+        optionId: option.pollOptionId,
+        preferenceValue: option.value,
         motivation: ""
       };
     });

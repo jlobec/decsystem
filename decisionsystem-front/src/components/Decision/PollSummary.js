@@ -49,7 +49,6 @@ class PollSummary extends React.Component {
         option => option.pollOptionId === pollOption.pollOptionId
       );
       return index !== -1;
-      // return this.state.selectedOptions.indexOf(pollOption.pollOptionId) !== -1;
     } else {
       return pollOption.userVote.voted;
     }
