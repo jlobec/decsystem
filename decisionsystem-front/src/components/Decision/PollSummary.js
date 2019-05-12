@@ -45,7 +45,11 @@ class PollSummary extends React.Component {
   handleIsSelected = pollOption => {
     const poll = this.props.poll;
     if (!poll.votedByUser) {
-      return this.state.selectedOptions.indexOf(pollOption.pollOptionId) !== -1;
+      const index = this.state.selectedOptions.findIndex(
+        option => option.pollOptionId === pollOption.pollOptionId
+      );
+      return index !== -1;
+      // return this.state.selectedOptions.indexOf(pollOption.pollOptionId) !== -1;
     } else {
       return pollOption.userVote.voted;
     }
@@ -53,23 +57,78 @@ class PollSummary extends React.Component {
 
   handleSelectOption = (pollOptionId, value) => {
     const poll = this.props.poll;
+    const pollSystemName = poll.pollSystem.name;
     if (!poll.votedByUser) {
-      // TODO en funcion del tipo de consulta la seleccion
-      // podra ser multiple o no, o preferencial (con valor asignado)
-      const { selectedOptions } = this.state;
-      const currentIndex = selectedOptions.indexOf(pollOptionId);
-      const newSelectedOptions = [...selectedOptions];
-
-      if (currentIndex === -1) {
-        newSelectedOptions.push(pollOptionId);
-      } else {
-        newSelectedOptions.splice(currentIndex, 1);
+      if (pollSystemName === "Single Option") {
+        this.handleSelectSingleOption(pollOptionId, value);
       }
-
-      this.setState({
-        selectedOptions: newSelectedOptions
-      });
+      if (pollSystemName === "Multiple Option") {
+        this.handleSelectMultipleOption(pollOptionId, value);
+      }
+      if (pollSystemName === "Score vote") {
+        this.handleSelectScoreOption(pollOptionId, value);
+      }
     }
+  };
+
+  handleSelectSingleOption = (pollOptionId, value) => {
+    const { selectedOptions } = this.state;
+    const currentIndex = selectedOptions.findIndex(
+      option => option.pollOptionId === pollOptionId
+    );
+    const newSelectedOptions = [...selectedOptions];
+
+    // If the item was not selected before, check it and deselect the others
+    if (currentIndex === -1) {
+      newSelectedOptions.splice(0, newSelectedOptions.length);
+      newSelectedOptions.push({ pollOptionId: pollOptionId, value: value });
+    } else {
+      newSelectedOptions.splice(currentIndex, 1);
+    }
+
+    this.setState({
+      selectedOptions: newSelectedOptions
+    });
+  };
+
+  handleSelectMultipleOption = (pollOptionId, value) => {
+    const { selectedOptions } = this.state;
+    const currentIndex = selectedOptions.findIndex(
+      option => option.pollOptionId === pollOptionId
+    );
+
+    // const currentIndex = selectedOptions.indexOf(pollOptionId);
+    const newSelectedOptions = [...selectedOptions];
+
+    if (currentIndex === -1) {
+      newSelectedOptions.push({ pollOptionId: pollOptionId, value: value });
+    } else {
+      newSelectedOptions.splice(currentIndex, 1);
+    }
+
+    this.setState({
+      selectedOptions: newSelectedOptions
+    });
+  };
+
+  handleSelectScoreOption = (pollOptionId, value) => {
+    const { selectedOptions } = this.state;
+    const currentIndex = selectedOptions.findIndex(
+      option => option.pollOptionId === pollOptionId
+    );
+
+    // const currentIndex = selectedOptions.indexOf(pollOptionId);
+    const newSelectedOptions = [...selectedOptions];
+
+    if (currentIndex === -1) {
+      newSelectedOptions.push({ pollOptionId: pollOptionId, value: value });
+    } else {
+      newSelectedOptions.splice(currentIndex, 1);
+    }
+
+    this.setState({
+      selectedOptions: newSelectedOptions
+    });
   };
 
   handleClickVote = () => {
