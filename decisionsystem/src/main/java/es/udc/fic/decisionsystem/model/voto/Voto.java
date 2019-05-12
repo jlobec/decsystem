@@ -42,6 +42,9 @@ public class Voto extends AuditModel {
 	@Column(name = "motivacion")
 	@NotNull
 	private String motivacion;
+	
+	@Column(name = "puntuacion")
+	private Integer puntuacion;
 
 	public Voto() {
 		super();

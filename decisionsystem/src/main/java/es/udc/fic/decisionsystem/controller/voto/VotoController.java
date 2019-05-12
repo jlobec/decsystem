@@ -75,6 +75,8 @@ public class VotoController {
 			return voteSingleOption(voteRequest, user);
 		case MULTIPLE_OPTION: 
 			return voteMultipleOption(voteRequest, user);
+		case SCORE_VOTE:
+			return voteScoreOption(voteRequest, user);
 		default:
 			throw new BadRequestException("Poll system not found");
 		}
@@ -184,5 +186,56 @@ public class VotoController {
 
 		return response;
 	}
+	
+	private VoteResponse voteScoreOption(VoteRequest voteRequest, Usuario user) { 
+		List<VoteOptionRequest> votedOptions = voteRequest.getOptions();
+		
+		// Validations
+		// - Size of options must be greater than 0
+		// - Poll must exist
+		if (votedOptions != null && votedOptions.size() < 1) {
+			throw new BadRequestException("Size of voted options invalid");
+		}
+		Consulta poll = consultaRepository.findById(voteRequest.getPollId())
+				.orElseThrow(() -> new ResourceNotFoundException(String.format("Poll %d not found", voteRequest.getPollId())));
+
+		// Vote and build response
+		// Fetch all options and match with the voted ones. 
+		// The non-voted should ve voted with the minimum score (1) as well.
+		VoteResponse response = new VoteResponse();
+		List<VoteOptionResponse> responseOptions = new ArrayList<>();
+		for (VoteOptionRequest votedOption : votedOptions) {
+			
+			ConsultaOpcion pollOption = consultaOpcionRepository.findById(votedOption.getOptionId()).orElseThrow(
+					() -> new ResourceNotFoundException(String.format("Option %d not found", votedOption.getOptionId())));
+
+			// TODO check the option belongs to a poll which is added to an assembly the
+			// user belongs to.
+
+			// TODO check if the user already has voted this option (not the poll: bear in
+			// mind multiple choice allowed)
+
+			Voto v = new Voto();
+			v.setConsultaOpcion(pollOption);
+			v.setUsuario(user);
+			v.setMotivacion(votedOption.getMotivation());
+
+			Voto savedVote = votoRepository.save(v);
+			
+			VoteOptionResponse responseOption = new VoteOptionResponse();
+			responseOption.setOptionId(savedVote.getConsultaOpcion().getIdConsultaOpcion());
+			responseOption.setMotivation(savedVote.getMotivacion());
+			responseOption.setVoteId(savedVote.getIdVoto());
+			responseOption.setPreferenceValue(0); // no aplica
+			responseOptions.add(responseOption);
+			
+		}
+		
+		response.setPollId(poll.getIdConsulta());
+		response.setOptions(responseOptions);
+
+		return response;
+	}
+
 
 }
