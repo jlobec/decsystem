@@ -23,6 +23,7 @@ class PollOption extends React.Component {
 
   handleScoreChange = (e, value, pollOptionId) => {
     this.props.handleSelectOption(pollOptionId, value);
+    this.setState({ value });
   };
 
   async componentDidMount() {}

@@ -112,18 +112,23 @@ class PollSummary extends React.Component {
   };
 
   handleSelectScoreOption = (pollOptionId, value) => {
+    console.log("score option value");
+    console.log(value);
+
     const { selectedOptions } = this.state;
+    const newSelectedOptions = [...selectedOptions];
+    const pollOptionNewValue = { pollOptionId: pollOptionId, value: value };
+
     const currentIndex = selectedOptions.findIndex(
       option => option.pollOptionId === pollOptionId
     );
 
-    // const currentIndex = selectedOptions.indexOf(pollOptionId);
-    const newSelectedOptions = [...selectedOptions];
-
+    // If the element does not exist, create it
+    // Otherwise, update its value
     if (currentIndex === -1) {
-      newSelectedOptions.push({ pollOptionId: pollOptionId, value: value });
+      newSelectedOptions.push(pollOptionNewValue);
     } else {
-      newSelectedOptions.splice(currentIndex, 1);
+      newSelectedOptions[currentIndex] = pollOptionNewValue;
     }
 
     this.setState({
