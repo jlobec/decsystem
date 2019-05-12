@@ -112,9 +112,6 @@ class PollSummary extends React.Component {
   };
 
   handleSelectScoreOption = (pollOptionId, value) => {
-    console.log("score option value");
-    console.log(value);
-
     const { selectedOptions } = this.state;
     const newSelectedOptions = [...selectedOptions];
     const pollOptionNewValue = { pollOptionId: pollOptionId, value: value };
