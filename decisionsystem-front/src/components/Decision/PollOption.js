@@ -19,25 +19,26 @@ class PollOption extends React.Component {
 
   handleToggle = value => () => {
     this.props.handleSelectOption(value);
-    // const { checked } = this.state;
-    // const currentIndex = checked.indexOf(value);
-    // const newChecked = [...checked];
-    // if (currentIndex === -1) {
-    //   newChecked.push(value);
-    // } else {
-    //   newChecked.splice(currentIndex, 1);
-    // }
-    // this.setState({
-    //   checked: newChecked
-    // });
   };
 
   async componentDidMount() {}
 
   componentWillUnmount() {}
 
-  render() {
-    const { classes, pollOption, checked } = this.props;
+  renderBySystem(classes, pollSystem, pollOption, checked) {
+    const type = pollSystem.name;
+    if ("Single Option" === type) {
+      return this.renderChoiceSystem(classes, pollOption, checked);
+    }
+    if ("Multiple Option" === type) {
+      return this.renderChoiceSystem(classes, pollOption, checked);
+    }
+    if ("Score vote" === type) {
+      return this.renderScoreSystem(classes, pollOption, checked);
+    }
+  }
+
+  renderChoiceSystem(classes, pollOption, checked) {
     return (
       <React.Fragment>
         <ListItem
@@ -49,14 +50,31 @@ class PollOption extends React.Component {
           <Checkbox checked={checked} tabIndex={-1} disableRipple />
           <ListItemText primary={`${pollOption.name} `} />
           <ListItemText secondary={`${pollOption.description}`} />
-          {/* <ListItemSecondaryAction>
-            <IconButton aria-label="Comments">
-              <CommentIcon />
-            </IconButton>
-          </ListItemSecondaryAction> */}
         </ListItem>
       </React.Fragment>
     );
+  }
+
+  renderScoreSystem(classes, pollOption, checked) {
+    return (
+      <React.Fragment>
+        <ListItem
+          role={undefined}
+          dense
+          button
+          onClick={this.handleToggle(pollOption.pollOptionId)}
+        >
+          <Checkbox checked={checked} tabIndex={-1} disableRipple />
+          <ListItemText primary={`${pollOption.name} `} />
+          <ListItemText secondary={`${pollOption.description}`} />
+        </ListItem>
+      </React.Fragment>
+    );
+  }
+
+  render() {
+    const { classes, pollOption, pollSystem, checked } = this.props;
+    return this.renderBySystem(classes, pollSystem, pollOption, checked);
   }
 }
 

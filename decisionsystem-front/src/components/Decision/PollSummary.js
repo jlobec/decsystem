@@ -88,13 +88,14 @@ class PollSummary extends React.Component {
     }
   };
 
-  renderPollOptions = pollOptions => {
+  renderPollOptions = (pollSystem, pollOptions) => {
     return pollOptions.map(pollOption => {
       return (
         <PollOption
           key={pollOption.pollOptionId}
           id={pollOption.pollOptionId}
           pollOption={pollOption}
+          pollSystem={pollSystem}
           disabled={this.handleIsDisabled}
           checked={this.handleIsSelected(pollOption)}
           handleSelectOption={this.handleSelectOption}
@@ -105,7 +106,10 @@ class PollSummary extends React.Component {
 
   render() {
     const { classes, poll, onDetails } = this.props;
-    const pollOptionsComponent = this.renderPollOptions(poll.pollOptions);
+    const pollOptionsComponent = this.renderPollOptions(
+      poll.pollSystem,
+      poll.pollOptions
+    );
     const pollSystem = poll.pollSystem;
     return (
       <Card className={classes.card}>
