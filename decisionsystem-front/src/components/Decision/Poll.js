@@ -64,7 +64,7 @@ class Poll extends React.Component {
         });
       }
       const { data: results } = await PollActions.doGetPollResults(pollId);
-      console.log(results);
+      // console.log(results);
       if (results) {
         this.setState({
           results: results,

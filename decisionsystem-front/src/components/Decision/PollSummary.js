@@ -45,31 +45,98 @@ class PollSummary extends React.Component {
   handleIsSelected = pollOption => {
     const poll = this.props.poll;
     if (!poll.votedByUser) {
-      return this.state.selectedOptions.indexOf(pollOption.pollOptionId) !== -1;
+      const index = this.state.selectedOptions.findIndex(
+        option => option.pollOptionId === pollOption.pollOptionId
+      );
+      return index !== -1;
     } else {
       return pollOption.userVote.voted;
     }
   };
 
-  handleSelectOption = pollOptionId => {
+  handleScore = pollOption => {
     const poll = this.props.poll;
-    if (!poll.votedByUser) {
-      // TODO en funcion del tipo de consulta la seleccion
-      // podra ser multiple o no, o preferencial (con valor asignado)
-      const { selectedOptions } = this.state;
-      const currentIndex = selectedOptions.indexOf(pollOptionId);
-      const newSelectedOptions = [...selectedOptions];
-
-      if (currentIndex === -1) {
-        newSelectedOptions.push(pollOptionId);
-      } else {
-        newSelectedOptions.splice(currentIndex, 1);
-      }
-
-      this.setState({
-        selectedOptions: newSelectedOptions
-      });
+    if (poll.votedByUser) {
+      return pollOption.userVote.preferenceValue;
     }
+  };
+
+  handleSelectOption = (pollOptionId, value) => {
+    const poll = this.props.poll;
+    const pollSystemName = poll.pollSystem.name;
+    if (!poll.votedByUser) {
+      if (pollSystemName === "Single Option") {
+        this.handleSelectSingleOption(pollOptionId, value);
+      }
+      if (pollSystemName === "Multiple Option") {
+        this.handleSelectMultipleOption(pollOptionId, value);
+      }
+      if (pollSystemName === "Score vote") {
+        this.handleSelectScoreOption(pollOptionId, value);
+      }
+    }
+  };
+
+  handleSelectSingleOption = (pollOptionId, value) => {
+    const { selectedOptions } = this.state;
+    const currentIndex = selectedOptions.findIndex(
+      option => option.pollOptionId === pollOptionId
+    );
+    const newSelectedOptions = [...selectedOptions];
+
+    // If the item was not selected before, check it and deselect the others
+    if (currentIndex === -1) {
+      newSelectedOptions.splice(0, newSelectedOptions.length);
+      newSelectedOptions.push({ pollOptionId: pollOptionId, value: value });
+    } else {
+      newSelectedOptions.splice(currentIndex, 1);
+    }
+
+    this.setState({
+      selectedOptions: newSelectedOptions
+    });
+  };
+
+  handleSelectMultipleOption = (pollOptionId, value) => {
+    const { selectedOptions } = this.state;
+    const currentIndex = selectedOptions.findIndex(
+      option => option.pollOptionId === pollOptionId
+    );
+
+    // const currentIndex = selectedOptions.indexOf(pollOptionId);
+    const newSelectedOptions = [...selectedOptions];
+
+    if (currentIndex === -1) {
+      newSelectedOptions.push({ pollOptionId: pollOptionId, value: value });
+    } else {
+      newSelectedOptions.splice(currentIndex, 1);
+    }
+
+    this.setState({
+      selectedOptions: newSelectedOptions
+    });
+  };
+
+  handleSelectScoreOption = (pollOptionId, value) => {
+    const { selectedOptions } = this.state;
+    const newSelectedOptions = [...selectedOptions];
+    const pollOptionNewValue = { pollOptionId: pollOptionId, value: value };
+
+    const currentIndex = selectedOptions.findIndex(
+      option => option.pollOptionId === pollOptionId
+    );
+
+    // If the element does not exist, create it
+    // Otherwise, update its value
+    if (currentIndex === -1) {
+      newSelectedOptions.push(pollOptionNewValue);
+    } else {
+      newSelectedOptions[currentIndex] = pollOptionNewValue;
+    }
+
+    this.setState({
+      selectedOptions: newSelectedOptions
+    });
   };
 
   handleClickVote = () => {
@@ -88,15 +155,17 @@ class PollSummary extends React.Component {
     }
   };
 
-  renderPollOptions = pollOptions => {
+  renderPollOptions = (pollSystem, pollOptions) => {
     return pollOptions.map(pollOption => {
       return (
         <PollOption
           key={pollOption.pollOptionId}
           id={pollOption.pollOptionId}
           pollOption={pollOption}
+          pollSystem={pollSystem}
           disabled={this.handleIsDisabled}
           checked={this.handleIsSelected(pollOption)}
+          score={this.handleScore(pollOption)}
           handleSelectOption={this.handleSelectOption}
         />
       );
@@ -105,7 +174,10 @@ class PollSummary extends React.Component {
 
   render() {
     const { classes, poll, onDetails } = this.props;
-    const pollOptionsComponent = this.renderPollOptions(poll.pollOptions);
+    const pollOptionsComponent = this.renderPollOptions(
+      poll.pollSystem,
+      poll.pollOptions
+    );
     const pollSystem = poll.pollSystem;
     return (
       <Card className={classes.card}>
@@ -144,7 +216,7 @@ class PollSummary extends React.Component {
               <Button
                 size="small"
                 color="secondary"
-                onClick={this.handleClickVote}
+                // onClick={this.handleClickVote}
               >
                 Voted
               </Button>

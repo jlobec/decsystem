@@ -1,43 +1,47 @@
 import React from "react";
-import { withStyles } from "@material-ui/core";
+import { withStyles, Typography } from "@material-ui/core";
 import ListItem from "@material-ui/core/ListItem";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
 import Checkbox from "@material-ui/core/Checkbox";
-import IconButton from "@material-ui/core/IconButton";
-import CommentIcon from "@material-ui/icons/Comment";
-import axios from "axios";
-
-import { config } from "../../config";
-
-const initialState = {
-  checked: []
-};
+import Slider, { defaultValueReducer } from "@material-ui/lab/Slider";
+import Grid from "@material-ui/core/Grid";
+import Tooltip from "@material-ui/core/Tooltip";
+import Badge from "@material-ui/core/Badge";
+import Chip from "@material-ui/core/Chip";
 
 class PollOption extends React.Component {
-  state = { ...initialState };
+  state = {
+    checked: [],
+    value: this.props.score || 1
+  };
 
-  handleToggle = value => () => {
-    this.props.handleSelectOption(value);
-    // const { checked } = this.state;
-    // const currentIndex = checked.indexOf(value);
-    // const newChecked = [...checked];
-    // if (currentIndex === -1) {
-    //   newChecked.push(value);
-    // } else {
-    //   newChecked.splice(currentIndex, 1);
-    // }
-    // this.setState({
-    //   checked: newChecked
-    // });
+  handleToggle = pollOptionId => () => {
+    this.props.handleSelectOption(pollOptionId);
+  };
+
+  handleScoreChange = (e, value, pollOptionId) => {
+    this.props.handleSelectOption(pollOptionId, value);
+    this.setState({ value });
   };
 
   async componentDidMount() {}
 
   componentWillUnmount() {}
 
-  render() {
-    const { classes, pollOption, checked } = this.props;
+  renderBySystem(classes, pollSystem, pollOption, checked, score) {
+    const type = pollSystem.name;
+    if ("Single Option" === type) {
+      return this.renderChoiceSystem(classes, pollOption, checked);
+    }
+    if ("Multiple Option" === type) {
+      return this.renderChoiceSystem(classes, pollOption, checked);
+    }
+    if ("Score vote" === type) {
+      return this.renderScoreSystem(classes, pollOption, checked, score);
+    }
+  }
+
+  renderChoiceSystem(classes, pollOption, checked) {
     return (
       <React.Fragment>
         <ListItem
@@ -49,17 +53,59 @@ class PollOption extends React.Component {
           <Checkbox checked={checked} tabIndex={-1} disableRipple />
           <ListItemText primary={`${pollOption.name} `} />
           <ListItemText secondary={`${pollOption.description}`} />
-          {/* <ListItemSecondaryAction>
-            <IconButton aria-label="Comments">
-              <CommentIcon />
-            </IconButton>
-          </ListItemSecondaryAction> */}
         </ListItem>
       </React.Fragment>
     );
   }
+
+  renderScoreSystem(classes, pollOption, checked, score) {
+    return (
+      <React.Fragment>
+        <ListItem>
+          <Grid container direction="column" spacing={8}>
+            <Grid item xs>
+              <ListItemText primary={`${pollOption.name} `} />
+              <ListItemText secondary={`${pollOption.description}`} />
+            </Grid>
+            <Grid item xs>
+              <Slider
+                classes={{ container: classes.slider }}
+                value={this.state.value}
+                min={1}
+                max={5}
+                step={1}
+                disabled={score}
+                onChange={(e, value) => {
+                  this.handleScoreChange(e, value, pollOption.pollOptionId);
+                }}
+                thumb={
+                  <Chip
+                    className={classes.chip}
+                    label={`${this.state.value}`}
+                    color="secondary"
+                  />
+                }
+              />
+            </Grid>
+          </Grid>
+        </ListItem>
+      </React.Fragment>
+    );
+  }
+
+  render() {
+    const { classes, pollOption, pollSystem, checked, score } = this.props;
+    return this.renderBySystem(classes, pollSystem, pollOption, checked, score);
+  }
 }
 
-const styles = theme => ({});
+const styles = theme => ({
+  slider: {
+    padding: "22px 0px"
+  },
+  chip: {
+    padding: "12px"
+  }
+});
 
 export default withStyles(styles)(PollOption);

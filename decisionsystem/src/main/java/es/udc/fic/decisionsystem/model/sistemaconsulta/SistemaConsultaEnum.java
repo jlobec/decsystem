@@ -3,7 +3,8 @@ package es.udc.fic.decisionsystem.model.sistemaconsulta;
 public enum SistemaConsultaEnum {
 
 	SINGLE_OPTION("Single Option"),
-	MULTIPLE_OPTION("Multiple Option");
+	MULTIPLE_OPTION("Multiple Option"),
+	SCORE_VOTE("Score vote");
 
 	private String name;
 
