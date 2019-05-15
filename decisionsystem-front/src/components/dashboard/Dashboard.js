@@ -22,6 +22,7 @@ import DashboardIcon from "@material-ui/icons/Dashboard";
 import PeopleIcon from "@material-ui/icons/People";
 import BarChartIcon from "@material-ui/icons/BarChart";
 import SettingsIcon from "@material-ui/icons/Settings";
+import LogoutIcon from "@material-ui/icons/ExitToApp";
 import SimpleLineChart from "./SimpleLineChart";
 import SimpleTable from "./SimpleTable";
 import Avatar from "@material-ui/core/Avatar";
@@ -33,8 +34,231 @@ import Settings from "../settings/Settings";
 import Assemblies from "../assembly/Assemblies";
 import Notifications from "../notifications/Notifications";
 import Decisions from "../Decision/Decisions";
+import UserActions from "../../actions/user/UserActions";
+import CommonUtils from "../../actions/util/CommonUtils";
 
 const drawerWidth = 240;
+
+const sectionPaths = {
+  decisions: {
+    title: "Decisions",
+    path: "/dashboard/decisions"
+  },
+  assemblies: {
+    title: "Assemblies",
+    path: "/dashboard/assemblies"
+  },
+  settings: {
+    title: "Settings",
+    path: "/dashboard/settings"
+  },
+  notifications: {
+    title: "Notifications",
+    path: "/dashboard/notifications"
+  }
+};
+
+class Dashboard extends React.Component {
+  state = {
+    open: false,
+    title: "DecisionApp",
+    user: {
+      name: "",
+      lastName: ""
+    }
+  };
+
+  handleDrawerOpen = () => {
+    this.setState({ open: true });
+  };
+
+  handleDrawerClose = () => {
+    this.setState({ open: false });
+  };
+
+  handleSection = sectionPath => {
+    const { match, history } = this.props;
+    history.push(`${match.path}/${sectionPath}`);
+    this.setState({
+      open: false,
+      title: `${sectionPaths[sectionPath].title}`
+    });
+  };
+
+  handleLogout = () => {
+    UserActions.doLogout();
+    this.props.history.push("/signin");
+  };
+
+  async componentDidMount() {
+    const { data: loggedUser } = await UserActions.doGetLoggedUser();
+    if (loggedUser) {
+      this.setState({ user: loggedUser });
+    }
+  }
+
+  render() {
+    const { classes } = this.props;
+    const { user, title } = this.state;
+    return (
+      <div className={classes.root}>
+        <CssBaseline />
+        <AppBar
+          position="absolute"
+          className={classNames(
+            classes.appBar,
+            this.state.open && classes.appBarShift
+          )}
+        >
+          <Toolbar
+            disableGutters={!this.state.open}
+            className={classes.toolbar}
+          >
+            <IconButton
+              color="inherit"
+              aria-label="Open drawer"
+              onClick={this.handleDrawerOpen}
+              className={classNames(
+                classes.menuButton,
+                this.state.open && classes.menuButtonHidden
+              )}
+            >
+              {/* <MenuIcon /> */}
+              <Avatar className={classes.avatar}>
+                {`${user.name.charAt(0).toUpperCase()}${user.lastName
+                  .charAt(0)
+                  .toUpperCase()}`}
+              </Avatar>
+            </IconButton>
+            <Typography
+              component="h1"
+              variant="h6"
+              color="inherit"
+              noWrap
+              className={classes.title}
+            >
+              {title}
+            </Typography>
+            {/* <IconButton color="inherit">
+              <Badge badgeContent={4} color="secondary">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton> */}
+            {/* AVATAR */}
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          classes={{
+            paper: classNames(
+              classes.drawerPaper,
+              !this.state.open && classes.drawerPaperClose
+            )
+          }}
+          open={this.state.open}
+        >
+          <Grid
+            container
+            direction="row"
+            justify="space-between"
+            alignItems="center"
+            className={classes.profileGrid}
+          >
+            <Grid item>
+              <Avatar className={classes.bigAvatar}>
+                {`${user.name.charAt(0).toUpperCase()}${user.lastName
+                  .charAt(0)
+                  .toUpperCase()}`}
+              </Avatar>
+            </Grid>
+            <Grid item>
+              <IconButton onClick={this.handleDrawerClose}>
+                <ChevronLeftIcon />
+              </IconButton>
+            </Grid>
+          </Grid>
+          <Typography className={classes.profileName} variant="h6">
+            {`${user.name} ${user.lastName}`}
+          </Typography>
+          <Typography
+            className={classes.profileNickname}
+            variant="subtitle1"
+            gutterBottom
+          >
+            {`@${user.nickname}`}
+          </Typography>
+
+          <Divider />
+          <List>
+            <ListItem button onClick={() => this.handleSection("decisions")}>
+              <ListItemIcon>
+                <DashboardIcon />
+              </ListItemIcon>
+              <ListItemText primary="My Decisions" />
+            </ListItem>
+            <ListItem button onClick={() => this.handleSection("assemblies")}>
+              <ListItemIcon>
+                <PeopleIcon />
+              </ListItemIcon>
+              <ListItemText primary="Assemblies" />
+            </ListItem>
+            <ListItem button onClick={() => this.handleSection("settings")}>
+              <ListItemIcon>
+                <SettingsIcon />
+              </ListItemIcon>
+              <ListItemText primary="Settings" />
+            </ListItem>
+            <ListItem
+              button
+              onClick={() => this.handleSection("notifications")}
+            >
+              <ListItemIcon>
+                <Badge badgeContent={4} color="secondary">
+                  <NotificationsIcon />
+                </Badge>
+              </ListItemIcon>
+              <ListItemText primary="Notifications" />
+            </ListItem>
+          </List>
+          <Divider />
+          <List>
+            <ListItem button onClick={this.handleLogout}>
+              <ListItemIcon>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText primary="Logout" />
+            </ListItem>
+          </List>
+        </Drawer>
+        <main className={classes.content}>
+          <div className={classes.appBarSpacer} />
+          <Route
+            path={`${sectionPaths.decisions.path}`}
+            component={Decisions}
+          />
+          <Route
+            path={`${sectionPaths.assemblies.path}`}
+            component={Assemblies}
+          />
+          <Route path={`${sectionPaths.settings.path}`} component={Settings} />
+          <Route
+            path={`${sectionPaths.notifications.path}`}
+            component={Notifications}
+          />
+
+          {/* <Typography component="div" className={classes.chartContainer}>
+            <SimpleLineChart />
+          </Typography> */}
+          {/* <Typography variant="h4" gutterBottom component="h2">
+            Products
+          </Typography>
+          <div className={classes.tableContainer}>
+            <SimpleTable />
+          </div> */}
+        </main>
+      </div>
+    );
+  }
+}
 
 const styles = theme => ({
   root: {
@@ -49,6 +273,17 @@ const styles = theme => ({
     justifyContent: "flex-end",
     padding: "0 8px",
     ...theme.mixins.toolbar
+  },
+  profileGrid: {
+    paddingTop: theme.spacing.unit,
+    paddingBottom: theme.spacing.unit
+  },
+  profileName: {
+    paddingLeft: theme.spacing.unit * 2,
+    paddingRight: theme.spacing.unit
+  },
+  profileNickname: {
+    paddingLeft: theme.spacing.unit * 2
   },
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
@@ -114,164 +349,14 @@ const styles = theme => ({
   },
   avatar: {
     marginLeft: theme.spacing.unit * 2
+  },
+  bigAvatar: {
+    marginLeft: theme.spacing.unit * 2,
+    margin: 10,
+    width: 60,
+    height: 60
   }
 });
-
-const sectionPaths = {
-  decisions: "/dashboard/decisions",
-  assemblies: "/dashboard/assemblies",
-  settings: "/dashboard/settings",
-  notifications: "/dashboard/notifications"
-};
-
-class Dashboard extends React.Component {
-  state = {
-    open: true
-  };
-
-  handleDrawerOpen = () => {
-    this.setState({ open: true });
-  };
-
-  handleDrawerClose = () => {
-    this.setState({ open: false });
-  };
-
-  handleSection = sectionPath => {
-    const { match, history } = this.props;
-    history.push(`${match.path}/${sectionPath}`);
-  };
-
-  componentDidMount = () => {
-    // TODO
-  };
-
-  render() {
-    const { classes } = this.props;
-
-    return (
-      <div className={classes.root}>
-        <CssBaseline />
-        <AppBar
-          position="absolute"
-          className={classNames(
-            classes.appBar,
-            this.state.open && classes.appBarShift
-          )}
-        >
-          <Toolbar
-            disableGutters={!this.state.open}
-            className={classes.toolbar}
-          >
-            <IconButton
-              color="inherit"
-              aria-label="Open drawer"
-              onClick={this.handleDrawerOpen}
-              className={classNames(
-                classes.menuButton,
-                this.state.open && classes.menuButtonHidden
-              )}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography
-              component="h1"
-              variant="h6"
-              color="inherit"
-              noWrap
-              className={classes.title}
-            >
-              DecisionApp
-            </Typography>
-            {/* <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton> */}
-            {/* AVATAR */}
-            <div className={classes.avatarContainer}>
-              <Grid container>
-                <Avatar className={classes.avatar}>H</Avatar>
-              </Grid>
-            </div>
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          variant="permanent"
-          classes={{
-            paper: classNames(
-              classes.drawerPaper,
-              !this.state.open && classes.drawerPaperClose
-            )
-          }}
-          open={this.state.open}
-        >
-          <div className={classes.toolbarIcon}>
-            <IconButton onClick={this.handleDrawerClose}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </div>
-
-          <Divider />
-          <List>
-            <div>
-              <ListItem button onClick={() => this.handleSection("decisions")}>
-                <ListItemIcon>
-                  <DashboardIcon />
-                </ListItemIcon>
-                <ListItemText primary="My Decisions" />
-              </ListItem>
-              <ListItem button onClick={() => this.handleSection("assemblies")}>
-                <ListItemIcon>
-                  <PeopleIcon />
-                </ListItemIcon>
-                <ListItemText primary="Assemblies" />
-              </ListItem>
-              <ListItem button onClick={() => this.handleSection("settings")}>
-                <ListItemIcon>
-                  <SettingsIcon />
-                </ListItemIcon>
-                <ListItemText primary="Settings" />
-              </ListItem>
-              <ListItem
-                button
-                onClick={() => this.handleSection("notifications")}
-              >
-                <ListItemIcon>
-                  <Badge badgeContent={4} color="secondary">
-                    <NotificationsIcon />
-                  </Badge>
-                </ListItemIcon>
-                <ListItemText primary="Notifications" />
-              </ListItem>
-            </div>
-          </List>
-        </Drawer>
-        <main className={classes.content}>
-          <div className={classes.appBarSpacer} />
-
-          <Route path={`${sectionPaths.decisions}`} component={Decisions} />
-          <Route path={`${sectionPaths.assemblies}`} component={Assemblies} />
-          <Route path={`${sectionPaths.settings}`} component={Settings} />
-          <Route
-            path={`${sectionPaths.notifications}`}
-            component={Notifications}
-          />
-
-          {/* <Typography component="div" className={classes.chartContainer}>
-            <SimpleLineChart />
-          </Typography> */}
-          {/* <Typography variant="h4" gutterBottom component="h2">
-            Products
-          </Typography>
-          <div className={classes.tableContainer}>
-            <SimpleTable />
-          </div> */}
-        </main>
-      </div>
-    );
-  }
-}
 
 Dashboard.propTypes = {
   classes: PropTypes.object.isRequired

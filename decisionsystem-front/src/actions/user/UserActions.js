@@ -12,6 +12,10 @@ class UserActions {
     const url = `${config.baseUrl}api/user/me`;
     return axios.get(url, AuthUtil.getHeaders());
   };
+
+  static doLogout = () => {
+    AuthUtil.logout();
+  };
 }
 
 export default UserActions;

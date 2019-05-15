@@ -11,6 +11,10 @@ class Auth {
     const token = sessionStorage.getItem("jwtToken");
     return token;
   };
+
+  static logout = () => {
+    sessionStorage.removeItem("jwtToken");
+  };
 }
 
 export default Auth;

@@ -59,6 +59,7 @@ class PollOption extends React.Component {
   }
 
   renderScoreSystem(classes, pollOption, checked, score) {
+    const disableSlider = score > 0;
     return (
       <React.Fragment>
         <ListItem>
@@ -74,7 +75,7 @@ class PollOption extends React.Component {
                 min={1}
                 max={5}
                 step={1}
-                disabled={score}
+                disabled={disableSlider}
                 onChange={(e, value) => {
                   this.handleScoreChange(e, value, pollOption.pollOptionId);
                 }}
