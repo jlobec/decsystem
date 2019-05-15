@@ -10,6 +10,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Chip from "@material-ui/core/Chip";
 import Button from "@material-ui/core/Button";
 import Divider from "@material-ui/core/Divider";
+import SimpleBarChart from "./SimpleBarChart";
 
 const initialState = {};
 
@@ -26,27 +27,26 @@ class Results extends React.Component {
     const { classes, poll, results } = this.props;
     return (
       <React.Fragment>
-        {/* https://material-ui.com/demos/expansion-panels/ */}
-        {/* Seccion Secondary heading and Columns */}
-        {/* This way the table could be collapsed and a Export button could be added 
-          at the botom */}
+        <ExpansionPanel defaultExpanded>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+            <div className={classes.column}>
+              <Typography className={classes.heading}>Chart</Typography>
+            </div>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails className={classes.details}>
+            <SimpleBarChart />
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
 
         <ExpansionPanel defaultExpanded>
           <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
             <div className={classes.column}>
-              <Typography className={classes.heading}>Table</Typography>
-            </div>
-            {/* <div className={classes.column}>
-              <Typography className={classes.secondaryHeading}>
-                Option chose by user
+              <Typography className={classes.heading}>
+                Detailed Results
               </Typography>
-            </div> */}
+            </div>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className={classes.details}>
-            {/* TODO align properly */}
-            {/* <Typography className={classes.secondaryHeading}>
-              {`Poll ${poll.title} `}
-            </Typography> */}
             <TableResults results={results} />
           </ExpansionPanelDetails>
           <Divider />
