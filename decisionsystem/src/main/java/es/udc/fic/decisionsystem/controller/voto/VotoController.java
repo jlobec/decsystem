@@ -2,7 +2,10 @@ package es.udc.fic.decisionsystem.controller.voto;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -198,27 +201,30 @@ public class VotoController {
 		}
 		Consulta poll = consultaRepository.findById(voteRequest.getPollId())
 				.orElseThrow(() -> new ResourceNotFoundException(String.format("Poll %d not found", voteRequest.getPollId())));
-
+		List<ConsultaOpcion> pollOptions = consultaOpcionRepository.findByConsulta(poll);
+		
+		Map<Long, VoteOptionRequest> votedOptionIds = votedOptions.stream().collect(Collectors.toMap(VoteOptionRequest::getOptionId, item -> item));
+		
 		// Vote and build response
 		// Fetch all options and match with the voted ones. 
 		// The non-voted should ve voted with the minimum score (1) as well.
 		VoteResponse response = new VoteResponse();
 		List<VoteOptionResponse> responseOptions = new ArrayList<>();
-		for (VoteOptionRequest votedOption : votedOptions) {
+		for (ConsultaOpcion  pollOption : pollOptions) {
+			// If match, vote this option with the score setted
+			// Otherwise set default value (1)
+			Integer score = 1;
+			String motivation = "";
+			if (votedOptionIds.containsKey(pollOption.getIdConsultaOpcion())) {
+				score = votedOptionIds.get(pollOption.getIdConsultaOpcion()).getPreferenceValue();
+				motivation = votedOptionIds.get(pollOption.getIdConsultaOpcion()).getMotivation();
+			} 
 			
-			ConsultaOpcion pollOption = consultaOpcionRepository.findById(votedOption.getOptionId()).orElseThrow(
-					() -> new ResourceNotFoundException(String.format("Option %d not found", votedOption.getOptionId())));
-
-			// TODO check the option belongs to a poll which is added to an assembly the
-			// user belongs to.
-
-			// TODO check if the user already has voted this option (not the poll: bear in
-			// mind multiple choice allowed)
-
 			Voto v = new Voto();
 			v.setConsultaOpcion(pollOption);
 			v.setUsuario(user);
-			v.setMotivacion(votedOption.getMotivation());
+			v.setMotivacion(motivation);
+			v.setPuntuacion(score);
 
 			Voto savedVote = votoRepository.save(v);
 			
@@ -226,10 +232,12 @@ public class VotoController {
 			responseOption.setOptionId(savedVote.getConsultaOpcion().getIdConsultaOpcion());
 			responseOption.setMotivation(savedVote.getMotivacion());
 			responseOption.setVoteId(savedVote.getIdVoto());
-			responseOption.setPreferenceValue(0); // no aplica
+			responseOption.setPreferenceValue(score);
 			responseOptions.add(responseOption);
-			
 		}
+		
+		
+		
 		
 		response.setPollId(poll.getIdConsulta());
 		response.setOptions(responseOptions);

@@ -54,6 +54,13 @@ class PollSummary extends React.Component {
     }
   };
 
+  handleScore = pollOption => {
+    const poll = this.props.poll;
+    if (poll.votedByUser) {
+      return pollOption.userVote.preferenceValue;
+    }
+  };
+
   handleSelectOption = (pollOptionId, value) => {
     const poll = this.props.poll;
     const pollSystemName = poll.pollSystem.name;
@@ -158,6 +165,7 @@ class PollSummary extends React.Component {
           pollSystem={pollSystem}
           disabled={this.handleIsDisabled}
           checked={this.handleIsSelected(pollOption)}
+          score={this.handleScore(pollOption)}
           handleSelectOption={this.handleSelectOption}
         />
       );
@@ -208,7 +216,7 @@ class PollSummary extends React.Component {
               <Button
                 size="small"
                 color="secondary"
-                onClick={this.handleClickVote}
+                // onClick={this.handleClickVote}
               >
                 Voted
               </Button>

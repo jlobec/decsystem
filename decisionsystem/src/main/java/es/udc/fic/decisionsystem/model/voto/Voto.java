@@ -42,7 +42,7 @@ public class Voto extends AuditModel {
 	@Column(name = "motivacion")
 	@NotNull
 	private String motivacion;
-	
+
 	@Column(name = "puntuacion")
 	private Integer puntuacion;
 
@@ -88,6 +88,14 @@ public class Voto extends AuditModel {
 
 	public void setMotivacion(String motivacion) {
 		this.motivacion = motivacion;
+	}
+
+	public Integer getPuntuacion() {
+		return puntuacion;
+	}
+
+	public void setPuntuacion(Integer puntuacion) {
+		this.puntuacion = puntuacion;
 	}
 
 }

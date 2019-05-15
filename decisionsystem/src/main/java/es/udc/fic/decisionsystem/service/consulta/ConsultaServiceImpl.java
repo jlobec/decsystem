@@ -85,7 +85,7 @@ public class ConsultaServiceImpl implements ConsultaService {
 			for (Voto vote : optionVotes) {
 				if (opt.getIdConsultaOpcion().equals(vote.getConsultaOpcion().getIdConsultaOpcion())) {
 					votedOption.setVoted(true);
-					votedOption.setPreferenceValue(0); // field non existent yet
+					votedOption.setPreferenceValue(vote.getPuntuacion()); 
 					votedOption.setMotivation(vote.getMotivacion());
 					break;
 				}
@@ -104,15 +104,13 @@ public class ConsultaServiceImpl implements ConsultaService {
 		switch (pollSystemEnum) {
 		case SINGLE_OPTION:
 		case MULTIPLE_OPTION:
+		case SCORE_VOTE:
 			for (PollOptionResponse pollOption : pollOptions) {
 				if (pollOption.getUserVote().isVoted()) {
 					votedByUser = true;
 					break;
 				}
 			}
-			break;
-		case SCORE_VOTE:
-			votedByUser = false;
 			break;
 		default:
 			throw new BadRequestException("Poll system not found");

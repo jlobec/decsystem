@@ -9,13 +9,11 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Badge from "@material-ui/core/Badge";
 import Chip from "@material-ui/core/Chip";
 
-const initialState = {
-  checked: [],
-  value: 1
-};
-
 class PollOption extends React.Component {
-  state = { ...initialState };
+  state = {
+    checked: [],
+    value: this.props.score || 1
+  };
 
   handleToggle = pollOptionId => () => {
     this.props.handleSelectOption(pollOptionId);
@@ -30,7 +28,7 @@ class PollOption extends React.Component {
 
   componentWillUnmount() {}
 
-  renderBySystem(classes, pollSystem, pollOption, checked) {
+  renderBySystem(classes, pollSystem, pollOption, checked, score) {
     const type = pollSystem.name;
     if ("Single Option" === type) {
       return this.renderChoiceSystem(classes, pollOption, checked);
@@ -39,7 +37,7 @@ class PollOption extends React.Component {
       return this.renderChoiceSystem(classes, pollOption, checked);
     }
     if ("Score vote" === type) {
-      return this.renderScoreSystem(classes, pollOption, checked);
+      return this.renderScoreSystem(classes, pollOption, checked, score);
     }
   }
 
@@ -60,7 +58,7 @@ class PollOption extends React.Component {
     );
   }
 
-  renderScoreSystem(classes, pollOption, checked) {
+  renderScoreSystem(classes, pollOption, checked, score) {
     return (
       <React.Fragment>
         <ListItem>
@@ -76,6 +74,7 @@ class PollOption extends React.Component {
                 min={1}
                 max={5}
                 step={1}
+                disabled={score}
                 onChange={(e, value) => {
                   this.handleScoreChange(e, value, pollOption.pollOptionId);
                 }}
@@ -95,8 +94,8 @@ class PollOption extends React.Component {
   }
 
   render() {
-    const { classes, pollOption, pollSystem, checked } = this.props;
-    return this.renderBySystem(classes, pollSystem, pollOption, checked);
+    const { classes, pollOption, pollSystem, checked, score } = this.props;
+    return this.renderBySystem(classes, pollSystem, pollOption, checked, score);
   }
 }
 
