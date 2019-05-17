@@ -120,6 +120,21 @@ class Decisions extends React.Component {
     this.addPoll.handleClickOpen();
   };
 
+  handleFilterPolls = async (pollStatusId, pollTypeId) => {
+    this.setState({ loading: true });
+    const { data: filteredPolls } = await PollActions.doGetOpenPolls(
+      pollStatusId,
+      pollTypeId
+    );
+    if (filteredPolls) {
+      this.setState({
+        loading: false,
+        polls: filteredPolls.content,
+        filterDrawerOpen: false
+      });
+    }
+  };
+
   async componentDidMount() {
     this.setState({ loading: true });
     const { data: openPolls } = await PollActions.doGetOpenPolls();
@@ -183,6 +198,7 @@ class Decisions extends React.Component {
               <PollFilters
                 open={this.state.filterDrawerOpen}
                 toggleFilterDrawer={this.toggleFilterDrawer}
+                handleFilterPolls={this.handleFilterPolls}
               />
               <List>{this.getOpenPolls(classes, routeProps)}</List>
               <AddPoll

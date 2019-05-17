@@ -8,8 +8,15 @@ class PollActions {
     return axios.get(url, AuthUtil.getHeaders());
   };
 
-  static doGetOpenPolls = async () => {
-    const url = config.baseUrl + "api/poll/open";
+  static doGetOpenPolls = async (pollStatusId, pollTypeId) => {
+    let url = config.baseUrl + "api/poll/open";
+    if (pollStatusId && pollTypeId) {
+      url += `?pollStatusId=${pollStatusId}&pollTypeId=${pollTypeId}`;
+    } else if (pollStatusId) {
+      url += `?pollStatusId=${pollStatusId}`;
+    } else if (pollTypeId) {
+      url += `?pollTypeId=${pollTypeId}`;
+    }
     return axios.get(url, AuthUtil.getHeaders());
   };
 

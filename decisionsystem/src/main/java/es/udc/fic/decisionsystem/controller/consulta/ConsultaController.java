@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
@@ -133,11 +134,13 @@ public class ConsultaController {
 	}
 
 	@GetMapping("/api/poll/open")
-	public Page<PollSummaryResponse> getOpenPolls(Pageable pageable, Principal principal) {
+	public Page<PollSummaryResponse> getOpenPolls(Pageable pageable, Principal principal, 
+			@RequestParam(value = "pollTypeId", required = false) Integer pollTypeId,
+			@RequestParam(value = "pollStatusId", required = false) Integer pollStatusId) {
 
 		Optional<Usuario> loggedUser = usuarioRepository.findByNickname(principal.getName());
 		if (loggedUser.isPresent()) {
-			return consultaService.getUserPolls(pageable, loggedUser.get());
+			return consultaService.getUserPolls(pageable, loggedUser.get(), pollTypeId, pollStatusId);
 		}
 		// Actually unlikely
 		throw new ResourceNotFoundException("No logged user");

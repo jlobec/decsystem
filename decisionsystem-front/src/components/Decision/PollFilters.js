@@ -40,8 +40,6 @@ class PollFilters extends React.Component {
     if (pollTypes) {
       const { data: pollStatuses } = await PollActions.doGetAllPollStatus();
       if (pollStatuses) {
-        console.log(pollTypes);
-        console.log(pollStatuses);
         this.setState({
           loading: false,
           pollTypeOptions: pollTypes.content,
@@ -55,11 +53,16 @@ class PollFilters extends React.Component {
     this.setState({ ...initialState });
   }
 
+  handleClickFilter = () => {
+    const { pollStatusId, pollTypeId } = this.state;
+    this.props.handleFilterPolls(pollStatusId, pollTypeId);
+  };
+
   render() {
     const { classes, open } = this.props;
     const pollStatusOptions = this.state.pollStatusOptions.map(pollStatus => {
       return (
-        <option key={pollStatus.pollStatusId} value={pollStatus.pollStatusId}>
+        <option key={pollStatus.statusId} value={pollStatus.statusId}>
           {pollStatus.name}
         </option>
       );
@@ -132,6 +135,7 @@ class PollFilters extends React.Component {
               color="primary"
               fullWidth
               className={classes.button}
+              onClick={this.handleClickFilter}
             >
               Apply Filters
             </Button>
