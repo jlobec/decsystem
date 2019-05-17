@@ -12,9 +12,13 @@ import PollActions from "../../actions/poll/PollActions";
 import UserActions from "../../actions/user/UserActions";
 import { Route } from "react-router-dom";
 import Tooltip from "@material-ui/core/Tooltip";
+import IconButton from "@material-ui/core/IconButton";
+import FilterListIcon from "@material-ui/icons/FilterList";
+import PollFilters from "./PollFilters";
 
 const initialState = {
   loading: false,
+  filterDrawerOpen: false,
   polls: [],
   user: {}
 };
@@ -27,6 +31,12 @@ class Decisions extends React.Component {
     this.addPoll = React.createRef();
     this.snack = React.createRef();
   }
+
+  toggleFilterDrawer = open => () => {
+    this.setState({
+      filterDrawerOpen: open
+    });
+  };
 
   savePoll = async poll => {
     console.log(poll);
@@ -157,6 +167,16 @@ class Decisions extends React.Component {
           path="/dashboard/decisions/"
           render={routeProps => (
             <React.Fragment>
+              <IconButton
+                color="inherit"
+                onClick={this.toggleFilterDrawer(true)}
+              >
+                <FilterListIcon />
+              </IconButton>
+              <PollFilters
+                open={this.state.filterDrawerOpen}
+                toggleFilterDrawer={this.toggleFilterDrawer}
+              />
               <List>{this.getOpenPolls(classes, routeProps)}</List>
               <AddPoll
                 innerRef={ref => (this.addPoll = ref)}
