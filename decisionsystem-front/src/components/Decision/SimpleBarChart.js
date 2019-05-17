@@ -21,21 +21,40 @@ const data = [
   { name: "Page G", uv: 3490, pv: 4300 }
 ];
 
-function SimpleBarChart() {
-  return (
-    // 99% per https://github.com/recharts/recharts/issues/172
-    <ResponsiveContainer width="99%" height={320}>
-      <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="pv" fill="#8884d8" />
-        {/* <Bar dataKey="uv" fill="#82ca9d" /> */}
-      </BarChart>
-    </ResponsiveContainer>
-  );
+class SimpleBarChart extends React.Component {
+  buildData = results => {
+    return [...results].map(result => {
+      return {
+        name: result.option.name,
+        votes: result.items.length
+      };
+    });
+  };
+
+  render() {
+    const colors = ["#0099ff", "#ff6666", "#009900", "#ff9999"];
+    const data = this.buildData(this.props.results);
+    return (
+      <ResponsiveContainer width="99%" height={320}>
+        <BarChart
+          data={data}
+          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="votes" fill="#8884d8">
+            {data.map((entry, index) => {
+              const color = colors[index % colors.length];
+              return <Cell key={index} fill={color} />;
+            })}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  }
 }
 
 export default SimpleBarChart;
