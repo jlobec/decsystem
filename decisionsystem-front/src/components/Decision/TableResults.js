@@ -17,33 +17,94 @@ class TableResults extends React.Component {
     this.setState({ ...initialState });
   }
 
-  render() {
-    const { classes, results } = this.props;
+  buildHead = poll => {
+    if (
+      "Single Option" === poll.pollSystem.name ||
+      "Multiple Option" === poll.pollSystem.name
+    ) {
+      return this.buildHeadForChoiceSystem();
+    }
+    if ("Score vote" === poll.pollSystem.name) {
+      return this.buildHeadForScoreSystem();
+    }
+  };
+
+  buildResultRows = (poll, results) => {
+    if (
+      "Single Option" === poll.pollSystem.name ||
+      "Multiple Option" === poll.pollSystem.name
+    ) {
+      return this.buildResultRowsForChoiceSystem(results);
+    }
+    if ("Score vote" === poll.pollSystem.name) {
+      return this.buildResultRowsForScoreSystem(results);
+    }
+  };
+
+  buildHeadForChoiceSystem = () => {
+    return (
+      <TableRow>
+        <TableCell>User</TableCell>
+        <TableCell>Option voted</TableCell>
+      </TableRow>
+    );
+  };
+
+  buildHeadForScoreSystem = () => {
+    return (
+      <TableRow>
+        <TableCell>User</TableCell>
+        <TableCell>Option</TableCell>
+        <TableCell>Score</TableCell>
+      </TableRow>
+    );
+  };
+
+  buildResultRowsForChoiceSystem = results => {
     const resultRows = results.map((result, index) => {
       const optionRow = <TableCell>{`${result.option.name}`}</TableCell>;
       const rows = result.items.map(item => {
         return (
           <TableRow key={`${index}${new Date()}`}>
-            {optionRow}
             <TableCell component="th" scope="row">{`${item.user.name} ${
               item.user.lastName
             }`}</TableCell>
-            <TableCell>{`${item.motivation}`}</TableCell>
+            {optionRow}
           </TableRow>
         );
       });
       return rows;
     });
+    return resultRows;
+  };
+
+  buildResultRowsForScoreSystem = results => {
+    const resultRows = results.map((result, index) => {
+      const optionRow = <TableCell>{`${result.option.name}`}</TableCell>;
+      const rows = result.items.map(item => {
+        return (
+          <TableRow key={`${index}${new Date()}`}>
+            <TableCell component="th" scope="row">{`${item.user.name} ${
+              item.user.lastName
+            }`}</TableCell>
+            {optionRow}
+            <TableCell>{`${item.score}`}</TableCell>
+          </TableRow>
+        );
+      });
+      return rows;
+    });
+    return resultRows;
+  };
+
+  render() {
+    const { classes, poll, results } = this.props;
+    const header = this.buildHead(poll);
+    const resultRows = this.buildResultRows(poll, results);
     return (
       <React.Fragment>
         <Table className={classes.table}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Option voted</TableCell>
-              <TableCell>User</TableCell>
-              <TableCell>Motivation</TableCell>
-            </TableRow>
-          </TableHead>
+          <TableHead>{header}</TableHead>
           <TableBody>{resultRows}</TableBody>
         </Table>
       </React.Fragment>

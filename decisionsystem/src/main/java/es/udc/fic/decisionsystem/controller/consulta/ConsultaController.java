@@ -195,6 +195,7 @@ public class ConsultaController {
 				
 				resultsItem.setMotivation(v.getMotivacion());
 				resultsItem.setUser(resultsItemUser);
+				resultsItem.setScore(v.getPuntuacion());
 				resultsItems.add(resultsItem);
 			}
 			

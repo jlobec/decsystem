@@ -6,6 +6,7 @@ public class PollResultsItem {
 
 	private UserDto user;
 	private String motivation;
+	private Integer score;
 
 	public UserDto getUser() {
 		return user;
@@ -21,6 +22,14 @@ public class PollResultsItem {
 
 	public void setMotivation(String motivation) {
 		this.motivation = motivation;
+	}
+
+	public Integer getScore() {
+		return score;
+	}
+
+	public void setScore(Integer score) {
+		this.score = score;
 	}
 
 }

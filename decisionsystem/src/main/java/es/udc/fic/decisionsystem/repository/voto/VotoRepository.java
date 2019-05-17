@@ -20,6 +20,6 @@ public interface VotoRepository extends JpaRepository<Voto, Long> {
 	@Query("SELECT v FROM Voto v "
 			+ "INNER JOIN ConsultaOpcion co ON v.consultaOpcion = co "
 			+ "INNER JOIN Consulta c ON co.consulta = c "
-			+ "WHERE c.idConsulta =  :pollId ")
+			+ "WHERE c.idConsulta =  :pollId ORDER BY co.idConsultaOpcion")
 	List<Voto> findByConsulta(@Param("pollId") Long pollId);
 }
