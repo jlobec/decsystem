@@ -28,6 +28,11 @@ class PollActions {
     return axios.get(url, AuthUtil.getHeaders());
   };
 
+  static doGetAllPollStatus = async () => {
+    const url = `${config.baseUrl}api/poll/status`;
+    return axios.get(url, AuthUtil.getHeaders());
+  };
+
   static doSavePoll = async poll => {
     const url = config.baseUrl + "api/poll";
     const requestBody = {

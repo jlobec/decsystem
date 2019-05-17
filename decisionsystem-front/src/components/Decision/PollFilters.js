@@ -15,11 +15,18 @@ import Typography from "@material-ui/core/Typography";
 import InputLabel from "@material-ui/core/InputLabel";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
+import PollActions from "../../actions/poll/PollActions";
+
+const initialState = {
+  loading: false,
+  pollStatusOptions: [],
+  pollTypeOptions: [],
+  pollStatusId: 0,
+  pollTypeId: 0
+};
 
 class PollFilters extends React.Component {
-  state = {
-    pollStatus: ""
-  };
+  state = { ...initialState };
 
   handleChange = event => {
     this.setState({
@@ -27,17 +34,43 @@ class PollFilters extends React.Component {
     });
   };
 
+  async componentDidMount() {
+    this.setState({ loading: true });
+    const { data: pollTypes } = await PollActions.doGetPollTypes();
+    if (pollTypes) {
+      const { data: pollStatuses } = await PollActions.doGetAllPollStatus();
+      if (pollStatuses) {
+        console.log(pollTypes);
+        console.log(pollStatuses);
+        this.setState({
+          loading: false,
+          pollTypeOptions: pollTypes.content,
+          pollStatusOptions: pollStatuses
+        });
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    this.setState({ ...initialState });
+  }
+
   render() {
     const { classes, open } = this.props;
-    const pollStatusOptions = ["All", "Open", "Closed"].map(
-      (pollStatus, index) => {
-        return (
-          <option key={index} value={pollStatus}>
-            {pollStatus}
-          </option>
-        );
-      }
-    );
+    const pollStatusOptions = this.state.pollStatusOptions.map(pollStatus => {
+      return (
+        <option key={pollStatus.pollStatusId} value={pollStatus.pollStatusId}>
+          {pollStatus.name}
+        </option>
+      );
+    });
+    const pollTypeOptions = this.state.pollTypeOptions.map(pollType => {
+      return (
+        <option key={pollType.pollTypeId} value={pollType.pollTypeId}>
+          {pollType.name}
+        </option>
+      );
+    });
     return (
       <Drawer
         anchor="right"
@@ -63,15 +96,34 @@ class PollFilters extends React.Component {
             <InputLabel>Poll status</InputLabel>
             <Select
               native
-              value={this.state.pollStatus}
+              value={this.state.pollStatusId}
               onChange={this.handleChange}
               inputProps={{
-                name: "pollStatus",
-                id: "pollStatus"
+                name: "pollStatusId",
+                id: "pollStatusId"
               }}
             >
               <option value="" />
               {pollStatusOptions}
+            </Select>
+          </FormControl>
+          <FormControl
+            variant="outlined"
+            className={classes.formControl}
+            fullWidth
+          >
+            <InputLabel>Poll Type</InputLabel>
+            <Select
+              native
+              value={this.state.pollTypeId}
+              onChange={this.handleChange}
+              inputProps={{
+                name: "pollTypeId",
+                id: "pollTypeId"
+              }}
+            >
+              <option value="" />
+              {pollTypeOptions}
             </Select>
           </FormControl>
           <Grid container justify="center">

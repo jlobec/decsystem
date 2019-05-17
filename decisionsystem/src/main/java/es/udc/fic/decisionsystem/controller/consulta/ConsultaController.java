@@ -41,6 +41,7 @@ import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
 import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionVotedResponse;
+import es.udc.fic.decisionsystem.payload.consulta.PollStatusResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultOption;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResults;
@@ -118,6 +119,16 @@ public class ConsultaController {
 			option.setName(opt.getNombre());
 			option.setDescription(opt.getDescripcion());
 			return option;
+		}).collect(Collectors.toList());
+	}
+	
+	@GetMapping("/api/poll/status")
+	public List<PollStatusResponse> getStatuses(){
+		return estadoConsultaRepository.findAll().stream().map(status -> {
+			PollStatusResponse result = new PollStatusResponse();
+			result.setName(status.getNombre());
+			result.setStatusId(status.getIdEstadoConsulta());
+			return result;
 		}).collect(Collectors.toList());
 	}
 
