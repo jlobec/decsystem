@@ -11,6 +11,7 @@ public class PollSummaryResponse {
 	private String description;
 	private Long startsAt;
 	private Long endsAt;
+	private PollStatusResponse status;
 	private boolean votedByUser;
 	private PollSystemResponse pollSystem;
 	private List<PollOptionResponse> pollOptions;
@@ -77,6 +78,14 @@ public class PollSummaryResponse {
 
 	public void setPollOptions(List<PollOptionResponse> pollOptions) {
 		this.pollOptions = pollOptions;
+	}
+
+	public PollStatusResponse getStatus() {
+		return status;
+	}
+
+	public void setStatus(PollStatusResponse status) {
+		this.status = status;
 	}
 
 }

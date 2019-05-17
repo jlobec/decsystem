@@ -59,6 +59,11 @@ public class Consulta extends AuditModel {
 	@JsonIgnore
 	private SistemaConsulta sistemaConsulta;
 
+	@ManyToOne(fetch = FetchType.LAZY, optional = true)
+	@JoinColumn(name = "id_estado_consulta", nullable = true)
+	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	private EstadoConsulta estadoConsulta;
+
 	public Consulta() {
 		super();
 	}
@@ -122,11 +127,19 @@ public class Consulta extends AuditModel {
 		this.sistemaConsulta = sistemaConsulta;
 	}
 
+	public EstadoConsulta getEstadoConsulta() {
+		return estadoConsulta;
+	}
+
+	public void setEstadoConsulta(EstadoConsulta estadoConsulta) {
+		this.estadoConsulta = estadoConsulta;
+	}
+
 	@Override
 	public String toString() {
 		return "Consulta [idConsulta=" + idConsulta + ", titulo=" + titulo + ", descripcion=" + descripcion
 				+ ", fechaHoraInicio=" + fechaHoraInicio + ", fechaHoraFin=" + fechaHoraFin + ", sistemaConsulta="
-				+ sistemaConsulta + "]";
+				+ sistemaConsulta + ", estadoConsulta=" + estadoConsulta + "]";
 	}
 
 }

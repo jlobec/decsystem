@@ -27,6 +27,6 @@ public interface ConsultaService {
 	 * @param user     the user
 	 * @return the user polls
 	 */
-	public Page<PollSummaryResponse> getUserPolls(Pageable pageable, Usuario user);
+	public Page<PollSummaryResponse> getUserPolls(Pageable pageable, Usuario user, Integer pollTypeId, Integer pollStatusId);
 
 }

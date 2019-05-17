@@ -19,6 +19,7 @@ import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.voto.Voto;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionVotedResponse;
+import es.udc.fic.decisionsystem.payload.consulta.PollStatusResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.payload.pollsystem.PollSystemResponse;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
@@ -51,9 +52,24 @@ public class ConsultaServiceImpl implements ConsultaService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Page<PollSummaryResponse> getUserPolls(Pageable pageable, Usuario user) {
+	public Page<PollSummaryResponse> getUserPolls(Pageable pageable, Usuario user, Integer pollTypeId, Integer pollStatusId) {
+		if (pollTypeId != null && pollStatusId != null) {
+			return consultaRepository.findByUserAndPollTypeAndPollStatus(pageable, user.getIdUsuario(), pollTypeId, pollStatusId).map(poll -> {
+				 return buildPollSummaryResponse(poll, user);
+			});
+		}
+		if (pollTypeId != null) {
+			return consultaRepository.findByUserAndPollType(pageable, user.getIdUsuario(), pollTypeId).map(poll -> {
+				 return buildPollSummaryResponse(poll, user);
+			});
+		}
+		if (pollStatusId != null) {
+			return consultaRepository.findByUserAndPollStatus(pageable, user.getIdUsuario(), pollStatusId).map(poll -> {
+				 return buildPollSummaryResponse(poll, user);
+			});
+		}
 		return consultaRepository.findByUser(pageable, user.getIdUsuario()).map(poll -> {
-			return buildPollSummaryResponse(poll, user);
+			 return buildPollSummaryResponse(poll, user);
 		});
 	}
 
@@ -120,6 +136,10 @@ public class ConsultaServiceImpl implements ConsultaService {
 		pollSystem.setPollTypeId(poll.getSistemaConsulta().getIdSistemaConsulta());
 		pollSystem.setName(poll.getSistemaConsulta().getNombre());
 		pollSystem.setDescription(poll.getSistemaConsulta().getDescripcion());
+		
+		PollStatusResponse pollStatus = new PollStatusResponse();
+		pollStatus.setStatusId(poll.getEstadoConsulta().getIdEstadoConsulta());
+		pollStatus.setName(poll.getEstadoConsulta().getNombre());
 
 		PollSummaryResponse pollSummary = new PollSummaryResponse();
 		pollSummary.setPollId(poll.getIdConsulta());
@@ -129,6 +149,7 @@ public class ConsultaServiceImpl implements ConsultaService {
 		pollSummary.setEndsAt(poll.getFechaHoraFin().getTime());
 		pollSummary.setVotedByUser(votedByUser);
 		pollSummary.setPollSystem(pollSystem);
+		pollSummary.setStatus(pollStatus);
 		pollSummary.setPollOptions(pollOptions);
 
 		return pollSummary;

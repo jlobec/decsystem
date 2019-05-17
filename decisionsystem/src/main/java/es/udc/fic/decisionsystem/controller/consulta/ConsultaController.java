@@ -21,11 +21,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
 import es.udc.fic.decisionsystem.model.asamblea.Asamblea;
 import es.udc.fic.decisionsystem.model.consulta.Consulta;
+import es.udc.fic.decisionsystem.model.consulta.EstadoConsulta;
+import es.udc.fic.decisionsystem.model.consulta.EstadoConsultaEnum;
 import es.udc.fic.decisionsystem.model.consultaasamblea.ConsultaAsamblea;
 import es.udc.fic.decisionsystem.model.consultaopcion.ConsultaOpcion;
 import es.udc.fic.decisionsystem.model.rol.Rol;
@@ -39,6 +42,7 @@ import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
 import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionVotedResponse;
+import es.udc.fic.decisionsystem.payload.consulta.PollStatusResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultOption;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResults;
@@ -48,6 +52,7 @@ import es.udc.fic.decisionsystem.payload.usuario.UserDto;
 import es.udc.fic.decisionsystem.repository.asamblea.AsambleaRepository;
 import es.udc.fic.decisionsystem.repository.comentario.ComentarioRepository;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
+import es.udc.fic.decisionsystem.repository.consulta.EstadoConsultaRepository;
 import es.udc.fic.decisionsystem.repository.consultaasamblea.ConsultaAsambleaRepository;
 import es.udc.fic.decisionsystem.repository.consultaopcion.ConsultaOpcionRepository;
 import es.udc.fic.decisionsystem.repository.sistemaconsulta.SistemaConsultaRepository;
@@ -81,6 +86,9 @@ public class ConsultaController {
 	
 	@Autowired
 	private VotoRepository votoRepository;
+	
+	@Autowired
+	private EstadoConsultaRepository estadoConsultaRepository;
 
 	@Autowired
 	private ConsultaService consultaService;
@@ -114,13 +122,25 @@ public class ConsultaController {
 			return option;
 		}).collect(Collectors.toList());
 	}
+	
+	@GetMapping("/api/poll/status")
+	public List<PollStatusResponse> getStatuses(){
+		return estadoConsultaRepository.findAll().stream().map(status -> {
+			PollStatusResponse result = new PollStatusResponse();
+			result.setName(status.getNombre());
+			result.setStatusId(status.getIdEstadoConsulta());
+			return result;
+		}).collect(Collectors.toList());
+	}
 
 	@GetMapping("/api/poll/open")
-	public Page<PollSummaryResponse> getOpenPolls(Pageable pageable, Principal principal) {
+	public Page<PollSummaryResponse> getOpenPolls(Pageable pageable, Principal principal, 
+			@RequestParam(value = "pollTypeId", required = false) Integer pollTypeId,
+			@RequestParam(value = "pollStatusId", required = false) Integer pollStatusId) {
 
 		Optional<Usuario> loggedUser = usuarioRepository.findByNickname(principal.getName());
 		if (loggedUser.isPresent()) {
-			return consultaService.getUserPolls(pageable, loggedUser.get());
+			return consultaService.getUserPolls(pageable, loggedUser.get(), pollTypeId, pollStatusId);
 		}
 		// Actually unlikely
 		throw new ResourceNotFoundException("No logged user");
@@ -212,6 +232,9 @@ public class ConsultaController {
 
 		Optional<SistemaConsulta> pollSystem = sistemaConsultaRepository.findById(poll.getPollSystemId());
 		if (pollSystem.isPresent()) {
+			
+			EstadoConsulta statusOpen = estadoConsultaRepository.findById(EstadoConsultaEnum.Open.getIdEstadoConsulta()).orElseThrow(() -> new ResourceNotFoundException("Status not found"));
+			
 			// Save poll
 			Consulta newPoll = new Consulta();
 			newPoll.setTitulo(poll.getTitle());
@@ -219,6 +242,7 @@ public class ConsultaController {
 			newPoll.setFechaHoraInicio(DateUtil.toDate(poll.getStartTime()));
 			newPoll.setFechaHoraFin(DateUtil.toDate(poll.getEndTime()));
 			newPoll.setSistemaConsulta(pollSystem.get());
+			newPoll.setEstadoConsulta(statusOpen);
 			Consulta savedPoll = consultaRepository.save(newPoll);
 
 			// Save options

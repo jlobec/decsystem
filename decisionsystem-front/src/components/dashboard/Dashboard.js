@@ -139,12 +139,6 @@ class Dashboard extends React.Component {
             >
               {title}
             </Typography>
-            {/* <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton> */}
-            {/* AVATAR */}
           </Toolbar>
         </AppBar>
         <Drawer
@@ -229,6 +223,8 @@ class Dashboard extends React.Component {
             </ListItem>
           </List>
         </Drawer>
+
+        {/* Main */}
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
           <Route
