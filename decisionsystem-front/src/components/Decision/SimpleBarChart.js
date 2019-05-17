@@ -52,11 +52,14 @@ class SimpleBarChart extends React.Component {
     const average = list =>
       list.reduce((prev, curr) => prev + curr) / list.length;
     const data = [...results].map(result => {
-      const avgScore = average(
-        result.items.map(item => {
-          return item.score;
-        })
-      );
+      let avgScore = 0;
+      if (result.items.length > 0) {
+        avgScore = average(
+          result.items.map(item => {
+            return item.score;
+          })
+        );
+      }
       return {
         name: result.option.name,
         score: avgScore
