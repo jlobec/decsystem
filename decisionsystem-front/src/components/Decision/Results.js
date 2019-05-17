@@ -34,7 +34,7 @@ class Results extends React.Component {
             </div>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className={classes.details}>
-            <SimpleBarChart results={results} />
+            <SimpleBarChart poll={poll} results={results} />
           </ExpansionPanelDetails>
         </ExpansionPanel>
 
@@ -47,7 +47,7 @@ class Results extends React.Component {
             </div>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className={classes.details}>
-            <TableResults results={results} />
+            <TableResults poll={poll} results={results} />
           </ExpansionPanelDetails>
           <Divider />
           <ExpansionPanelActions>
