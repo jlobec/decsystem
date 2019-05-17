@@ -12,7 +12,8 @@ import PollActions from "../../actions/poll/PollActions";
 import UserActions from "../../actions/user/UserActions";
 import { Route } from "react-router-dom";
 import Tooltip from "@material-ui/core/Tooltip";
-import IconButton from "@material-ui/core/IconButton";
+import Button from "@material-ui/core/Button";
+import Grid from "@material-ui/core/Grid";
 import FilterListIcon from "@material-ui/icons/FilterList";
 import PollFilters from "./PollFilters";
 
@@ -167,12 +168,18 @@ class Decisions extends React.Component {
           path="/dashboard/decisions/"
           render={routeProps => (
             <React.Fragment>
-              <IconButton
-                color="inherit"
-                onClick={this.toggleFilterDrawer(true)}
-              >
-                <FilterListIcon />
-              </IconButton>
+              <div className={classes.buttonFiltersContainer}>
+                <Grid container justify="flex-end">
+                  <Button
+                    variant="contained"
+                    color="default"
+                    onClick={this.toggleFilterDrawer(true)}
+                  >
+                    Filters
+                    <FilterListIcon />
+                  </Button>
+                </Grid>
+              </div>
               <PollFilters
                 open={this.state.filterDrawerOpen}
                 toggleFilterDrawer={this.toggleFilterDrawer}
@@ -230,6 +237,28 @@ const styles = theme => ({
   },
   pollListItem: {
     alignItems: "center"
+  },
+  buttonFiltersContainer: {
+    minWidth: 275,
+    [theme.breakpoints.down("sm")]: {
+      paddingRight: theme.spacing.unit * 2,
+      marginBottom: theme.spacing.unit,
+      width: "100%"
+    },
+    [theme.breakpoints.up("md")]: {
+      paddingRight: theme.spacing.unit * 2,
+      marginBottom: theme.spacing.unit * 2,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    },
+    [theme.breakpoints.up("lg")]: {
+      paddingRight: theme.spacing.unit * 2,
+      marginBottom: theme.spacing.unit * 2,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    }
   }
 });
 
