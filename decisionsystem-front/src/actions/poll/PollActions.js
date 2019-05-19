@@ -40,6 +40,11 @@ class PollActions {
     return axios.get(url, AuthUtil.getHeaders());
   };
 
+  static doGetAllPollResultsVisibilityOptions = async () => {
+    const url = `${config.baseUrl}api/poll/resultsvisibility`;
+    return axios.get(url, AuthUtil.getHeaders());
+  };
+
   static doSavePoll = async poll => {
     const url = config.baseUrl + "api/poll";
     const requestBody = {
@@ -49,6 +54,7 @@ class PollActions {
       endTime: poll.endTime,
       pollSystemId: poll.pollTypeId,
       assemblyId: poll.assemblyId,
+      resultsVisibilityId: poll.resultsVisibilityId,
       pollOptions: poll.pollOptions
     };
     return axios.post(url, requestBody, AuthUtil.getHeaders());

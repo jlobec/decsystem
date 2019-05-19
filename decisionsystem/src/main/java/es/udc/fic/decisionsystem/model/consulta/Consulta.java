@@ -64,6 +64,11 @@ public class Consulta extends AuditModel {
 	@OnDelete(action = OnDeleteAction.NO_ACTION)
 	private EstadoConsulta estadoConsulta;
 
+	@ManyToOne(fetch = FetchType.LAZY, optional = true)
+	@JoinColumn(name = "id_visibilidad_resultado_consulta", nullable = true)
+	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	private VisibilidadResultadoConsulta visibilidadResultadoConsulta;
+
 	public Consulta() {
 		super();
 	}
@@ -135,11 +140,20 @@ public class Consulta extends AuditModel {
 		this.estadoConsulta = estadoConsulta;
 	}
 
+	public VisibilidadResultadoConsulta getVisibilidadResultadoConsulta() {
+		return visibilidadResultadoConsulta;
+	}
+
+	public void setVisibilidadResultadoConsulta(VisibilidadResultadoConsulta visibilidadResultadoConsulta) {
+		this.visibilidadResultadoConsulta = visibilidadResultadoConsulta;
+	}
+
 	@Override
 	public String toString() {
 		return "Consulta [idConsulta=" + idConsulta + ", titulo=" + titulo + ", descripcion=" + descripcion
 				+ ", fechaHoraInicio=" + fechaHoraInicio + ", fechaHoraFin=" + fechaHoraFin + ", sistemaConsulta="
-				+ sistemaConsulta + ", estadoConsulta=" + estadoConsulta + "]";
+				+ sistemaConsulta + ", estadoConsulta=" + estadoConsulta + ", visibilidadResultadoConsulta="
+				+ visibilidadResultadoConsulta + "]";
 	}
 
 }

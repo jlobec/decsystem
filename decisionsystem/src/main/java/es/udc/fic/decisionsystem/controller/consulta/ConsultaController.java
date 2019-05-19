@@ -29,6 +29,7 @@ import es.udc.fic.decisionsystem.model.asamblea.Asamblea;
 import es.udc.fic.decisionsystem.model.consulta.Consulta;
 import es.udc.fic.decisionsystem.model.consulta.EstadoConsulta;
 import es.udc.fic.decisionsystem.model.consulta.EstadoConsultaEnum;
+import es.udc.fic.decisionsystem.model.consulta.VisibilidadResultadoConsulta;
 import es.udc.fic.decisionsystem.model.consultaasamblea.ConsultaAsamblea;
 import es.udc.fic.decisionsystem.model.consultaopcion.ConsultaOpcion;
 import es.udc.fic.decisionsystem.model.rol.Rol;
@@ -42,6 +43,7 @@ import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
 import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionVotedResponse;
+import es.udc.fic.decisionsystem.payload.consulta.PollResultsVisibilityResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollStatusResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultOption;
@@ -53,6 +55,7 @@ import es.udc.fic.decisionsystem.repository.asamblea.AsambleaRepository;
 import es.udc.fic.decisionsystem.repository.comentario.ComentarioRepository;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
 import es.udc.fic.decisionsystem.repository.consulta.EstadoConsultaRepository;
+import es.udc.fic.decisionsystem.repository.consulta.VisibilidadResultadoConsultaRepository;
 import es.udc.fic.decisionsystem.repository.consultaasamblea.ConsultaAsambleaRepository;
 import es.udc.fic.decisionsystem.repository.consultaopcion.ConsultaOpcionRepository;
 import es.udc.fic.decisionsystem.repository.sistemaconsulta.SistemaConsultaRepository;
@@ -80,15 +83,18 @@ public class ConsultaController {
 
 	@Autowired
 	private ConsultaAsambleaRepository consultaAsambleaRepository;
-	
+
 	@Autowired
 	private ComentarioRepository comentarioRepository;
-	
+
 	@Autowired
 	private VotoRepository votoRepository;
-	
+
 	@Autowired
 	private EstadoConsultaRepository estadoConsultaRepository;
+
+	@Autowired
+	private VisibilidadResultadoConsultaRepository visibilidadResultadoConsultaRepository;
 
 	@Autowired
 	private ConsultaService consultaService;
@@ -122,9 +128,9 @@ public class ConsultaController {
 			return option;
 		}).collect(Collectors.toList());
 	}
-	
+
 	@GetMapping("/api/poll/status")
-	public List<PollStatusResponse> getStatuses(){
+	public List<PollStatusResponse> getStatuses() {
 		return estadoConsultaRepository.findAll().stream().map(status -> {
 			PollStatusResponse result = new PollStatusResponse();
 			result.setName(status.getNombre());
@@ -133,8 +139,18 @@ public class ConsultaController {
 		}).collect(Collectors.toList());
 	}
 
+	@GetMapping("/api/poll/resultsvisibility")
+	public List<PollResultsVisibilityResponse> getResultsVisibilityOptions() {
+		return visibilidadResultadoConsultaRepository.findAll().stream().map(resultsVisibility -> {
+			PollResultsVisibilityResponse result = new PollResultsVisibilityResponse();
+			result.setName(resultsVisibility.getNombre());
+			result.setResultsVisibilityId(resultsVisibility.getIdVisibilidadResultadoConsulta());
+			return result;
+		}).collect(Collectors.toList());
+	}
+
 	@GetMapping("/api/poll/open")
-	public Page<PollSummaryResponse> getOpenPolls(Pageable pageable, Principal principal, 
+	public Page<PollSummaryResponse> getOpenPolls(Pageable pageable, Principal principal,
 			@RequestParam(value = "pollTypeId", required = false) Integer pollTypeId,
 			@RequestParam(value = "pollStatusId", required = false) Integer pollStatusId) {
 
@@ -145,17 +161,18 @@ public class ConsultaController {
 		// Actually unlikely
 		throw new ResourceNotFoundException("No logged user");
 	}
-	
+
 	@GetMapping("/api/poll/{consultaId}/comments")
-	public Page<CommentResponse> getPollComments(Pageable pageable, @PathVariable Long consultaId, Principal principal) {
-		
+	public Page<CommentResponse> getPollComments(Pageable pageable, @PathVariable Long consultaId,
+			Principal principal) {
+
 		Consulta consulta = consultaRepository.findById(consultaId).map(c -> {
 			return c;
 		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
-		
+
 		return comentarioRepository.findByConsulta(pageable, consulta).map(comentario -> {
 			CommentResponse response = new CommentResponse();
-			
+
 			UserDto user = new UserDto();
 			Set<String> roles = new HashSet<>();
 			user.setUserId(comentario.getUsuario().getIdUsuario());
@@ -167,7 +184,7 @@ public class ConsultaController {
 				roles.add(r.getNombre().name());
 			}
 			user.setRoles(roles);
-			
+
 			response.setCommentId(comentario.getIdComentario());
 			response.setPollId(comentario.getConsulta().getIdConsulta());
 			response.setUser(user);
@@ -175,33 +192,33 @@ public class ConsultaController {
 			return response;
 		});
 	}
-	
+
 	@GetMapping("/api/poll/{consultaId}/results")
 	public List<PollResults> getPollResults(@PathVariable Long consultaId) {
 		List<PollResults> pollResults = new ArrayList<>();
 		List<Voto> pollVotes = new ArrayList<>();
 		pollVotes = votoRepository.findByConsulta(consultaId);
-		Map<ConsultaOpcion, List<Voto>> groupByPollOption = pollVotes.stream().collect(Collectors.groupingBy(v -> v.getConsultaOpcion()));
-		
-		
+		Map<ConsultaOpcion, List<Voto>> groupByPollOption = pollVotes.stream()
+				.collect(Collectors.groupingBy(v -> v.getConsultaOpcion()));
+
 		for (Map.Entry<ConsultaOpcion, List<Voto>> entry : groupByPollOption.entrySet()) {
 			PollResults results = new PollResults();
 			ConsultaOpcion pollOption = entry.getKey();
 			List<Voto> pollOptionVotes = entry.getValue();
-					
+
 			// Option
 			PollResultOption resultsOption = new PollResultOption();
 			resultsOption.setOptionId(pollOption.getIdConsultaOpcion());
 			resultsOption.setName(pollOption.getNombre());
 			resultsOption.setDescription(pollOption.getDescripcion());
-			
+
 			// Vote info
 			List<PollResultsItem> resultsItems = new ArrayList<>();
 			for (Voto v : pollOptionVotes) {
 				PollResultsItem resultsItem = new PollResultsItem();
 				UserDto resultsItemUser = new UserDto();
 				Set<String> roles = new HashSet<>();
-				
+
 				resultsItemUser.setUserId(v.getUsuario().getIdUsuario());
 				resultsItemUser.setName(v.getUsuario().getNombre());
 				resultsItemUser.setLastName(v.getUsuario().getApellido());
@@ -212,18 +229,18 @@ public class ConsultaController {
 					roles.add(r.getNombre().name());
 				}
 				resultsItemUser.setRoles(roles);
-				
+
 				resultsItem.setMotivation(v.getMotivacion());
 				resultsItem.setUser(resultsItemUser);
 				resultsItem.setScore(v.getPuntuacion());
 				resultsItems.add(resultsItem);
 			}
-			
+
 			results.setOption(resultsOption);
 			results.setItems(resultsItems);
 			pollResults.add(results);
 		}
-		
+
 		return pollResults;
 	}
 
@@ -232,9 +249,14 @@ public class ConsultaController {
 
 		Optional<SistemaConsulta> pollSystem = sistemaConsultaRepository.findById(poll.getPollSystemId());
 		if (pollSystem.isPresent()) {
-			
-			EstadoConsulta statusOpen = estadoConsultaRepository.findById(EstadoConsultaEnum.Open.getIdEstadoConsulta()).orElseThrow(() -> new ResourceNotFoundException("Status not found"));
-			
+
+			EstadoConsulta statusOpen = estadoConsultaRepository.findById(EstadoConsultaEnum.Open.getIdEstadoConsulta())
+					.orElseThrow(() -> new ResourceNotFoundException("Status not found"));
+
+			VisibilidadResultadoConsulta resultsVisibility = visibilidadResultadoConsultaRepository
+					.findById(poll.getResultsVisibilityId())
+					.orElseThrow(() -> new ResourceNotFoundException("Results visibility option not found"));
+
 			// Save poll
 			Consulta newPoll = new Consulta();
 			newPoll.setTitulo(poll.getTitle());
@@ -243,6 +265,7 @@ public class ConsultaController {
 			newPoll.setFechaHoraFin(DateUtil.toDate(poll.getEndTime()));
 			newPoll.setSistemaConsulta(pollSystem.get());
 			newPoll.setEstadoConsulta(statusOpen);
+			newPoll.setVisibilidadResultadoConsulta(resultsVisibility);
 			Consulta savedPoll = consultaRepository.save(newPoll);
 
 			// Save options
@@ -287,6 +310,15 @@ public class ConsultaController {
 			pollSystemResponse.setName(pollSystem.get().getNombre());
 			pollSystemResponse.setDescription(pollSystem.get().getDescripcion());
 
+			PollStatusResponse pollStatus = new PollStatusResponse();
+			pollStatus.setStatusId(savedPoll.getEstadoConsulta().getIdEstadoConsulta());
+			pollStatus.setName(savedPoll.getEstadoConsulta().getNombre());
+
+			PollResultsVisibilityResponse pollResultsVisibility = new PollResultsVisibilityResponse();
+			pollResultsVisibility.setResultsVisibilityId(
+					savedPoll.getVisibilidadResultadoConsulta().getIdVisibilidadResultadoConsulta());
+			pollResultsVisibility.setName(savedPoll.getVisibilidadResultadoConsulta().getNombre());
+
 			PollSummaryResponse response = new PollSummaryResponse();
 			response.setPollId(savedPoll.getIdConsulta());
 			response.setTitle(savedPoll.getTitulo());
@@ -295,6 +327,8 @@ public class ConsultaController {
 			response.setEndsAt(savedPoll.getFechaHoraFin().getTime());
 			response.setVotedByUser(false);
 			response.setPollSystem(pollSystemResponse);
+			response.setStatus(pollStatus);
+			response.setResultsVisibility(pollResultsVisibility);
 			response.setPollOptions(pollOptions);
 
 			return response;

@@ -39,12 +39,14 @@ const initialState = {
   fullScreen: false,
   assemblyOptions: [],
   pollTypeOptions: [],
+  pollResultsVisibilityOptions: [],
   title: "",
   description: "",
   startTime: "",
   endTime: "",
   pollTypeId: 0,
   assemblyId: 0,
+  pollResultsVisibilityId: 0,
   pollOptions: [{ name: "", description: "" }]
 };
 
@@ -73,11 +75,17 @@ class AddPoll extends React.Component {
     if (assemblies) {
       const { data: pollTypes } = await PollActions.doGetPollTypes();
       if (pollTypes) {
-        this.setState({
-          loading: false,
-          assemblyOptions: assemblies.content,
-          pollTypeOptions: pollTypes.content
-        });
+        const {
+          data: visibilityOptions
+        } = await PollActions.doGetAllPollResultsVisibilityOptions();
+        if (visibilityOptions) {
+          this.setState({
+            loading: false,
+            assemblyOptions: assemblies.content,
+            pollTypeOptions: pollTypes.content,
+            pollResultsVisibilityOptions: visibilityOptions
+          });
+        }
       }
     }
   }
@@ -206,6 +214,7 @@ class AddPoll extends React.Component {
       endTime: this.state.endTime,
       pollTypeId: this.state.pollTypeId,
       assemblyId: this.state.assemblyId,
+      resultsVisibilityId: this.state.pollResultsVisibilityId,
       pollOptions: this.state.pollOptions
     });
     this.handleClose();
@@ -228,6 +237,18 @@ class AddPoll extends React.Component {
         </option>
       );
     });
+    const pollResultsVisibilityOptions = this.state.pollResultsVisibilityOptions.map(
+      pollVisibilityOption => {
+        return (
+          <option
+            key={pollVisibilityOption.resultsVisibilityId}
+            value={pollVisibilityOption.resultsVisibilityId}
+          >
+            {pollVisibilityOption.name}
+          </option>
+        );
+      }
+    );
     const pollOptions = this.handlePollOptions(classes);
     return (
       <div>
@@ -331,7 +352,25 @@ class AddPoll extends React.Component {
                   {assemblyOptions}
                 </Select>
               </FormControl>
-
+              <FormControl
+                variant="outlined"
+                className={classes.formControl}
+                fullWidth
+              >
+                <InputLabel>Results visibility</InputLabel>
+                <Select
+                  native
+                  value={this.state.pollResultsVisibilityId}
+                  onChange={this.handleChange}
+                  inputProps={{
+                    name: "pollResultsVisibilityId",
+                    id: "pollResultsVisibilityId"
+                  }}
+                >
+                  <option value={0} />
+                  {pollResultsVisibilityOptions}
+                </Select>
+              </FormControl>
               {/* <Divider variant="middle" /> */}
               <Typography gutterBottom variant="body1">
                 Poll options

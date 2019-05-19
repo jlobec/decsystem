@@ -32,6 +32,10 @@ public class CreatePollRequest {
 	@Positive
 	private Integer assemblyId;
 
+	@NotNull
+	@Positive
+	private Integer resultsVisibilityId;
+
 	private List<AddPollOptionRequest> pollOptions;
 
 	public String getTitle() {
@@ -80,6 +84,14 @@ public class CreatePollRequest {
 
 	public void setAssemblyId(Integer assemblyId) {
 		this.assemblyId = assemblyId;
+	}
+
+	public Integer getResultsVisibilityId() {
+		return resultsVisibilityId;
+	}
+
+	public void setResultsVisibilityId(Integer resultsVisibilityId) {
+		this.resultsVisibilityId = resultsVisibilityId;
 	}
 
 	public List<AddPollOptionRequest> getPollOptions() {
