@@ -63,7 +63,7 @@ class TableResults extends React.Component {
   buildResultRowsForChoiceSystem = results => {
     const resultRows = results.map((result, index) => {
       const optionRow = <TableCell>{`${result.option.name}`}</TableCell>;
-      const rows = result.items.map(item => {
+      const rows = result.items.map((item, index) => {
         return (
           <TableRow key={`${index}${new Date()}`}>
             <TableCell component="th" scope="row">{`${item.user.name} ${
@@ -81,7 +81,7 @@ class TableResults extends React.Component {
   buildResultRowsForScoreSystem = results => {
     const resultRows = results.map((result, index) => {
       const optionRow = <TableCell>{`${result.option.name}`}</TableCell>;
-      const rows = result.items.map(item => {
+      const rows = result.items.map((item, index) => {
         return (
           <TableRow key={`${index}${new Date()}`}>
             <TableCell component="th" scope="row">{`${item.user.name} ${
