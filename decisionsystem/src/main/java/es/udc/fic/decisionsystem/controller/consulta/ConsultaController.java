@@ -1,16 +1,20 @@
 package es.udc.fic.decisionsystem.controller.consulta;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import es.udc.fic.decisionsystem.exception.BadRequestException;
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
 import es.udc.fic.decisionsystem.model.asamblea.Asamblea;
 import es.udc.fic.decisionsystem.model.consulta.Consulta;
@@ -34,9 +39,9 @@ import es.udc.fic.decisionsystem.model.consultaasamblea.ConsultaAsamblea;
 import es.udc.fic.decisionsystem.model.consultaopcion.ConsultaOpcion;
 import es.udc.fic.decisionsystem.model.rol.Rol;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsulta;
+import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsultaEnum;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.util.DateUtil;
-import es.udc.fic.decisionsystem.model.voto.Voto;
 import es.udc.fic.decisionsystem.payload.ApiResponse;
 import es.udc.fic.decisionsystem.payload.comentario.CommentResponse;
 import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
@@ -46,7 +51,7 @@ import es.udc.fic.decisionsystem.payload.consulta.PollOptionVotedResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollResultsVisibilityResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollStatusResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
-import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultOption;
+import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultCsv;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResults;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultsItem;
 import es.udc.fic.decisionsystem.payload.pollsystem.PollSystemResponse;
@@ -86,9 +91,6 @@ public class ConsultaController {
 
 	@Autowired
 	private ComentarioRepository comentarioRepository;
-
-	@Autowired
-	private VotoRepository votoRepository;
 
 	@Autowired
 	private EstadoConsultaRepository estadoConsultaRepository;
@@ -195,53 +197,70 @@ public class ConsultaController {
 
 	@GetMapping("/api/poll/{consultaId}/results")
 	public List<PollResults> getPollResults(@PathVariable Long consultaId) {
-		List<PollResults> pollResults = new ArrayList<>();
-		List<Voto> pollVotes = new ArrayList<>();
-		pollVotes = votoRepository.findByConsulta(consultaId);
-		Map<ConsultaOpcion, List<Voto>> groupByPollOption = pollVotes.stream()
-				.collect(Collectors.groupingBy(v -> v.getConsultaOpcion()));
+		return consultaService.getResults(consultaId);
+	}
 
-		for (Map.Entry<ConsultaOpcion, List<Voto>> entry : groupByPollOption.entrySet()) {
-			PollResults results = new PollResults();
-			ConsultaOpcion pollOption = entry.getKey();
-			List<Voto> pollOptionVotes = entry.getValue();
+	@GetMapping("/api/poll/{consultaId}/results/export")
+	public void getExportedResults(@PathVariable Long consultaId, @RequestParam(value = "format", required = true) String format,
+			HttpServletResponse response) throws IOException {
 
-			// Option
-			PollResultOption resultsOption = new PollResultOption();
-			resultsOption.setOptionId(pollOption.getIdConsultaOpcion());
-			resultsOption.setName(pollOption.getNombre());
-			resultsOption.setDescription(pollOption.getDescripcion());
-
-			// Vote info
-			List<PollResultsItem> resultsItems = new ArrayList<>();
-			for (Voto v : pollOptionVotes) {
-				PollResultsItem resultsItem = new PollResultsItem();
-				UserDto resultsItemUser = new UserDto();
-				Set<String> roles = new HashSet<>();
-
-				resultsItemUser.setUserId(v.getUsuario().getIdUsuario());
-				resultsItemUser.setName(v.getUsuario().getNombre());
-				resultsItemUser.setLastName(v.getUsuario().getApellido());
-				resultsItemUser.setNickname(v.getUsuario().getNickname());
-				resultsItemUser.setEmail(v.getUsuario().getEmail());
-				resultsItemUser.setRoles(roles);
-				for (Rol r : v.getUsuario().getRoles()) {
-					roles.add(r.getNombre().name());
-				}
-				resultsItemUser.setRoles(roles);
-
-				resultsItem.setMotivation(v.getMotivacion());
-				resultsItem.setUser(resultsItemUser);
-				resultsItem.setScore(v.getPuntuacion());
-				resultsItems.add(resultsItem);
-			}
-
-			results.setOption(resultsOption);
-			results.setItems(resultsItems);
-			pollResults.add(results);
+		if (!"csv".equalsIgnoreCase(format)) {
+			throw new BadRequestException("Format not supported yet.");
 		}
 
-		return pollResults;
+		Consulta poll = consultaRepository.findById(consultaId)
+				.orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
+
+		List<PollResults> pollResults = consultaService.getResults(consultaId);
+
+		// Build csv list
+		List<PollResultCsv> resultList = new ArrayList<>();
+		for (PollResults resultItem : pollResults) {
+			PollResultCsv csvRow = new PollResultCsv();
+			csvRow.setOptionName(resultItem.getOption().getName());
+			csvRow.setOptionDescription(resultItem.getOption().getDescription());
+			for (PollResultsItem optItem : resultItem.getItems()) {
+				csvRow.setUserName(optItem.getUser().getName());
+				csvRow.setUserLastname(optItem.getUser().getLastName());
+				csvRow.setUserEmail(optItem.getUser().getEmail());
+				csvRow.setUserNickname(optItem.getUser().getNickname());
+				csvRow.setOptionScore(optItem.getScore());
+			}
+			resultList.add(csvRow);
+		}
+
+		String[] header = null;
+		SistemaConsultaEnum pollSystem = SistemaConsultaEnum.getByName(poll.getSistemaConsulta().getNombre());
+		switch (pollSystem) {
+		case SINGLE_OPTION:
+		case MULTIPLE_OPTION:
+			String[] headerWithoutScore = { "OptionName", "OptionDescription", "UserName", "UserLastname", "UserEmail",
+					"UserNickname" };
+			header = headerWithoutScore;
+			break;
+		case SCORE_VOTE:
+			String[] headerWithScore = { "OptionName", "OptionDescription", "UserName", "UserLastname", "UserEmail",
+					"UserNickname", "OptionScore" };
+			header = headerWithScore;
+			break;
+		}
+
+		response.setContentType("text/csv");
+	    response.setHeader("Content-Disposition", "attachment; file=example.csv");
+		try (CSVPrinter csvPrinter = new CSVPrinter(response.getWriter(), CSVFormat.DEFAULT.withHeader(header));) {
+			for (PollResultCsv csvRow : resultList) {
+				List<String> data = Arrays.asList(csvRow.getOptionName(), csvRow.getOptionDescription(),
+						csvRow.getUserName(), csvRow.getUserLastname(), csvRow.getUserEmail(),
+						csvRow.getUserNickname());
+
+				csvPrinter.printRecord(data);
+			}
+			csvPrinter.flush();
+		} catch (Exception e) {
+			System.out.println("Writing CSV error!");
+			e.printStackTrace();
+		}
+
 	}
 
 	@PostMapping("/api/poll")

@@ -5,19 +5,33 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelActions from "@material-ui/core/ExpansionPanelActions";
+import { CSVLink, CSVDownload } from "react-csv";
 import Typography from "@material-ui/core/Typography";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Chip from "@material-ui/core/Chip";
 import Button from "@material-ui/core/Button";
 import Divider from "@material-ui/core/Divider";
 import SimpleBarChart from "./SimpleBarChart";
+import PollActions from "../../actions/poll/PollActions";
 
-const initialState = {};
+const initialState = {
+  resultsToExport: []
+};
 
 class Results extends React.Component {
   state = { ...initialState };
 
-  async componentDidMount() {}
+  async componentDidMount() {
+    const poll = this.props.poll;
+    const { data: resultsToExport } = await PollActions.doExportPollResults(
+      poll.pollId
+    );
+    if (resultsToExport) {
+      this.setState({
+        resultsToExport: resultsToExport
+      });
+    }
+  }
 
   componentWillUnmount() {
     this.setState({ ...initialState });
@@ -36,6 +50,17 @@ class Results extends React.Component {
       return "Closed" === pollStatus;
     }
   };
+
+  // exportPollResults = async () => {
+  //   const poll = this.props.poll;
+  //   const { data: exportResult } = await PollActions.doExportPollResults(
+  //     poll.pollId
+  //   );
+  //   if (exportResult) {
+  //     window.open(exportResult);
+  //   }
+  //   // window.open(PollActions.doExportPollResults(poll.pollId), "_blank");
+  // };
 
   render() {
     const { classes, poll, results } = this.props;
@@ -71,7 +96,13 @@ class Results extends React.Component {
             <Divider />
             <ExpansionPanelActions>
               <Button size="small" color="primary" variant="outlined">
-                Export
+                <CSVLink
+                  data={this.state.resultsToExport}
+                  filename={`${poll.title}.csv`}
+                  target="_blank"
+                >
+                  Export
+                </CSVLink>
               </Button>
             </ExpansionPanelActions>
           </ExpansionPanel>
