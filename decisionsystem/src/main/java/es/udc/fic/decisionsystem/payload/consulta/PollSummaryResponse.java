@@ -12,6 +12,7 @@ public class PollSummaryResponse {
 	private Long startsAt;
 	private Long endsAt;
 	private PollStatusResponse status;
+	private PollResultsVisibilityResponse resultsVisibility;
 	private boolean votedByUser;
 	private PollSystemResponse pollSystem;
 	private List<PollOptionResponse> pollOptions;
@@ -86,6 +87,14 @@ public class PollSummaryResponse {
 
 	public void setStatus(PollStatusResponse status) {
 		this.status = status;
+	}
+
+	public PollResultsVisibilityResponse getResultsVisibility() {
+		return resultsVisibility;
+	}
+
+	public void setResultsVisibility(PollResultsVisibilityResponse resultsVisibility) {
+		this.resultsVisibility = resultsVisibility;
 	}
 
 }

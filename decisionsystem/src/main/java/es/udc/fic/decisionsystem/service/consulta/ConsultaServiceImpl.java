@@ -19,6 +19,7 @@ import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.voto.Voto;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionVotedResponse;
+import es.udc.fic.decisionsystem.payload.consulta.PollResultsVisibilityResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollStatusResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.payload.pollsystem.PollSystemResponse;
@@ -52,24 +53,27 @@ public class ConsultaServiceImpl implements ConsultaService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Page<PollSummaryResponse> getUserPolls(Pageable pageable, Usuario user, Integer pollTypeId, Integer pollStatusId) {
+	public Page<PollSummaryResponse> getUserPolls(Pageable pageable, Usuario user, Integer pollTypeId,
+			Integer pollStatusId) {
 		if (pollTypeId != null && pollStatusId != null) {
-			return consultaRepository.findByUserAndPollTypeAndPollStatus(pageable, user.getIdUsuario(), pollTypeId, pollStatusId).map(poll -> {
-				 return buildPollSummaryResponse(poll, user);
-			});
+			return consultaRepository
+					.findByUserAndPollTypeAndPollStatus(pageable, user.getIdUsuario(), pollTypeId, pollStatusId)
+					.map(poll -> {
+						return buildPollSummaryResponse(poll, user);
+					});
 		}
 		if (pollTypeId != null) {
 			return consultaRepository.findByUserAndPollType(pageable, user.getIdUsuario(), pollTypeId).map(poll -> {
-				 return buildPollSummaryResponse(poll, user);
+				return buildPollSummaryResponse(poll, user);
 			});
 		}
 		if (pollStatusId != null) {
 			return consultaRepository.findByUserAndPollStatus(pageable, user.getIdUsuario(), pollStatusId).map(poll -> {
-				 return buildPollSummaryResponse(poll, user);
+				return buildPollSummaryResponse(poll, user);
 			});
 		}
 		return consultaRepository.findByUser(pageable, user.getIdUsuario()).map(poll -> {
-			 return buildPollSummaryResponse(poll, user);
+			return buildPollSummaryResponse(poll, user);
 		});
 	}
 
@@ -101,7 +105,7 @@ public class ConsultaServiceImpl implements ConsultaService {
 			for (Voto vote : optionVotes) {
 				if (opt.getIdConsultaOpcion().equals(vote.getConsultaOpcion().getIdConsultaOpcion())) {
 					votedOption.setVoted(true);
-					votedOption.setPreferenceValue(vote.getPuntuacion()); 
+					votedOption.setPreferenceValue(vote.getPuntuacion());
 					votedOption.setMotivation(vote.getMotivacion());
 					break;
 				}
@@ -136,10 +140,15 @@ public class ConsultaServiceImpl implements ConsultaService {
 		pollSystem.setPollTypeId(poll.getSistemaConsulta().getIdSistemaConsulta());
 		pollSystem.setName(poll.getSistemaConsulta().getNombre());
 		pollSystem.setDescription(poll.getSistemaConsulta().getDescripcion());
-		
+
 		PollStatusResponse pollStatus = new PollStatusResponse();
 		pollStatus.setStatusId(poll.getEstadoConsulta().getIdEstadoConsulta());
 		pollStatus.setName(poll.getEstadoConsulta().getNombre());
+
+		PollResultsVisibilityResponse pollResultsVisibility = new PollResultsVisibilityResponse();
+		pollResultsVisibility
+				.setResultsVisibilityId(poll.getVisibilidadResultadoConsulta().getIdVisibilidadResultadoConsulta());
+		pollResultsVisibility.setName(poll.getVisibilidadResultadoConsulta().getNombre());
 
 		PollSummaryResponse pollSummary = new PollSummaryResponse();
 		pollSummary.setPollId(poll.getIdConsulta());
@@ -150,6 +159,7 @@ public class ConsultaServiceImpl implements ConsultaService {
 		pollSummary.setVotedByUser(votedByUser);
 		pollSummary.setPollSystem(pollSystem);
 		pollSummary.setStatus(pollStatus);
+		pollSummary.setResultsVisibility(pollResultsVisibility);
 		pollSummary.setPollOptions(pollOptions);
 
 		return pollSummary;
