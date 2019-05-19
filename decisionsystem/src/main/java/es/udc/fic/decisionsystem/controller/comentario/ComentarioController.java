@@ -80,6 +80,7 @@ public class ComentarioController {
 			response.setPollId(comentario.getConsulta().getIdConsulta());
 			response.setUser(user);
 			response.setContent(comentario.getContenido());
+			response.setRemoved(comentario.getEliminado());
 			return response;
 		}).orElseThrow(() -> new ResourceNotFoundException("Comment und with id " + comentarioId));
 	}
@@ -105,6 +106,7 @@ public class ComentarioController {
 			response.setPollId(comentario.getConsulta().getIdConsulta());
 			response.setUser(user);
 			response.setContent(comentario.getContenido());
+			response.setRemoved(comentario.getEliminado());
 			return response;
 		});
 	}
@@ -120,6 +122,7 @@ public class ComentarioController {
 		commentToAdd.setUsuario(user);
 		commentToAdd.setConsulta(consulta);
 		commentToAdd.setContenido(addCommentRequest.getContent());
+		commentToAdd.setEliminado(false);
 
 		// Add comment entity, then add comment relationship
 		Comentario commentAdded = comentarioRepository.save(commentToAdd);
@@ -150,6 +153,7 @@ public class ComentarioController {
 		response.setPollId(commentAdded.getConsulta().getIdConsulta());
 		response.setUser(userResponse);
 		response.setContent(commentAdded.getContenido());
+		response.setRemoved(commentAdded.getEliminado());
 		return response;
 		
 	}
@@ -167,6 +171,7 @@ public class ComentarioController {
 		Comentario commentToAdd = new Comentario();
 		commentToAdd.setUsuario(user);
 		commentToAdd.setConsulta(consulta);
+		commentToAdd.setEliminado(false);
 		commentToAdd.setContenido(addCommentRequest.getContent());
 
 		// Add comment entity, then add comment relationship
@@ -198,6 +203,7 @@ public class ComentarioController {
 		response.setPollId(commentAdded.getConsulta().getIdConsulta());
 		response.setUser(userResponse);
 		response.setContent(commentAdded.getContenido());
+		response.setRemoved(commentAdded.getEliminado());
 		return response;
 		
 		
@@ -239,10 +245,35 @@ public class ComentarioController {
 	}
 
 	@DeleteMapping("/api/comment/{comentarioId}")
-	public ResponseEntity<?> deleteComentario(@PathVariable Long comentarioId) {
-		return comentarioRepository.findById(comentarioId).map(comentario -> {
-			comentarioRepository.delete(comentario);
-			return ResponseEntity.ok().build();
+	public CommentResponse deleteComentario(@PathVariable Long comentarioId) {
+		// Logical remove in case the comment has responses and the responses have responses and so on
+		CommentResponse res = comentarioRepository.findById(comentarioId).map(comentario -> {
+			comentario.setEliminado(true);
+			Comentario updated = comentarioRepository.save(comentario);
+			Usuario user = updated.getUsuario();
+			
+			// Return result
+			CommentResponse response = new CommentResponse();
+			
+			UserDto userResponse = new UserDto();
+			Set<String> roles = new HashSet<>();
+			userResponse.setUserId(user.getIdUsuario());
+			userResponse.setName(user.getNombre());
+			userResponse.setLastName(user.getApellido());
+			userResponse.setEmail(user.getEmail());
+			userResponse.setNickname(user.getNickname());
+			for (Rol r : user.getRoles()) {
+				roles.add(r.getNombre().name());
+			}
+			userResponse.setRoles(roles);
+			
+			response.setCommentId(updated.getIdComentario());
+			response.setPollId(updated.getConsulta().getIdConsulta());
+			response.setUser(userResponse);
+			response.setContent(updated.getContenido());
+			response.setRemoved(updated.getEliminado());
+			return response;
 		}).orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
+		return res;
 	}
 }

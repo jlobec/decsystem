@@ -21,15 +21,23 @@ class Comments extends React.Component {
     // TODO
   };
 
+  handleRemoveComment = comment => {
+    // TODO
+  };
+
   render() {
     const { classes, comments } = this.props;
-    const commentList = comments.map((comment, index) => {
+    const commentList = comments.map(comment => {
+      const isRemovable = this.props.loggedUser.userId === comment.user.userId;
       return (
-        // <Card className={classes.card}>
         <ListItem className={classes.comment} key={`${comment.commentId}}`}>
-          <Comment comment={comment} handleReply={this.replyComment} />
+          <Comment
+            comment={comment}
+            handleReply={this.replyComment}
+            handleRemove={this.props.removeComment}
+            isRemovable={isRemovable}
+          />
         </ListItem>
-        // </Card>
       );
     });
     return (
