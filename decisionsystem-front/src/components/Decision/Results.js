@@ -42,9 +42,9 @@ class Results extends React.Component {
     const showDetailedResults = this.showDetailedResults(poll);
     return (
       <React.Fragment>
-        <Typography variant="h6" gutterBottom>
+        {/* <Typography variant="h6" gutterBottom>
           {`Results publication: ${poll.resultsVisibility.name}`}
-        </Typography>
+        </Typography> */}
         <ExpansionPanel defaultExpanded>
           <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
             <div className={classes.column}>
