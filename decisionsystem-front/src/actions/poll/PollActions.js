@@ -45,6 +45,11 @@ class PollActions {
     return axios.get(url, AuthUtil.getHeaders());
   };
 
+  static doExportPollResults = async pollId => {
+    const url = `${config.baseUrl}api/poll/${pollId}/results/export?format=csv`;
+    return axios.get(url, AuthUtil.getHeaders());
+  };
+
   static doSavePoll = async poll => {
     const url = config.baseUrl + "api/poll";
     const requestBody = {
