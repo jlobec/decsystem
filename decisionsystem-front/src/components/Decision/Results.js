@@ -23,10 +23,28 @@ class Results extends React.Component {
     this.setState({ ...initialState });
   }
 
+  showDetailedResults = poll => {
+    const visibilityConfig = poll.resultsVisibility.name;
+    if ("Private" === visibilityConfig) {
+      return false;
+    }
+    if ("Public" === visibilityConfig) {
+      return true;
+    }
+    if ("PrivateUntilClosed" === visibilityConfig) {
+      const pollStatus = poll.status.name;
+      return "Closed" === pollStatus;
+    }
+  };
+
   render() {
     const { classes, poll, results } = this.props;
+    const showDetailedResults = this.showDetailedResults(poll);
     return (
       <React.Fragment>
+        <Typography variant="h6" gutterBottom>
+          {`Results publication: ${poll.resultsVisibility.name}`}
+        </Typography>
         <ExpansionPanel defaultExpanded>
           <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
             <div className={classes.column}>
@@ -38,24 +56,26 @@ class Results extends React.Component {
           </ExpansionPanelDetails>
         </ExpansionPanel>
 
-        <ExpansionPanel defaultExpanded>
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-            <div className={classes.column}>
-              <Typography className={classes.heading}>
-                Detailed Results
-              </Typography>
-            </div>
-          </ExpansionPanelSummary>
-          <ExpansionPanelDetails className={classes.details}>
-            <TableResults poll={poll} results={results} />
-          </ExpansionPanelDetails>
-          <Divider />
-          <ExpansionPanelActions>
-            <Button size="small" color="primary" variant="outlined">
-              Export
-            </Button>
-          </ExpansionPanelActions>
-        </ExpansionPanel>
+        {showDetailedResults && (
+          <ExpansionPanel defaultExpanded>
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+              <div className={classes.column}>
+                <Typography className={classes.heading}>
+                  Detailed Results
+                </Typography>
+              </div>
+            </ExpansionPanelSummary>
+            <ExpansionPanelDetails className={classes.details}>
+              <TableResults poll={poll} results={results} />
+            </ExpansionPanelDetails>
+            <Divider />
+            <ExpansionPanelActions>
+              <Button size="small" color="primary" variant="outlined">
+                Export
+              </Button>
+            </ExpansionPanelActions>
+          </ExpansionPanel>
+        )}
       </React.Fragment>
     );
   }
