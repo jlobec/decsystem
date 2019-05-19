@@ -41,6 +41,9 @@ public class Comentario extends AuditModel {
 	@Column(name = "contenido")
 	private String contenido;
 
+	@Column(name = "eliminado")
+	private Boolean eliminado;
+
 	public Comentario() {
 		super();
 	}
@@ -82,6 +85,14 @@ public class Comentario extends AuditModel {
 
 	public void setContenido(String contenido) {
 		this.contenido = contenido;
+	}
+
+	public Boolean getEliminado() {
+		return eliminado;
+	}
+
+	public void setEliminado(Boolean eliminado) {
+		this.eliminado = eliminado;
 	}
 
 }

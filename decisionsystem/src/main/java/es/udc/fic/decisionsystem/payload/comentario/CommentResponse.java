@@ -8,6 +8,7 @@ public class CommentResponse {
 	private Long pollId;
 	private UserDto user;
 	private String content;
+	private Boolean removed;
 
 	public Long getCommentId() {
 		return commentId;
@@ -39,6 +40,14 @@ public class CommentResponse {
 
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public Boolean getRemoved() {
+		return removed;
+	}
+
+	public void setRemoved(Boolean removed) {
+		this.removed = removed;
 	}
 
 }

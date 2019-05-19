@@ -6,6 +6,7 @@ import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
 import ReplyIcon from "@material-ui/icons/Reply";
+import DeleteIcon from "@material-ui/icons/Delete";
 import Tooltip from "@material-ui/core/Tooltip";
 
 const initialState = {
@@ -21,9 +22,31 @@ class Comment extends React.Component {
     this.setState({ ...initialState });
   }
 
+  handleRemoveComment = () => {
+    this.props.handleRemove(this.props.comment);
+  };
+
+  renderRemovedComment = () => {
+    return (
+      <React.Fragment>
+        <ListItemAvatar>
+          <Avatar>{``}</Avatar>
+        </ListItemAvatar>
+        <ListItemText
+          primary={` `}
+          secondary={` This comment has been removed. `}
+        />
+        <ListItemSecondaryAction />
+      </React.Fragment>
+    );
+  };
+
   render() {
-    const { classes, comment } = this.props;
+    const { classes, comment, isRemovable } = this.props;
     const user = comment.user;
+    if (comment.removed) {
+      return this.renderRemovedComment();
+    }
     return (
       <React.Fragment>
         <ListItemAvatar>
@@ -36,16 +59,14 @@ class Comment extends React.Component {
           secondary={`${comment.content} `}
         />
 
-        <ListItemSecondaryAction>
-          {/* <IconButton
-              aria-label="Delete"
-              onClick={() => {
-                this.handleRemoveMember(assembly, member);
-              }}
-            >
+        <ListItemSecondaryAction />
+        {isRemovable && (
+          <Tooltip title="Delete" aria-label="Delete">
+            <IconButton onClick={this.handleRemoveComment}>
               <DeleteIcon />
-            </IconButton> */}
-        </ListItemSecondaryAction>
+            </IconButton>
+          </Tooltip>
+        )}
         <Tooltip title="Reply" aria-label="Reply">
           <IconButton>
             <ReplyIcon />

@@ -102,6 +102,25 @@ class Poll extends React.Component {
     this.handleShowSnackbarForAddComment(savedComment);
   };
 
+  removeComment = async comment => {
+    const commentId = comment.commentId;
+    const { data: removedComment } = await CommentActions.doRemoveComment(
+      commentId
+    );
+
+    if (removedComment) {
+      const newComments = [...this.state.comments];
+      const foundIndex = newComments.findIndex(
+        comment => comment.commentId === commentId
+      );
+      newComments[foundIndex] = removedComment;
+      this.setState({
+        comments: newComments
+      });
+    }
+    this.handleShowSnackbarForRemoveComment(removedComment);
+  };
+
   handleShowSnackbarForAddComment = successful => {
     const okMessage = {
       open: true,
@@ -112,6 +131,21 @@ class Poll extends React.Component {
       open: true,
       variant: "error",
       message: `Comment could not be added`
+    };
+    const messageToShow = successful ? okMessage : errorMessage;
+    this.snack.openWith(messageToShow);
+  };
+
+  handleShowSnackbarForRemoveComment = successful => {
+    const okMessage = {
+      open: true,
+      variant: "success",
+      message: `Comment removed successfully`
+    };
+    const errorMessage = {
+      open: true,
+      variant: "error",
+      message: `Comment could not be removed`
     };
     const messageToShow = successful ? okMessage : errorMessage;
     this.snack.openWith(messageToShow);
@@ -144,8 +178,10 @@ class Poll extends React.Component {
                 {!this.state.loadingComments && (
                   <Comments
                     poll={this.state.poll}
+                    loggedUser={this.state.user}
                     comments={this.state.comments}
                     addComment={this.addComment}
+                    removeComment={this.removeComment}
                   />
                 )}
               </TabContainer>

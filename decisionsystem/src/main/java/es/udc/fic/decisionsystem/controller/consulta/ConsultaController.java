@@ -191,6 +191,7 @@ public class ConsultaController {
 			response.setPollId(comentario.getConsulta().getIdConsulta());
 			response.setUser(user);
 			response.setContent(comentario.getContenido());
+			response.setRemoved(comentario.getEliminado());
 			return response;
 		});
 	}
