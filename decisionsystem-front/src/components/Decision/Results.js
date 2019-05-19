@@ -97,6 +97,7 @@ class Results extends React.Component {
             <ExpansionPanelActions>
               <Button size="small" color="primary" variant="outlined">
                 <CSVLink
+                  className={classes.link}
                   data={this.state.resultsToExport}
                   filename={`${poll.title}.csv`}
                   target="_blank"
@@ -140,10 +141,7 @@ const styles = theme => ({
   },
   link: {
     color: theme.palette.primary.main,
-    textDecoration: "none",
-    "&:hover": {
-      textDecoration: "underline"
-    }
+    textDecoration: "none"
   }
 });
 
