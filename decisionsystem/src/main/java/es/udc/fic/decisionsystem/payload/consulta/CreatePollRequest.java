@@ -32,6 +32,8 @@ public class CreatePollRequest {
 	@Positive
 	private Integer assemblyId;
 
+	@NotNull
+	@Positive
 	private Integer resultsVisibilityId;
 
 	private List<AddPollOptionRequest> pollOptions;

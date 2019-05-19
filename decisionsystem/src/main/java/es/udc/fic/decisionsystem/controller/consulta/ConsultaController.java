@@ -43,6 +43,7 @@ import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
 import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollOptionVotedResponse;
+import es.udc.fic.decisionsystem.payload.consulta.PollResultsVisibilityResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollStatusResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultOption;
@@ -134,6 +135,16 @@ public class ConsultaController {
 			PollStatusResponse result = new PollStatusResponse();
 			result.setName(status.getNombre());
 			result.setStatusId(status.getIdEstadoConsulta());
+			return result;
+		}).collect(Collectors.toList());
+	}
+
+	@GetMapping("/api/poll/resultsvisibility")
+	public List<PollResultsVisibilityResponse> getResultsVisibilityOptions() {
+		return visibilidadResultadoConsultaRepository.findAll().stream().map(resultsVisibility -> {
+			PollResultsVisibilityResponse result = new PollResultsVisibilityResponse();
+			result.setName(resultsVisibility.getNombre());
+			result.setResultsVisibilityId(resultsVisibility.getIdVisibilidadResultadoConsulta());
 			return result;
 		}).collect(Collectors.toList());
 	}
@@ -299,6 +310,15 @@ public class ConsultaController {
 			pollSystemResponse.setName(pollSystem.get().getNombre());
 			pollSystemResponse.setDescription(pollSystem.get().getDescripcion());
 
+			PollStatusResponse pollStatus = new PollStatusResponse();
+			pollStatus.setStatusId(savedPoll.getEstadoConsulta().getIdEstadoConsulta());
+			pollStatus.setName(savedPoll.getEstadoConsulta().getNombre());
+
+			PollResultsVisibilityResponse pollResultsVisibility = new PollResultsVisibilityResponse();
+			pollResultsVisibility.setResultsVisibilityId(
+					savedPoll.getVisibilidadResultadoConsulta().getIdVisibilidadResultadoConsulta());
+			pollResultsVisibility.setName(savedPoll.getVisibilidadResultadoConsulta().getNombre());
+
 			PollSummaryResponse response = new PollSummaryResponse();
 			response.setPollId(savedPoll.getIdConsulta());
 			response.setTitle(savedPoll.getTitulo());
@@ -307,6 +327,8 @@ public class ConsultaController {
 			response.setEndsAt(savedPoll.getFechaHoraFin().getTime());
 			response.setVotedByUser(false);
 			response.setPollSystem(pollSystemResponse);
+			response.setStatus(pollStatus);
+			response.setResultsVisibility(pollResultsVisibility);
 			response.setPollOptions(pollOptions);
 
 			return response;
