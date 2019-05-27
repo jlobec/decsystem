@@ -167,6 +167,10 @@ class PollSummary extends React.Component {
     }
   };
 
+  handleUndoVote = () => {
+    const { poll } = this.props;
+  };
+
   renderPollOptions = (pollSystem, pollOptions) => {
     return pollOptions.map(pollOption => {
       return (
@@ -218,7 +222,7 @@ class PollSummary extends React.Component {
                 open={Boolean(this.state.anchorEl)}
                 onClose={this.handleCloseMenu}
               >
-                <MenuItem onClick={this.handleCloseMenu}>Undo vote</MenuItem>
+                <MenuItem onClick={this.handleUndoVote}>Undo vote</MenuItem>
               </Menu>
             </Grid>
           </Grid>
