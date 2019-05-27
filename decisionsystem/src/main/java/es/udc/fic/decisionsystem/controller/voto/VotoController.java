@@ -59,6 +59,11 @@ public class VotoController {
 	public Page<Voto> getVoto(Pageable pageable) {
 		return votoRepository.findAll(pageable);
 	}
+	
+	@PostMapping("/api/vote/undo")
+	public void undoVote(Principal principal) {
+		// Check votes for the logged user
+	}
 
 	@PostMapping("/api/vote")
 	public VoteResponse createVoto(@Valid @RequestBody VoteRequest voteRequest, Principal principal) {
