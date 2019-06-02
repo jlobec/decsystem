@@ -31,16 +31,16 @@ class Notifications extends React.Component {
   };
 
   dismissNotification = async notificationId => {
-    const {
-      data: result
-    } = await NotificationActions.doMarkNotificationAsChecked(notificationId);
+    const result = await NotificationActions.doMarkNotificationAsChecked(
+      notificationId
+    );
     if (result) {
       const newNotificationList = [...this.state.notifications].filter(
         notification => {
           return notification.notificationId !== notificationId;
         }
       );
-      console.log(newNotificationList);
+
       this.setState({ notifications: newNotificationList });
     }
   };

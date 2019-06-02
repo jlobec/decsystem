@@ -19,8 +19,9 @@ class Notification extends React.Component {
         <Paper className={classes.notification}>
           <ListItem key={`${notification.notificationId}}`}>
             <ListItemText primary={` ${notification.content}`} />
-            <ListItemSecondaryAction />
+            {/* <ListItemSecondaryAction> */}
             <Button
+              className={classes.dismissButton}
               variant="outlined"
               color="primary"
               onClick={this.handleDismissNotification}
@@ -54,6 +55,9 @@ const styles = theme => ({
       marginRigth: "10%",
       marginLeft: "10%"
     }
+  },
+  dismissButton: {
+    margin: theme.spacing.unit
   }
 });
 
