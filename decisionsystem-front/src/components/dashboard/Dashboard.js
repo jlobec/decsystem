@@ -36,6 +36,7 @@ import Notifications from "../notifications/Notifications";
 import Decisions from "../Decision/Decisions";
 import UserActions from "../../actions/user/UserActions";
 import CommonUtils from "../../actions/util/CommonUtils";
+import NotificationListener from "./NotificationListener";
 
 const drawerWidth = 240;
 
@@ -281,6 +282,7 @@ class Dashboard extends React.Component {
             <SimpleTable />
           </div> */}
         </main>
+        <NotificationListener />
       </div>
     );
   }
