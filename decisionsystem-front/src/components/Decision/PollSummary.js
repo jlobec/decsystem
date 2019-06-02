@@ -12,7 +12,10 @@ import Chip from "@material-ui/core/Chip";
 import Grid from "@material-ui/core/Grid";
 import IconButton from "@material-ui/core/IconButton";
 import CommentIcon from "@material-ui/icons/Comment";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
 import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
 import PollOption from "./PollOption";
 import CommonUtils from "../../actions/util/CommonUtils";
 
@@ -20,7 +23,8 @@ const initialState = {
   loading: false,
   selectedOptions: [],
   comments: [],
-  poll: {}
+  poll: {},
+  anchorEl: null
 };
 
 class PollSummary extends React.Component {
@@ -36,6 +40,14 @@ class PollSummary extends React.Component {
       hour12: false
     };
     return new Intl.DateTimeFormat("en-US", options).format(new Date(time));
+  };
+
+  handleOpenMenu = event => {
+    this.setState({ anchorEl: event.currentTarget });
+  };
+
+  handleCloseMenu = () => {
+    this.setState({ anchorEl: null });
   };
 
   handleIsDisabled = () => {
@@ -182,7 +194,7 @@ class PollSummary extends React.Component {
     return (
       <Card className={classes.card}>
         <CardContent>
-          <Grid container spacing={8}>
+          <Grid container alignItems="center" spacing={40}>
             <Grid item xs>
               <Typography
                 gutterBottom
@@ -195,6 +207,19 @@ class PollSummary extends React.Component {
             </Grid>
             <Grid item>
               <Chip label={`${pollSystem.name}`} color="primary" />
+            </Grid>
+            <Grid item>
+              <IconButton aria-label="Options" onClick={this.handleOpenMenu}>
+                <MoreVertIcon />
+              </IconButton>
+              <Menu
+                id="simple-menu"
+                anchorEl={this.state.anchorEl}
+                open={Boolean(this.state.anchorEl)}
+                onClose={this.handleCloseMenu}
+              >
+                <MenuItem onClick={this.handleCloseMenu}>Undo vote</MenuItem>
+              </Menu>
             </Grid>
           </Grid>
           <Typography className={classes.pos} color="textSecondary">
