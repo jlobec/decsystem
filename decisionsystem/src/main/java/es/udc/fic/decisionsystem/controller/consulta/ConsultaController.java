@@ -407,15 +407,21 @@ public class ConsultaController {
 			}
 			
 			// Filter the ones who havent voted
-			usersToRemind = new HashSet<>(pollUsers);
+			for (Usuario user: pollUsers) {
+				PollSummaryResponse pollSummary = consultaService.buildPollSummaryResponse(consulta, user);
+				if (!pollSummary.isVotedByUser()) {
+					usersToRemind.add(user);
+				}
+			}
 			
 			// Save a notification per user
 			for (Usuario u : usersToRemind) {
 				Notificacion notification = new Notificacion();
 				notification.setContenido(String.format("Please remember to vote poll '%s' ", consulta.getTitulo()));
 				notification.setUsuario(u);
+				notification.setEnviada(false);
 				notification.setVista(false);
-				Notificacion saved = notificacionRepository.save(notification);
+				notificacionRepository.save(notification);
 			}
 		}
 

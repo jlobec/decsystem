@@ -37,14 +37,29 @@ public class NotificacionController {
 					NotificationResponse notification = new NotificationResponse();
 					notification.setNotificationId(n.getIdNotificacion());
 					notification.setContent(n.getContenido());
+					notification.setCheckedByUser(n.isVista());
+					notification.setSentToUser(n.isEnviada());
 					return notification;
 		}).collect(Collectors.toList());
 		
 		return notifications;
 	}
 	
-	@PostMapping("/api/notification/{notificationId}/shown")
+	@PostMapping("/api/notification/{notificationId}/sent")
 	public ResponseEntity<?> markNotificationAsShown(@PathVariable Long notificationId){
+		
+		Notificacion not = notificacionRepository.findById(notificationId)
+		.orElseThrow(() -> new ResourceNotFoundException("Notification not found"));
+		
+		not.setEnviada(true);
+		
+		notificacionRepository.save(not);
+		
+		return ResponseEntity.ok().build();
+	}
+	
+	@PostMapping("/api/notification/{notificationId}/checked")
+	public ResponseEntity<?> markNotificationAsChecked(@PathVariable Long notificationId){
 		
 		Notificacion not = notificacionRepository.findById(notificationId)
 		.orElseThrow(() -> new ResourceNotFoundException("Notification not found"));

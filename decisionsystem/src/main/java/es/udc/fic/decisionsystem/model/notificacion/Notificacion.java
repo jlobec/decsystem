@@ -28,6 +28,9 @@ public class Notificacion extends AuditModel {
 	@Size(max = 300)
 	private String contenido;
 
+	@Column(name = "enviada")
+	private boolean enviada;
+
 	@Column(name = "vista")
 	private boolean vista;
 
@@ -39,12 +42,22 @@ public class Notificacion extends AuditModel {
 		super();
 	}
 
-	public Notificacion(Long idNotificacion, @Size(max = 300) String contenido, boolean vista, Usuario usuario) {
+	public Notificacion(Long idNotificacion, @Size(max = 300) String contenido, boolean enviada, boolean vista,
+			Usuario usuario) {
 		super();
 		this.idNotificacion = idNotificacion;
 		this.contenido = contenido;
+		this.enviada = enviada;
 		this.vista = vista;
 		this.usuario = usuario;
+	}
+
+	public boolean isEnviada() {
+		return enviada;
+	}
+
+	public void setEnviada(boolean enviada) {
+		this.enviada = enviada;
 	}
 
 	public Long getIdNotificacion() {

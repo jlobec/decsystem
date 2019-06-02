@@ -14,7 +14,7 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Long
 
 	@Query("SELECT n FROM Notificacion n "
 			+ "INNER JOIN Usuario u ON n.usuario = u "
-			+ "WHERE u.idUsuario = :idUser AND n.vista = false")
+			+ "WHERE u.idUsuario = :idUser AND n.enviada = false")
 	List<Notificacion> findUnSeenByUser(@Param("idUser") Long idUser);
 	
 	@Query("SELECT n FROM Notificacion n "
