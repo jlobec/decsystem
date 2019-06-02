@@ -414,6 +414,7 @@ public class ConsultaController {
 				Notificacion notification = new Notificacion();
 				notification.setContenido(String.format("Please remember to vote poll '%s' ", consulta.getTitulo()));
 				notification.setUsuario(u);
+				notification.setVista(false);
 				Notificacion saved = notificacionRepository.save(notification);
 			}
 		}

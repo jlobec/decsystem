@@ -20,6 +20,7 @@ import PollOption from "./PollOption";
 import CommonUtils from "../../actions/util/CommonUtils";
 import UserActions from "../../actions/user/UserActions";
 import AssemblyActions from "../../actions/assembly/AssemblyActions";
+import PollActions from "../../actions/poll/PollActions";
 
 const initialState = {
   loading: false,
@@ -158,8 +159,15 @@ class PollSummary extends React.Component {
     this.props.handleVote(this.props.poll, [...this.state.selectedOptions]);
   };
 
-  handleSendVoteReminder = () => {
-    // TODO send notification to all users that havent voted yet the poll
+  handleSendVoteReminder = async () => {
+    // send notification to all users that havent voted yet the poll
+    const { data: result } = await PollActions.doSendVoteReminder(
+      this.props.poll.pollId
+    );
+    console.log(result);
+    if (result) {
+      // TODO show snackbar
+    }
   };
 
   handleClickComment = () => {
@@ -208,6 +216,10 @@ class PollSummary extends React.Component {
         }
       }
     }
+  }
+
+  componentWillUnmount() {
+    this.setState({ ...initialState });
   }
 
   render() {

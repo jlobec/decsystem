@@ -51,7 +51,7 @@ class PollActions {
   };
 
   static doSendVoteReminder = async pollId => {
-    const url = `${config.baseUrl}api/${pollId}/reminder`;
+    const url = `${config.baseUrl}api/poll/${pollId}/reminder`;
     const requestBody = {
       pollId: pollId,
       reminderType: `unvoted_poll`
