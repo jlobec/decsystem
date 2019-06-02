@@ -1,5 +1,6 @@
 package es.udc.fic.decisionsystem.controller.notificacion;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,17 +31,32 @@ public class NotificacionController {
 	
 	
 	@GetMapping("/api/notification")
-	public List<NotificationResponse> getAsambleaUsers(@RequestParam(value = "userId", required = false) Long userId) {
+	public List<NotificationResponse> getUserNotifications(@RequestParam(value = "userId", required = false) Long userId,
+			@RequestParam(value = "notSentToUser", required = false) boolean notSentToUser,
+			@RequestParam(value = "notCheckedByUser", required = false) boolean notCheckedByUser) {
 		
-		List<NotificationResponse> notifications = notificacionRepository.findUnSeenByUser(userId)
-				.stream().map(n -> {
-					NotificationResponse notification = new NotificationResponse();
-					notification.setNotificationId(n.getIdNotificacion());
-					notification.setContent(n.getContenido());
-					notification.setCheckedByUser(n.isVista());
-					notification.setSentToUser(n.isEnviada());
-					return notification;
-		}).collect(Collectors.toList());
+		List<NotificationResponse> notifications = new ArrayList<>();
+		if (notSentToUser) {
+			notifications = notificacionRepository.findNotSentToUser(userId)
+					.stream().map(n -> {
+						NotificationResponse notification = new NotificationResponse();
+						notification.setNotificationId(n.getIdNotificacion());
+						notification.setContent(n.getContenido());
+						notification.setCheckedByUser(n.isVista());
+						notification.setSentToUser(n.isEnviada());
+						return notification;
+			}).collect(Collectors.toList());
+		} else if (notCheckedByUser) {
+			notifications = notificacionRepository.findPendingToSee(userId)
+					.stream().map(n -> {
+						NotificationResponse notification = new NotificationResponse();
+						notification.setNotificationId(n.getIdNotificacion());
+						notification.setContent(n.getContenido());
+						notification.setCheckedByUser(n.isVista());
+						notification.setSentToUser(n.isEnviada());
+						return notification;
+			}).collect(Collectors.toList());
+		}
 		
 		return notifications;
 	}

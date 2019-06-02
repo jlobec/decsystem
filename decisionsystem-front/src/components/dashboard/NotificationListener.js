@@ -9,12 +9,12 @@ class NotificationListener extends React.Component {
 
     const {
       data: notifications
-    } = await NotificationActions.doGetUnseenNotifications(loggedUser.userId);
+    } = await NotificationActions.doGetNotSentNotifications(loggedUser.userId);
 
     if (notifications) {
       for (var index = 0; index < notifications.length; index++) {
         this.createNotification(notifications[index].content);
-        this.markNotificationAsShown(notifications[index].notificationId);
+        this.doMarkNotificationAsSent(notifications[index].notificationId);
       }
     }
   };
@@ -27,10 +27,11 @@ class NotificationListener extends React.Component {
     setTimeout(n.close.bind(n), 5000);
   };
 
-  markNotificationAsShown = async notificationId => {
-    const {
-      data: result
-    } = await NotificationActions.doMarkNotificationAsShown(notificationId);
+  doMarkNotificationAsSent = async notificationId => {
+    console.log(notificationId);
+    const { data: result } = await NotificationActions.doMarkNotificationAsSent(
+      notificationId
+    );
     if (result) {
       // TODO OK Jose Luis
     }
