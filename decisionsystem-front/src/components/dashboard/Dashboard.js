@@ -95,7 +95,37 @@ class Dashboard extends React.Component {
     if (loggedUser) {
       this.setState({ user: loggedUser });
     }
+    this.notificationPermissions();
   }
+
+  notificationPermissions = () => {
+    console.log("permisos");
+    // Comprobamos si el navegador soporta las notificaciones
+    if (!("Notification" in window)) {
+      alert("Este navegador no soporta las notificaciones del sistema");
+    }
+
+    // Comprobamos si ya nos habían dado permiso
+    else if (Notification.permission === "granted") {
+      // Si esta correcto lanzamos la notificación
+      // var notification = new Notification("Holiwis :D");
+    }
+
+    // Si no, tendremos que pedir permiso al usuario
+    else if (Notification.permission !== "denied") {
+      Notification.requestPermission(function(permission) {
+        // Si el usuario acepta, lanzamos la notificación
+        if (permission === "granted") {
+          var notification = new Notification(
+            "Gracias por aceptar las notificaciones"
+          );
+        }
+      });
+    }
+
+    // Finalmente, si el usuario te ha denegado el permiso y
+    // quieres ser respetuoso no hay necesidad molestar más.
+  };
 
   render() {
     const { classes } = this.props;
