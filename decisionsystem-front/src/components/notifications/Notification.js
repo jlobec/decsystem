@@ -4,7 +4,6 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 
 class Notification extends React.Component {
   handleDismissNotification = () => {
@@ -19,7 +18,7 @@ class Notification extends React.Component {
         <Paper className={classes.notification}>
           <ListItem key={`${notification.notificationId}}`}>
             <ListItemText primary={` ${notification.content}`} />
-            {/* <ListItemSecondaryAction> */}
+
             <Button
               className={classes.dismissButton}
               variant="outlined"
