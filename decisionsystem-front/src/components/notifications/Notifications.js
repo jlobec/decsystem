@@ -41,6 +41,7 @@ class Notifications extends React.Component {
         }
       );
 
+      this.props.updateNotificationsNumber(newNotificationList.length);
       this.setState({ notifications: newNotificationList });
     }
   };
