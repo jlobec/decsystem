@@ -37,12 +37,15 @@ import es.udc.fic.decisionsystem.model.consulta.EstadoConsultaEnum;
 import es.udc.fic.decisionsystem.model.consulta.VisibilidadResultadoConsulta;
 import es.udc.fic.decisionsystem.model.consultaasamblea.ConsultaAsamblea;
 import es.udc.fic.decisionsystem.model.consultaopcion.ConsultaOpcion;
+import es.udc.fic.decisionsystem.model.notificacion.Notificacion;
 import es.udc.fic.decisionsystem.model.rol.Rol;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsulta;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsultaEnum;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.util.DateUtil;
 import es.udc.fic.decisionsystem.payload.ApiResponse;
+import es.udc.fic.decisionsystem.payload.asamblea.AssemblyPollRequest;
+import es.udc.fic.decisionsystem.payload.asamblea.AssemblyResponse;
 import es.udc.fic.decisionsystem.payload.comentario.CommentResponse;
 import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
 import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
@@ -51,6 +54,7 @@ import es.udc.fic.decisionsystem.payload.consulta.PollOptionVotedResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollResultsVisibilityResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollStatusResponse;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
+import es.udc.fic.decisionsystem.payload.consulta.notificaciones.PollReminderRequest;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultCsv;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResults;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultsItem;
@@ -63,6 +67,7 @@ import es.udc.fic.decisionsystem.repository.consulta.EstadoConsultaRepository;
 import es.udc.fic.decisionsystem.repository.consulta.VisibilidadResultadoConsultaRepository;
 import es.udc.fic.decisionsystem.repository.consultaasamblea.ConsultaAsambleaRepository;
 import es.udc.fic.decisionsystem.repository.consultaopcion.ConsultaOpcionRepository;
+import es.udc.fic.decisionsystem.repository.notificacion.NotificacionRepository;
 import es.udc.fic.decisionsystem.repository.sistemaconsulta.SistemaConsultaRepository;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
 import es.udc.fic.decisionsystem.repository.voto.VotoRepository;
@@ -97,6 +102,9 @@ public class ConsultaController {
 
 	@Autowired
 	private VisibilidadResultadoConsultaRepository visibilidadResultadoConsultaRepository;
+	
+	@Autowired
+	private NotificacionRepository notificacionRepository;
 
 	@Autowired
 	private ConsultaService consultaService;
@@ -150,7 +158,7 @@ public class ConsultaController {
 			return result;
 		}).collect(Collectors.toList());
 	}
-
+	
 	@GetMapping("/api/poll/open")
 	public Page<PollSummaryResponse> getOpenPolls(Pageable pageable, Principal principal,
 			@RequestParam(value = "pollTypeId", required = false) Integer pollTypeId,
@@ -371,6 +379,53 @@ public class ConsultaController {
 		consultaOpcionRepository.save(option);
 
 		return ResponseEntity.ok().body(new ApiResponse(true, "Option added"));
+
+	}
+	
+	
+	@PostMapping("/api/poll/{consultaId}/reminder")
+	public ResponseEntity<?> addReminder(@Valid @RequestBody PollReminderRequest pollReminderRequest,
+			@PathVariable Long consultaId) {
+		
+		Consulta consulta = consultaRepository.findById(consultaId).map(c -> {
+			return c;
+		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
+		
+		// Check by type
+		Set<Usuario> usersToRemind = new HashSet<>();
+		Set<Usuario> pollUsers = new HashSet<>();
+		if ("unvoted_poll".equalsIgnoreCase(pollReminderRequest.getReminderType())) {
+			
+			// Get all registered users for the poll 
+			List<Asamblea> pollAssemblies = asambleaRepository.findByIdConsulta(consultaId);
+			if (pollAssemblies != null && !pollAssemblies.isEmpty()) {
+				
+				for (Asamblea a: pollAssemblies) {
+					List<Usuario> assemblyUsers = usuarioRepository.findAllByIdAsamblea(a.getIdAsamblea());
+					pollUsers.addAll(assemblyUsers);
+				}
+			}
+			
+			// Filter the ones who havent voted
+			for (Usuario user: pollUsers) {
+				PollSummaryResponse pollSummary = consultaService.buildPollSummaryResponse(consulta, user);
+				if (!pollSummary.isVotedByUser()) {
+					usersToRemind.add(user);
+				}
+			}
+			
+			// Save a notification per user
+			for (Usuario u : usersToRemind) {
+				Notificacion notification = new Notificacion();
+				notification.setContenido(String.format("Please remember to vote poll '%s' ", consulta.getTitulo()));
+				notification.setUsuario(u);
+				notification.setEnviada(false);
+				notification.setVista(false);
+				notificacionRepository.save(notification);
+			}
+		}
+
+		return ResponseEntity.ok().body(new ApiResponse(true, "Saved reminders"));
 
 	}
 

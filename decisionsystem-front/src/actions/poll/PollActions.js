@@ -50,6 +50,15 @@ class PollActions {
     return axios.get(url, AuthUtil.getHeaders());
   };
 
+  static doSendVoteReminder = async pollId => {
+    const url = `${config.baseUrl}api/poll/${pollId}/reminder`;
+    const requestBody = {
+      pollId: pollId,
+      reminderType: `unvoted_poll`
+    };
+    return axios.post(url, requestBody, AuthUtil.getHeaders());
+  };
+
   static doSavePoll = async poll => {
     const url = config.baseUrl + "api/poll";
     const requestBody = {
