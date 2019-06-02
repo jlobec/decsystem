@@ -87,7 +87,7 @@ class AddMember extends React.Component {
       <div>
         <Button
           className={classes.btnAddMember}
-          variant="contained"
+          variant="outlined"
           color="secondary"
           onClick={this.handleClickOpen}
         >

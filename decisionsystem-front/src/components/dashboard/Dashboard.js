@@ -63,7 +63,7 @@ const sectionPaths = {
 class Dashboard extends React.Component {
   state = {
     open: false,
-    title: "DecisionApp",
+    title: "Decide",
     user: {
       name: "",
       lastName: ""
