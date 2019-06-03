@@ -21,10 +21,6 @@ class Comments extends React.Component {
     // TODO
   };
 
-  handleRemoveComment = comment => {
-    // TODO
-  };
-
   render() {
     const { classes, comments } = this.props;
     const commentList = comments.map(comment => {

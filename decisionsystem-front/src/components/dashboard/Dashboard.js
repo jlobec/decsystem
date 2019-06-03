@@ -284,10 +284,6 @@ class Dashboard extends React.Component {
             component={Assemblies}
           />
           <Route path={`${sectionPaths.settings.path}`} component={Settings} />
-          {/* <Route
-            path={`${sectionPaths.notifications.path}`}
-            component={Notifications}
-          /> */}
           <Route
             path={`${sectionPaths.notifications.path}`}
             render={routeProps => (
@@ -297,16 +293,6 @@ class Dashboard extends React.Component {
               />
             )}
           />
-
-          {/* <Typography component="div" className={classes.chartContainer}>
-            <SimpleLineChart />
-          </Typography> */}
-          {/* <Typography variant="h4" gutterBottom component="h2">
-            Products
-          </Typography>
-          <div className={classes.tableContainer}>
-            <SimpleTable />
-          </div> */}
         </main>
         <NotificationListener />
       </div>

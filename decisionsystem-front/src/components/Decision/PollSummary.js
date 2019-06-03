@@ -166,7 +166,7 @@ class PollSummary extends React.Component {
     );
     console.log(result);
     if (result) {
-      // TODO show snackbar
+      this.handleCloseMenu();
     }
   };
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { withStyles } from "@material-ui/core";
+import { withStyles, Typography } from "@material-ui/core";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
@@ -7,6 +7,8 @@ import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
 import ReplyIcon from "@material-ui/icons/Reply";
 import DeleteIcon from "@material-ui/icons/Delete";
+import ThumbUpIcon from "@material-ui/icons/ThumbUpAltTwoTone";
+import ThumbUpOutlinedIcon from "@material-ui/icons/ThumbUpOutlined";
 import Tooltip from "@material-ui/core/Tooltip";
 
 const initialState = {
@@ -47,6 +49,7 @@ class Comment extends React.Component {
     if (comment.removed) {
       return this.renderRemovedComment();
     }
+    const reactionsNumber = comment.reactions.length;
     return (
       <React.Fragment>
         <ListItemAvatar>
@@ -59,7 +62,6 @@ class Comment extends React.Component {
           secondary={`${comment.content} `}
         />
 
-        <ListItemSecondaryAction />
         {isRemovable && (
           <Tooltip title="Delete" aria-label="Delete">
             <IconButton onClick={this.handleRemoveComment}>
@@ -67,19 +69,39 @@ class Comment extends React.Component {
             </IconButton>
           </Tooltip>
         )}
-        <Tooltip title="Reply" aria-label="Reply">
+        {/* <Tooltip title="Reply" aria-label="Reply">
           <IconButton>
             <ReplyIcon />
           </IconButton>
-        </Tooltip>
+        </Tooltip> */}
+
+        {/* Reactions */}
+        {!comment.reactedByUser && (
+          <Tooltip title="Like" aria-label="Like">
+            <IconButton className={classes.likeButton}>
+              <ThumbUpOutlinedIcon />
+            </IconButton>
+          </Tooltip>
+        )}
+        {comment.reactedByUser && (
+          <IconButton className={classes.likeButton}>
+            <ThumbUpIcon className={classes.likedButton} />
+          </IconButton>
+        )}
+        <Typography variant="overline" display="block">
+          {reactionsNumber}
+        </Typography>
       </React.Fragment>
     );
   }
 }
 
 const styles = theme => ({
-  commentAction: {
-    // marginRight: "90%"
+  likedButton: {
+    color: "rgb(66, 140, 244)"
+  },
+  likeButton: {
+    paddingRight: "4px"
   }
 });
 

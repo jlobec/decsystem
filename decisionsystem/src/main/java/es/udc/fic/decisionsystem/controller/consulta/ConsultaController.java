@@ -38,14 +38,14 @@ import es.udc.fic.decisionsystem.model.consulta.VisibilidadResultadoConsulta;
 import es.udc.fic.decisionsystem.model.consultaasamblea.ConsultaAsamblea;
 import es.udc.fic.decisionsystem.model.consultaopcion.ConsultaOpcion;
 import es.udc.fic.decisionsystem.model.notificacion.Notificacion;
+import es.udc.fic.decisionsystem.model.reaccion.Reaccion;
 import es.udc.fic.decisionsystem.model.rol.Rol;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsulta;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsultaEnum;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.util.DateUtil;
 import es.udc.fic.decisionsystem.payload.ApiResponse;
-import es.udc.fic.decisionsystem.payload.asamblea.AssemblyPollRequest;
-import es.udc.fic.decisionsystem.payload.asamblea.AssemblyResponse;
+import es.udc.fic.decisionsystem.payload.comentario.CommentReactionResponse;
 import es.udc.fic.decisionsystem.payload.comentario.CommentResponse;
 import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
 import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
@@ -68,9 +68,9 @@ import es.udc.fic.decisionsystem.repository.consulta.VisibilidadResultadoConsult
 import es.udc.fic.decisionsystem.repository.consultaasamblea.ConsultaAsambleaRepository;
 import es.udc.fic.decisionsystem.repository.consultaopcion.ConsultaOpcionRepository;
 import es.udc.fic.decisionsystem.repository.notificacion.NotificacionRepository;
+import es.udc.fic.decisionsystem.repository.reaccion.ReaccionRepository;
 import es.udc.fic.decisionsystem.repository.sistemaconsulta.SistemaConsultaRepository;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
-import es.udc.fic.decisionsystem.repository.voto.VotoRepository;
 import es.udc.fic.decisionsystem.service.consulta.ConsultaService;
 
 @RestController
@@ -108,6 +108,9 @@ public class ConsultaController {
 
 	@Autowired
 	private ConsultaService consultaService;
+	
+	@Autowired
+	private ReaccionRepository reaccionRepository;
 
 	@GetMapping("/api/poll/{consultaId}")
 	public PollSummaryResponse getConsulta(@PathVariable Long consultaId, Principal principal) {
@@ -179,10 +182,13 @@ public class ConsultaController {
 		Consulta consulta = consultaRepository.findById(consultaId).map(c -> {
 			return c;
 		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
+		
+		Usuario loggedUser = usuarioRepository.findByNickname(principal.getName())
+				.orElseThrow(() -> new ResourceNotFoundException("Logged user not found"));
 
 		return comentarioRepository.findByConsulta(pageable, consulta).map(comentario -> {
 			CommentResponse response = new CommentResponse();
-
+			
 			UserDto user = new UserDto();
 			Set<String> roles = new HashSet<>();
 			user.setUserId(comentario.getUsuario().getIdUsuario());
@@ -194,12 +200,28 @@ public class ConsultaController {
 				roles.add(r.getNombre().name());
 			}
 			user.setRoles(roles);
+			
+			// Get all reactions for comment
+			List<Reaccion> reactions = reaccionRepository.findByComentario(comentario);
+			List<CommentReactionResponse> commentReactions = reactions.stream().map(r -> {
+				CommentReactionResponse reaction = new CommentReactionResponse();
+				reaction.setReactionId(r.getIdReaccion());
+				reaction.setReactionType(r.getTipoReaccion().getNombre());
+				return reaction;
+			}).collect(Collectors.toList());
+			
+			// Logged user reactions
+			boolean reactedByUser = reactions.stream().anyMatch(r -> {
+				return (r.getUsuario().getIdUsuario() == loggedUser.getIdUsuario());
+			});
 
 			response.setCommentId(comentario.getIdComentario());
 			response.setPollId(comentario.getConsulta().getIdConsulta());
 			response.setUser(user);
 			response.setContent(comentario.getContenido());
 			response.setRemoved(comentario.getEliminado());
+			response.setReactions(commentReactions);
+			response.setReactedByUser(reactedByUser);
 			return response;
 		});
 	}

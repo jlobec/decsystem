@@ -1,5 +1,6 @@
 package es.udc.fic.decisionsystem.controller.comentario;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -154,6 +155,8 @@ public class ComentarioController {
 		response.setUser(userResponse);
 		response.setContent(commentAdded.getContenido());
 		response.setRemoved(commentAdded.getEliminado());
+		response.setReactions(new ArrayList<>());
+		response.setReactedByUser(false);
 		return response;
 		
 	}
