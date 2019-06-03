@@ -71,6 +71,7 @@ import es.udc.fic.decisionsystem.repository.notificacion.NotificacionRepository;
 import es.udc.fic.decisionsystem.repository.reaccion.ReaccionRepository;
 import es.udc.fic.decisionsystem.repository.sistemaconsulta.SistemaConsultaRepository;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
+import es.udc.fic.decisionsystem.service.comentario.ComentarioUtil;
 import es.udc.fic.decisionsystem.service.consulta.ConsultaService;
 
 @RestController
@@ -187,42 +188,8 @@ public class ConsultaController {
 				.orElseThrow(() -> new ResourceNotFoundException("Logged user not found"));
 
 		return comentarioRepository.findByConsulta(pageable, consulta).map(comentario -> {
-			CommentResponse response = new CommentResponse();
-			
-			UserDto user = new UserDto();
-			Set<String> roles = new HashSet<>();
-			user.setUserId(comentario.getUsuario().getIdUsuario());
-			user.setName(comentario.getUsuario().getNombre());
-			user.setLastName(comentario.getUsuario().getApellido());
-			user.setEmail(comentario.getUsuario().getEmail());
-			user.setNickname(comentario.getUsuario().getNickname());
-			for (Rol r : comentario.getUsuario().getRoles()) {
-				roles.add(r.getNombre().name());
-			}
-			user.setRoles(roles);
-			
-			// Get all reactions for comment
 			List<Reaccion> reactions = reaccionRepository.findByComentario(comentario);
-			List<CommentReactionResponse> commentReactions = reactions.stream().map(r -> {
-				CommentReactionResponse reaction = new CommentReactionResponse();
-				reaction.setReactionId(r.getIdReaccion());
-				reaction.setReactionType(r.getTipoReaccion().getNombre());
-				return reaction;
-			}).collect(Collectors.toList());
-			
-			// Logged user reactions
-			boolean reactedByUser = reactions.stream().anyMatch(r -> {
-				return (r.getUsuario().getIdUsuario() == loggedUser.getIdUsuario());
-			});
-
-			response.setCommentId(comentario.getIdComentario());
-			response.setPollId(comentario.getConsulta().getIdConsulta());
-			response.setUser(user);
-			response.setContent(comentario.getContenido());
-			response.setRemoved(comentario.getEliminado());
-			response.setReactions(commentReactions);
-			response.setReactedByUser(reactedByUser);
-			return response;
+			return ComentarioUtil.buildCommentResponse(comentario, loggedUser, reactions);
 		});
 	}
 

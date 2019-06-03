@@ -121,6 +121,24 @@ class Poll extends React.Component {
     this.handleShowSnackbarForRemoveComment(removedComment);
   };
 
+  likeComment = async comment => {
+    const commentId = comment.commentId;
+    const { data: likedComment } = await CommentActions.doLikeComment(
+      commentId
+    );
+
+    if (likedComment) {
+      const newComments = [...this.state.comments];
+      const foundIndex = newComments.findIndex(
+        comment => comment.commentId === commentId
+      );
+      newComments[foundIndex] = likedComment;
+      this.setState({
+        comments: newComments
+      });
+    }
+  };
+
   handleShowSnackbarForAddComment = successful => {
     const okMessage = {
       open: true,
@@ -182,6 +200,7 @@ class Poll extends React.Component {
                     comments={this.state.comments}
                     addComment={this.addComment}
                     removeComment={this.removeComment}
+                    likeComment={this.likeComment}
                   />
                 )}
               </TabContainer>

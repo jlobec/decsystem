@@ -9,8 +9,6 @@ public class AddCommentReactionRequest {
 	@Positive
 	private Integer reactionTypeId;
 
-	@NotNull
-	@Positive
 	private Long userId;
 
 	public Integer getReactionTypeId() {
