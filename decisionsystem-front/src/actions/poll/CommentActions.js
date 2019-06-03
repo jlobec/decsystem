@@ -19,7 +19,15 @@ class CommentActions {
   };
 
   static doLikeComment = async commentId => {
-    const url = `${config.baseUrl}api/comment/${commentId}/reaction`;
+    const url = `${config.baseUrl}api/comment/${commentId}/reaction/add`;
+    const requestBody = {
+      reactionTypeId: 1
+    };
+    return axios.post(url, requestBody, AuthUtil.getHeaders());
+  };
+
+  static doRemoveLikeComment = async commentId => {
+    const url = `${config.baseUrl}api/comment/${commentId}/reaction/remove`;
     const requestBody = {
       reactionTypeId: 1
     };

@@ -32,6 +32,7 @@ class Comments extends React.Component {
             handleReply={this.replyComment}
             handleRemove={this.props.removeComment}
             handleLike={this.props.likeComment}
+            handleRemoveLike={this.props.removeLikeComment}
             isRemovable={isRemovable}
           />
         </ListItem>

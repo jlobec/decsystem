@@ -32,6 +32,10 @@ class Comment extends React.Component {
     this.props.handleLike(this.props.comment);
   };
 
+  handleRemoveLikeComment = () => {
+    this.props.handleRemoveLike(this.props.comment);
+  };
+
   renderRemovedComment = () => {
     return (
       <React.Fragment>
@@ -91,7 +95,10 @@ class Comment extends React.Component {
           </Tooltip>
         )}
         {comment.reactedByUser && (
-          <IconButton className={classes.likeButton}>
+          <IconButton
+            className={classes.likeButton}
+            onClick={this.handleRemoveLikeComment}
+          >
             <ThumbUpIcon className={classes.likedButton} />
           </IconButton>
         )}

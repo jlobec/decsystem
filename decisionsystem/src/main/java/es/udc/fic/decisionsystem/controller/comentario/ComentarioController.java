@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -33,6 +34,7 @@ import es.udc.fic.decisionsystem.payload.comentario.AddCommentReactionRequest;
 import es.udc.fic.decisionsystem.payload.comentario.AddCommentReplyRequest;
 import es.udc.fic.decisionsystem.payload.comentario.AddCommentRequest;
 import es.udc.fic.decisionsystem.payload.comentario.CommentResponse;
+import es.udc.fic.decisionsystem.payload.comentario.RemoveCommentReactionRequest;
 import es.udc.fic.decisionsystem.payload.usuario.UserDto;
 import es.udc.fic.decisionsystem.repository.comentario.ComentarioRepository;
 import es.udc.fic.decisionsystem.repository.comentarioasociacion.ComentarioAsociacionRepository;
@@ -215,7 +217,7 @@ public class ComentarioController {
 		
 	}
 
-	@PostMapping("/api/comment/{comentarioId}/reaction")
+	@PostMapping("/api/comment/{comentarioId}/reaction/add")
 	public CommentResponse addReaction(@Valid @RequestBody AddCommentReactionRequest addReactionRequest,
 			@PathVariable Long comentarioId, Principal principal) {
 		
@@ -237,6 +239,29 @@ public class ComentarioController {
 		reaction.setUsuario(usuario);
 
 		reaccionRepository.save(reaction);
+		
+		// Build response
+		List<Reaccion> reactions = reaccionRepository.findByComentario(comment);
+		return ComentarioUtil.buildCommentResponse(comment, usuario, reactions);
+	}
+	
+	@PostMapping("/api/comment/{comentarioId}/reaction/remove")
+	public CommentResponse removeReaction(@Valid @RequestBody RemoveCommentReactionRequest removeReactionRequest,
+			@PathVariable Long comentarioId, Principal principal) {
+		
+		Comentario comment = comentarioRepository.findById(comentarioId)
+				.orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
+		Usuario usuario = usuarioRepository.findByNicknameOrEmail(principal.getName(), principal.getName())
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		TipoReaccion reactionType = tipoReaccionRepository.findById(removeReactionRequest.getReactionTypeId())
+				.orElseThrow(() -> new ResourceNotFoundException("Reaction type not found"));
+
+		Optional<Reaccion> reaction = reaccionRepository.findByComentarioAndUsuario(comment, usuario);
+		if (!reaction.isPresent()) {
+			throw new BadRequestException("Not reacted yet");
+		}
+
+		reaccionRepository.delete(reaction.get());
 		
 		// Build response
 		List<Reaccion> reactions = reaccionRepository.findByComentario(comment);
