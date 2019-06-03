@@ -104,8 +104,6 @@ class UserInfo extends React.Component {
     const user = this.state.user;
     return (
       <React.Fragment>
-        <CssBaseline />
-
         <Paper className={classes.root}>
           <Typography className={classes.formlabel} variant="h5" component="h3">
             Profile
@@ -204,7 +202,25 @@ const styles = theme => ({
   root: {
     padding: theme.spacing.unit * 3,
     width: "100%",
-    overflowX: "auto"
+    overflowX: "auto",
+    minWidth: 275,
+    minHeight: 70,
+    [theme.breakpoints.down("sm")]: {
+      marginBottom: theme.spacing.unit,
+      width: "100%"
+    },
+    [theme.breakpoints.up("md")]: {
+      marginBottom: theme.spacing.unit * 2,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    },
+    [theme.breakpoints.up("lg")]: {
+      marginBottom: theme.spacing.unit * 2,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    }
   },
   formlabel: {},
   textField: {

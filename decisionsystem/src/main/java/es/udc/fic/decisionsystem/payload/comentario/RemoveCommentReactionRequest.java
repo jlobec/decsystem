@@ -3,7 +3,7 @@ package es.udc.fic.decisionsystem.payload.comentario;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
-public class AddCommentReactionRequest {
+public class RemoveCommentReactionRequest {
 
 	@NotNull
 	@Positive
