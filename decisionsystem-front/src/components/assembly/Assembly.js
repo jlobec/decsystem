@@ -169,13 +169,9 @@ class Assembly extends React.Component {
 
   render() {
     const { classes, assembly } = this.props;
-    const showHidePolls = this.state.showPolls ? "Hide" : "Show";
     const showHideMembers = this.state.showMembers ? "Hide" : "Show";
     const cardActions = (
       <CardActions>
-        <Button size="small" color="primary" onClick={this.handleShowPolls}>
-          {showHidePolls} polls
-        </Button>
         <Button size="small" color="primary" onClick={this.handleShowMembers}>
           {showHideMembers} members
         </Button>
@@ -228,7 +224,24 @@ const styles = theme => ({
     overflowX: "auto"
   },
   card: {
-    minWidth: 275
+    minWidth: 275,
+    minHeight: 70,
+    [theme.breakpoints.down("sm")]: {
+      marginBottom: theme.spacing.unit,
+      width: "100%"
+    },
+    [theme.breakpoints.up("md")]: {
+      marginBottom: theme.spacing.unit * 2,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    },
+    [theme.breakpoints.up("lg")]: {
+      marginBottom: theme.spacing.unit * 2,
+      width: "80%",
+      marginRigth: "10%",
+      marginLeft: "10%"
+    }
   },
   pos: {
     marginBottom: 12

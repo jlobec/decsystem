@@ -21,10 +21,6 @@ class Comments extends React.Component {
     // TODO
   };
 
-  handleRemoveComment = comment => {
-    // TODO
-  };
-
   render() {
     const { classes, comments } = this.props;
     const commentList = comments.map(comment => {
@@ -35,6 +31,8 @@ class Comments extends React.Component {
             comment={comment}
             handleReply={this.replyComment}
             handleRemove={this.props.removeComment}
+            handleLike={this.props.likeComment}
+            handleRemoveLike={this.props.removeLikeComment}
             isRemovable={isRemovable}
           />
         </ListItem>

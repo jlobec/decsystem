@@ -1,5 +1,6 @@
 package es.udc.fic.decisionsystem.repository.usuario;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -27,5 +28,11 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 			+ "INNER JOIN Asamblea a ON ua.asamblea = a "
 			+ "WHERE a.idAsamblea = :idAsamblea")
 	Page<Usuario> findByIdAsamblea(Pageable pageable, @Param("idAsamblea") Integer idAsamblea);
+	
+	@Query("SELECT u FROM UsuarioAsamblea ua "
+			+ "INNER JOIN Usuario u ON ua.usuario = u "
+			+ "INNER JOIN Asamblea a ON ua.asamblea = a "
+			+ "WHERE a.idAsamblea = :idAsamblea")
+	List<Usuario> findAllByIdAsamblea(@Param("idAsamblea") Integer idAsamblea);
 
 }

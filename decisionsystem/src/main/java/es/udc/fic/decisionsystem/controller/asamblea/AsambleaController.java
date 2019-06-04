@@ -1,7 +1,9 @@
 package es.udc.fic.decisionsystem.controller.asamblea;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
@@ -28,7 +31,6 @@ import es.udc.fic.decisionsystem.payload.asamblea.AssemblyPollRequest;
 import es.udc.fic.decisionsystem.payload.asamblea.AssemblyResponse;
 import es.udc.fic.decisionsystem.payload.asamblea.AssemblyUserRequest;
 import es.udc.fic.decisionsystem.payload.asamblea.AssemblyUserResponse;
-import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.repository.asamblea.AsambleaRepository;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
 import es.udc.fic.decisionsystem.repository.consultaasamblea.ConsultaAsambleaRepository;
@@ -60,10 +62,10 @@ public class AsambleaController {
 		}).orElseThrow(() -> new ResourceNotFoundException("Asamblea not found with id " + asambleaId));
 	}
 
-	@GetMapping("/api/assembly")
-	public Page<Asamblea> getAsamblea(Pageable pageable) {
-		return asambleaRepository.findAll(pageable);
-	}
+//	@GetMapping("/api/assembly")
+//	public Page<Asamblea> getAsamblea(Pageable pageable) {
+//		return asambleaRepository.findAll(pageable);
+//	}
 
 	@GetMapping("/api/assembly/{asambleaId}/users")
 	public Page<AssemblyUserResponse> getAsambleaUsers(Pageable pageable, @PathVariable Integer asambleaId) {
@@ -77,7 +79,30 @@ public class AsambleaController {
 			return user;
 		});
 	}
-
+	
+	@GetMapping("/api/assembly")
+	public AssemblyResponse getPollAssembly(Pageable pageable, 
+			@RequestParam(value = "pollId", required = false) Long pollId) {
+		List<AssemblyResponse> foundAssemblies = asambleaRepository.findByIdConsulta(pollId).stream().map(a -> {
+			AssemblyResponse assembly = new AssemblyResponse();
+			assembly.setAssemblyId(a.getIdAsamblea());
+			assembly.setName(a.getNombre());
+			assembly.setDescription(a.getDescripcion());
+			assembly.setTimecreated(a.getFechaHoraAlta().getTime());
+			long pollCount = consultaRepository.findByIdAsamblea(pageable, a.getIdAsamblea()).getTotalElements();
+			long usersCount = usuarioRepository.findByIdAsamblea(pageable, a.getIdAsamblea()).getTotalElements();
+			assembly.setPollCount(Math.toIntExact(pollCount));
+			assembly.setMembersCount(Math.toIntExact(usersCount));
+			return assembly;
+		}).collect(Collectors.toList());
+		
+		if (foundAssemblies.size() == 1) {
+			return foundAssemblies.get(0);
+		}
+		
+		throw new ResourceNotFoundException("More than one assembly for poll not supported so far");
+	}
+	
 	@GetMapping("/api/assembly/{asambleaId}/polls")
 	public Page<Consulta> getAssemblyPolls(Pageable pageable, @PathVariable Integer asambleaId) {
 		return consultaRepository.findByIdAsamblea(pageable, asambleaId);
@@ -104,6 +129,26 @@ public class AsambleaController {
 		// Actually unlikely
 		throw new ResourceNotFoundException("No logged user");
 	}
+	
+	@GetMapping("/api/assembly/{asambleaId}/user/{userId}/permissions")
+	public String getUserPermissionsOnAssembly(Principal principal, @PathVariable Integer asambleaId, @PathVariable Long userId) {
+		String role = "ROLE_USER";
+		
+		Usuario user = usuarioRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
+		
+		Asamblea assembly = asambleaRepository.findById(asambleaId).orElseThrow(() -> new ResourceNotFoundException("Asamblea not found with id " + asambleaId));
+		
+		Optional<UsuarioAsamblea> userAssembly = usuarioAsambleaRepository.findByUsuarioAndAsamblea(user, assembly);
+		
+		if (userAssembly.isPresent()) {
+			UsuarioAsamblea relation = userAssembly.get();
+			if (relation.getEsAdministrador()) return "ROLE_ASSEMBLY_ADMIN";
+		} 
+		
+		return role;
+		
+	}
+
 
 	@PostMapping("/api/assembly")
 	public Asamblea createAsamblea(@Valid @RequestBody Asamblea asamblea) {

@@ -18,13 +18,17 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import PollOption from "./PollOption";
 import CommonUtils from "../../actions/util/CommonUtils";
+import UserActions from "../../actions/user/UserActions";
+import AssemblyActions from "../../actions/assembly/AssemblyActions";
+import PollActions from "../../actions/poll/PollActions";
 
 const initialState = {
   loading: false,
   selectedOptions: [],
   comments: [],
   poll: {},
-  anchorEl: null
+  anchorEl: null,
+  role: "ROLE_USER"
 };
 
 class PollSummary extends React.Component {
@@ -155,6 +159,17 @@ class PollSummary extends React.Component {
     this.props.handleVote(this.props.poll, [...this.state.selectedOptions]);
   };
 
+  handleSendVoteReminder = async () => {
+    // send notification to all users that havent voted yet the poll
+    const { data: result } = await PollActions.doSendVoteReminder(
+      this.props.poll.pollId
+    );
+    console.log(result);
+    if (result) {
+      this.handleCloseMenu();
+    }
+  };
+
   handleClickComment = () => {
     // TODO show modal
   };
@@ -188,8 +203,32 @@ class PollSummary extends React.Component {
     });
   };
 
+  async componentDidMount() {
+    const { poll } = this.props;
+    const { data: loggedUser } = await UserActions.doGetLoggedUser();
+    if (loggedUser) {
+      const { data: assembly } = await AssemblyActions.doGetByPollId(
+        poll.pollId
+      );
+      if (assembly) {
+        const { data: role } = await UserActions.doGetAssemblyRole(
+          assembly.assemblyId,
+          loggedUser.userId
+        );
+        if (role) {
+          this.setState({ role: role });
+        }
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    this.setState({ ...initialState });
+  }
+
   render() {
     const { classes, poll, onDetails } = this.props;
+    const isAssemblyAdmin = this.state.role === "ROLE_ASSEMBLY_ADMIN";
     const pollOptionsComponent = this.renderPollOptions(
       poll.pollSystem,
       poll.pollOptions
@@ -222,7 +261,12 @@ class PollSummary extends React.Component {
                 open={Boolean(this.state.anchorEl)}
                 onClose={this.handleCloseMenu}
               >
-                <MenuItem onClick={this.handleUndoVote}>Undo vote</MenuItem>
+                <MenuItem onClick={this.handleCloseMenu}>Undo vote</MenuItem>
+                {isAssemblyAdmin && (
+                  <MenuItem onClick={this.handleSendVoteReminder}>
+                    Send vote reminder
+                  </MenuItem>
+                )}
               </Menu>
             </Grid>
           </Grid>

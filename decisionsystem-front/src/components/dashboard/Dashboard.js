@@ -36,6 +36,8 @@ import Notifications from "../notifications/Notifications";
 import Decisions from "../Decision/Decisions";
 import UserActions from "../../actions/user/UserActions";
 import CommonUtils from "../../actions/util/CommonUtils";
+import NotificationListener from "./NotificationListener";
+import NotificationActions from "../../actions/notification/NotificationActions";
 
 const drawerWidth = 240;
 
@@ -61,11 +63,12 @@ const sectionPaths = {
 class Dashboard extends React.Component {
   state = {
     open: false,
-    title: "DecisionApp",
+    title: "Decide",
     user: {
       name: "",
       lastName: ""
-    }
+    },
+    pendingNotificationsNumber: 0
   };
 
   handleDrawerOpen = () => {
@@ -94,8 +97,50 @@ class Dashboard extends React.Component {
     const { data: loggedUser } = await UserActions.doGetLoggedUser();
     if (loggedUser) {
       this.setState({ user: loggedUser });
+      const {
+        data: notifications
+      } = await NotificationActions.doGetPendingNotifications(
+        loggedUser.userId
+      );
+      if (notifications) {
+        this.setState({ pendingNotificationsNumber: notifications.length });
+      }
     }
+    this.notificationPermissions();
   }
+
+  notificationPermissions = () => {
+    console.log("permisos");
+    // Comprobamos si el navegador soporta las notificaciones
+    if (!("Notification" in window)) {
+      alert("Este navegador no soporta las notificaciones del sistema");
+    }
+
+    // Comprobamos si ya nos habían dado permiso
+    else if (Notification.permission === "granted") {
+      // Si esta correcto lanzamos la notificación
+      // var notification = new Notification("Holiwis :D");
+    }
+
+    // Si no, tendremos que pedir permiso al usuario
+    else if (Notification.permission !== "denied") {
+      Notification.requestPermission(function(permission) {
+        // Si el usuario acepta, lanzamos la notificación
+        if (permission === "granted") {
+          var notification = new Notification(
+            "Gracias por aceptar las notificaciones"
+          );
+        }
+      });
+    }
+
+    // Finalmente, si el usuario te ha denegado el permiso y
+    // quieres ser respetuoso no hay necesidad molestar más.
+  };
+
+  updateNotificationsNumber = newNumber => {
+    this.setState({ pendingNotificationsNumber: newNumber });
+  };
 
   render() {
     const { classes } = this.props;
@@ -206,7 +251,10 @@ class Dashboard extends React.Component {
               onClick={() => this.handleSection("notifications")}
             >
               <ListItemIcon>
-                <Badge badgeContent={4} color="secondary">
+                <Badge
+                  badgeContent={this.state.pendingNotificationsNumber}
+                  color="secondary"
+                >
                   <NotificationsIcon />
                 </Badge>
               </ListItemIcon>
@@ -238,19 +286,15 @@ class Dashboard extends React.Component {
           <Route path={`${sectionPaths.settings.path}`} component={Settings} />
           <Route
             path={`${sectionPaths.notifications.path}`}
-            component={Notifications}
+            render={routeProps => (
+              <Notifications
+                {...routeProps}
+                updateNotificationsNumber={this.updateNotificationsNumber}
+              />
+            )}
           />
-
-          {/* <Typography component="div" className={classes.chartContainer}>
-            <SimpleLineChart />
-          </Typography> */}
-          {/* <Typography variant="h4" gutterBottom component="h2">
-            Products
-          </Typography>
-          <div className={classes.tableContainer}>
-            <SimpleTable />
-          </div> */}
         </main>
+        <NotificationListener />
       </div>
     );
   }

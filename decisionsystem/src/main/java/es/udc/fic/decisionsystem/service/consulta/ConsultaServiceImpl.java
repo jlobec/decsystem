@@ -85,7 +85,8 @@ public class ConsultaServiceImpl implements ConsultaService {
 		});
 	}
 
-	private PollSummaryResponse buildPollSummaryResponse(Consulta poll, Usuario user) {
+	@Override
+	public PollSummaryResponse buildPollSummaryResponse(Consulta poll, Usuario user) {
 
 		// Get options
 		List<ConsultaOpcion> options = consultaOpcionRepository.findByConsulta(poll);

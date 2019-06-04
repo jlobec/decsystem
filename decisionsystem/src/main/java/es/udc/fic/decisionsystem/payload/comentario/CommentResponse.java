@@ -1,5 +1,7 @@
 package es.udc.fic.decisionsystem.payload.comentario;
 
+import java.util.List;
+
 import es.udc.fic.decisionsystem.payload.usuario.UserDto;
 
 public class CommentResponse {
@@ -9,6 +11,8 @@ public class CommentResponse {
 	private UserDto user;
 	private String content;
 	private Boolean removed;
+	private List<CommentReactionResponse> reactions;
+	private boolean reactedByUser;
 
 	public Long getCommentId() {
 		return commentId;
@@ -48,6 +52,22 @@ public class CommentResponse {
 
 	public void setRemoved(Boolean removed) {
 		this.removed = removed;
+	}
+
+	public List<CommentReactionResponse> getReactions() {
+		return reactions;
+	}
+
+	public void setReactions(List<CommentReactionResponse> reactions) {
+		this.reactions = reactions;
+	}
+
+	public boolean isReactedByUser() {
+		return reactedByUser;
+	}
+
+	public void setReactedByUser(boolean reactedByUser) {
+		this.reactedByUser = reactedByUser;
 	}
 
 }

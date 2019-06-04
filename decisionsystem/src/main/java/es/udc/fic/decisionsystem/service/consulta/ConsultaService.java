@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import es.udc.fic.decisionsystem.model.consulta.Consulta;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResults;
@@ -32,6 +33,8 @@ public interface ConsultaService {
 	 */
 	public Page<PollSummaryResponse> getUserPolls(Pageable pageable, Usuario user, Integer pollTypeId, Integer pollStatusId);
 	
+	
+	public PollSummaryResponse buildPollSummaryResponse(Consulta poll, Usuario user); 
 	
 	public List<PollResults> getResults(Long consultaId); 
 }

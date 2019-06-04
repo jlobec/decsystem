@@ -13,6 +13,13 @@ class UserActions {
     return axios.get(url, AuthUtil.getHeaders());
   };
 
+  static doGetAssemblyRole = async (assemblyId, userId) => {
+    const url = `${
+      config.baseUrl
+    }api/assembly/${assemblyId}/user/${userId}/permissions`;
+    return axios.get(url, AuthUtil.getHeaders());
+  };
+
   static doLogout = () => {
     AuthUtil.logout();
   };

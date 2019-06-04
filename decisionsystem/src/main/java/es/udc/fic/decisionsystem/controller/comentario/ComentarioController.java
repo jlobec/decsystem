@@ -1,6 +1,10 @@
 package es.udc.fic.decisionsystem.controller.comentario;
 
+import java.security.Principal;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import es.udc.fic.decisionsystem.exception.BadRequestException;
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
 import es.udc.fic.decisionsystem.model.comentario.Comentario;
 import es.udc.fic.decisionsystem.model.comentarioasociacion.ComentarioAsociacion;
@@ -25,11 +30,11 @@ import es.udc.fic.decisionsystem.model.reaccion.Reaccion;
 import es.udc.fic.decisionsystem.model.rol.Rol;
 import es.udc.fic.decisionsystem.model.tiporeaccion.TipoReaccion;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
-import es.udc.fic.decisionsystem.payload.ApiResponse;
 import es.udc.fic.decisionsystem.payload.comentario.AddCommentReactionRequest;
 import es.udc.fic.decisionsystem.payload.comentario.AddCommentReplyRequest;
 import es.udc.fic.decisionsystem.payload.comentario.AddCommentRequest;
 import es.udc.fic.decisionsystem.payload.comentario.CommentResponse;
+import es.udc.fic.decisionsystem.payload.comentario.RemoveCommentReactionRequest;
 import es.udc.fic.decisionsystem.payload.usuario.UserDto;
 import es.udc.fic.decisionsystem.repository.comentario.ComentarioRepository;
 import es.udc.fic.decisionsystem.repository.comentarioasociacion.ComentarioAsociacionRepository;
@@ -37,6 +42,7 @@ import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
 import es.udc.fic.decisionsystem.repository.reaccion.ReaccionRepository;
 import es.udc.fic.decisionsystem.repository.tiporeaccion.TipoReaccionRepository;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
+import es.udc.fic.decisionsystem.service.comentario.ComentarioUtil;
 
 @RestController
 public class ComentarioController {
@@ -154,6 +160,8 @@ public class ComentarioController {
 		response.setUser(userResponse);
 		response.setContent(commentAdded.getContenido());
 		response.setRemoved(commentAdded.getEliminado());
+		response.setReactions(new ArrayList<>());
+		response.setReactedByUser(false);
 		return response;
 		
 	}
@@ -209,29 +217,55 @@ public class ComentarioController {
 		
 	}
 
-	@PostMapping("/api/comment/{comentarioId}/reaction")
-	public ResponseEntity<?> addReaction(@Valid @RequestBody AddCommentReactionRequest addReactionRequest,
-			@PathVariable Long comentarioId) {
+	@PostMapping("/api/comment/{comentarioId}/reaction/add")
+	public CommentResponse addReaction(@Valid @RequestBody AddCommentReactionRequest addReactionRequest,
+			@PathVariable Long comentarioId, Principal principal) {
+		
 		Comentario comment = comentarioRepository.findById(comentarioId)
 				.orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
-		Usuario user = usuarioRepository.findById(addReactionRequest.getUserId())
+		Usuario usuario = usuarioRepository.findByNicknameOrEmail(principal.getName(), principal.getName())
 				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 		TipoReaccion reactionType = tipoReaccionRepository.findById(addReactionRequest.getReactionTypeId())
 				.orElseThrow(() -> new ResourceNotFoundException("Reaction type not found"));
 
-		Boolean alreadyAdded = reaccionRepository.findByComentarioAndUsuario(comment, user).isPresent();
+		Boolean alreadyAdded = reaccionRepository.findByComentarioAndUsuario(comment, usuario).isPresent();
 		if (alreadyAdded) {
-			return ResponseEntity.badRequest().body(new ApiResponse(false, "Reaction already added"));
+			throw new BadRequestException("Reaction already added");
 		}
 
 		Reaccion reaction = new Reaccion();
 		reaction.setComentario(comment);
 		reaction.setTipoReaccion(reactionType);
-		reaction.setUsuario(user);
+		reaction.setUsuario(usuario);
 
 		reaccionRepository.save(reaction);
+		
+		// Build response
+		List<Reaccion> reactions = reaccionRepository.findByComentario(comment);
+		return ComentarioUtil.buildCommentResponse(comment, usuario, reactions);
+	}
+	
+	@PostMapping("/api/comment/{comentarioId}/reaction/remove")
+	public CommentResponse removeReaction(@Valid @RequestBody RemoveCommentReactionRequest removeReactionRequest,
+			@PathVariable Long comentarioId, Principal principal) {
+		
+		Comentario comment = comentarioRepository.findById(comentarioId)
+				.orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
+		Usuario usuario = usuarioRepository.findByNicknameOrEmail(principal.getName(), principal.getName())
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		TipoReaccion reactionType = tipoReaccionRepository.findById(removeReactionRequest.getReactionTypeId())
+				.orElseThrow(() -> new ResourceNotFoundException("Reaction type not found"));
 
-		return ResponseEntity.ok().body(new ApiResponse(true, "Reaction added"));
+		Optional<Reaccion> reaction = reaccionRepository.findByComentarioAndUsuario(comment, usuario);
+		if (!reaction.isPresent()) {
+			throw new BadRequestException("Not reacted yet");
+		}
+
+		reaccionRepository.delete(reaction.get());
+		
+		// Build response
+		List<Reaccion> reactions = reaccionRepository.findByComentario(comment);
+		return ComentarioUtil.buildCommentResponse(comment, usuario, reactions);
 	}
 
 	@PutMapping("/api/comment/{comentarioId}")
