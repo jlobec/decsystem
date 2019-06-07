@@ -16,6 +16,7 @@
 package es.udc.fic.decisionsystem.service.consulta;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
@@ -51,8 +52,10 @@ import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsulta;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsultaEnum;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.usuarioasamblea.UsuarioAsamblea;
+import es.udc.fic.decisionsystem.model.voto.Voto;
 import es.udc.fic.decisionsystem.payload.consulta.PollSummaryResponse;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResults;
+import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultsItem;
 import es.udc.fic.decisionsystem.repository.asamblea.AsambleaRepository;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
 import es.udc.fic.decisionsystem.repository.consulta.EstadoConsultaRepository;
@@ -63,6 +66,7 @@ import es.udc.fic.decisionsystem.repository.rol.RolRepository;
 import es.udc.fic.decisionsystem.repository.sistemaconsulta.SistemaConsultaRepository;
 import es.udc.fic.decisionsystem.repository.usuario.UsuarioRepository;
 import es.udc.fic.decisionsystem.repository.usuarioasamblea.UsuarioAsambleaRepository;
+import es.udc.fic.decisionsystem.repository.voto.VotoRepository;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -104,6 +108,9 @@ public class ConsultaServiceTest {
 
 	@Autowired
 	private ConsultaAsambleaRepository consultaAsambleaRepository;
+	
+	@Autowired
+	private VotoRepository voteRepository;
 
 	@Test
 	@Transactional
@@ -270,13 +277,46 @@ public class ConsultaServiceTest {
 		assertTrue(results.size() == 0);
 	}
 	
+	@Test
+	@Transactional
+	public void pollWithVotedOptionsShouldGetResults() {
+		// Prepare data
+		Consulta savedPoll = this.savePoll(EstadoConsultaEnum.Open, SistemaConsultaEnum.SINGLE_OPTION,
+				VisibilidadResultadoConsultaEnum.Public, "test", "test desc", new Date(), new Date());
+		Usuario user = this.saveUsuario("name", "lastName", "email@email.com", "nickname", "passwd", RoleName.ROLE_USER);
+		ConsultaOpcion option1 = this.addOptionToPoll(savedPoll, "Option1", "option 1 description");
+		ConsultaOpcion option2 = this.addOptionToPoll(savedPoll, "Option2", "option 2 description");
+		this.addVote(option1, user);
+		
+		// Execute operation
+		List<PollResults> results = consultaService.getResults(savedPoll.getIdConsulta());
+		
+		// Check results
+		assertTrue(results.size() == 1);
+		PollResults result = results.get(0);
+		List<PollResultsItem> resultItems = result.getItems();
+		assertEquals(result.getOption().getName(), option1.getNombre());
+		assertNotEquals(result.getOption().getName(), option2.getNombre());
+		assertEquals(resultItems.get(0).getUser().getEmail(), user.getEmail());
+		
+	}
 	
-	private void addOptionToPoll(Consulta poll, String optionName, String optionDesc) {
+	private void addVote(ConsultaOpcion option, Usuario user) {
+		Voto v = new Voto();
+		v.setConsultaOpcion(option);
+		v.setUsuario(user);
+		v.setMotivacion("");
+
+		Voto savedVote = voteRepository.save(v);
+	}
+	
+	
+	private ConsultaOpcion addOptionToPoll(Consulta poll, String optionName, String optionDesc) {
 		ConsultaOpcion option = new ConsultaOpcion();
 		option.setConsulta(poll);
 		option.setNombre(optionName);
 		option.setDescripcion(optionDesc);
-		consultaOpcionRepository.save(option);
+		return consultaOpcionRepository.save(option);
 	}
 
 	private void addPollToAssembly(Consulta poll, Asamblea assembly) {
