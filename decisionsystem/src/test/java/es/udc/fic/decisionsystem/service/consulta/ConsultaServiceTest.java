@@ -295,9 +295,17 @@ public class ConsultaServiceTest {
 		assertTrue(results.size() == 1);
 		PollResults result = results.get(0);
 		List<PollResultsItem> resultItems = result.getItems();
+		assertEquals(result.getOption().getOptionId(), option1.getIdConsultaOpcion());
 		assertEquals(result.getOption().getName(), option1.getNombre());
+		assertEquals(result.getOption().getDescription(), option1.getDescripcion());
+		assertNotEquals(result.getOption().getOptionId(), option2.getIdConsultaOpcion());
 		assertNotEquals(result.getOption().getName(), option2.getNombre());
+		assertNotEquals(result.getOption().getDescription(), option2.getDescripcion());
+		assertEquals(resultItems.get(0).getUser().getUserId(), user.getIdUsuario());
 		assertEquals(resultItems.get(0).getUser().getEmail(), user.getEmail());
+		assertEquals(resultItems.get(0).getUser().getName(), user.getNombre());
+		assertEquals(resultItems.get(0).getUser().getLastName(), user.getApellido());
+		assertEquals(resultItems.get(0).getUser().getNickname(), user.getNickname());
 		
 	}
 	
