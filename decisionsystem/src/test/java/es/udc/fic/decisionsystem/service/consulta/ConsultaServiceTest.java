@@ -116,6 +116,20 @@ public class ConsultaServiceTest {
 		// Check data
 		assertEquals(savedPoll.getIdConsulta(), pollResponse.getPollId());
 	}
+	
+	@Test
+	@Transactional
+	public void shouldSaveAndReturnPollByIdWithOptions() {
+		Consulta savedPoll = this.savePoll(EstadoConsultaEnum.Open, SistemaConsultaEnum.SINGLE_OPTION,
+				VisibilidadResultadoConsultaEnum.Public, "test", "test desc", new Date(), new Date());
+		this.addOptionToPoll(savedPoll, "Option1", "option 1 description");
+		this.addOptionToPoll(savedPoll, "Option2", "option 2 description");
+		
+		PollSummaryResponse pollResponse = consultaService.getPollById(savedPoll.getIdConsulta(), null);
+
+		// Check data
+		assertEquals(savedPoll.getIdConsulta(), pollResponse.getPollId());
+	}
 
 	@Test
 	@Transactional
@@ -203,6 +217,35 @@ public class ConsultaServiceTest {
 		assertEquals(userPoll.getPollId(), savedPoll.getIdConsulta());
 		assertEquals(userPoll.getTitle(), savedPoll.getTitulo());
 	}
+	
+	@Test
+	@Transactional
+	public void shouldReturnUserPollsWithStatusAndTypeFilter() {
+		// Prepare data
+		Consulta savedPoll = this.savePoll(EstadoConsultaEnum.Open, SistemaConsultaEnum.SINGLE_OPTION,
+				VisibilidadResultadoConsultaEnum.Public, "test", "test desc", new Date(), new Date());
+		Usuario savedUser = this.saveUsuario("name", "lastName", "email@email.com", "nickname", "passwd",
+				RoleName.ROLE_USER);
+		Asamblea savedAssembly = this.saveAssembly("testAssembly", "description");
+		this.addUserToAssembly(savedUser, savedAssembly);
+		this.addPollToAssembly(savedPoll, savedAssembly);
+
+		// Execute operation
+		Pageable p = PageRequest.of(0, 20);
+		Integer pollTypeId = SINGLE_OPTION_SYSTEM_ID;
+		Integer pollStatusId = EstadoConsultaEnum.Open.getIdEstadoConsulta();
+		Page<PollSummaryResponse> pagedUserPolls = consultaService.getUserPolls(p, savedUser, pollTypeId, pollStatusId);
+		List<PollSummaryResponse> userPolls = pagedUserPolls.getContent();
+
+		// Check results
+		// Only one poll for the user and it must be the one we have just saved
+		assertTrue(userPolls.size() == 1);
+		
+		// The poll retrieved should be the one saved
+		PollSummaryResponse userPoll = userPolls.get(0);
+		assertEquals(userPoll.getPollId(), savedPoll.getIdConsulta());
+		assertEquals(userPoll.getTitle(), savedPoll.getTitulo());
+	}
 
 	@Test
 	@Transactional
@@ -212,7 +255,6 @@ public class ConsultaServiceTest {
 
 		List<PollResults> results = consultaService.getResults(savedPoll.getIdConsulta());
 		assertTrue(results.size() == 0);
-
 	}
 	
 	@Test
