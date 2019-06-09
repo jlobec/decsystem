@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -94,9 +93,9 @@ public class AsambleaController {
 			return user;
 		});
 	}
-	
+
 	@GetMapping("/api/assembly")
-	public AssemblyResponse getPollAssembly(Pageable pageable, 
+	public AssemblyResponse getPollAssembly(Pageable pageable,
 			@RequestParam(value = "pollId", required = false) Long pollId) {
 		List<AssemblyResponse> foundAssemblies = asambleaRepository.findByIdConsulta(pollId).stream().map(a -> {
 			AssemblyResponse assembly = new AssemblyResponse();
@@ -110,21 +109,21 @@ public class AsambleaController {
 			assembly.setMembersCount(Math.toIntExact(usersCount));
 			return assembly;
 		}).collect(Collectors.toList());
-		
+
 		if (foundAssemblies.size() == 1) {
 			return foundAssemblies.get(0);
 		}
-		
+
 		throw new ResourceNotFoundException("More than one assembly for poll not supported so far");
 	}
-	
+
 	@GetMapping("/api/assembly/{asambleaId}/polls")
 	public Page<Consulta> getAssemblyPolls(Pageable pageable, @PathVariable Integer asambleaId) {
 		return consultaRepository.findByIdAsamblea(pageable, asambleaId);
 	}
-	
+
 	@GetMapping("/api/assembly/mine")
-	public Page<AssemblyResponse> getLoggedUserAssemblies(Pageable pageable, Principal principal){
+	public Page<AssemblyResponse> getLoggedUserAssemblies(Pageable pageable, Principal principal) {
 		Optional<Usuario> loggedUser = usuarioRepository.findByNickname(principal.getName());
 		if (loggedUser.isPresent()) {
 			Long userId = loggedUser.get().getIdUsuario();
@@ -144,32 +143,35 @@ public class AsambleaController {
 		// Actually unlikely
 		throw new ResourceNotFoundException("No logged user");
 	}
-	
+
 	@GetMapping("/api/assembly/{asambleaId}/user/{userId}/permissions")
-	public String getUserPermissionsOnAssembly(Principal principal, @PathVariable Integer asambleaId, @PathVariable Long userId) {
+	public String getUserPermissionsOnAssembly(Principal principal, @PathVariable Integer asambleaId,
+			@PathVariable Long userId) {
 		String role = "ROLE_USER";
-		
-		Usuario user = usuarioRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
-		
-		Asamblea assembly = asambleaRepository.findById(asambleaId).orElseThrow(() -> new ResourceNotFoundException("Asamblea not found with id " + asambleaId));
-		
+
+		Usuario user = usuarioRepository.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
+
+		Asamblea assembly = asambleaRepository.findById(asambleaId)
+				.orElseThrow(() -> new ResourceNotFoundException("Asamblea not found with id " + asambleaId));
+
 		Optional<UsuarioAsamblea> userAssembly = usuarioAsambleaRepository.findByUsuarioAndAsamblea(user, assembly);
-		
+
 		if (userAssembly.isPresent()) {
 			UsuarioAsamblea relation = userAssembly.get();
-			if (relation.getEsAdministrador()) return "ROLE_ASSEMBLY_ADMIN";
-		} 
-		
+			if (relation.getEsAdministrador())
+				return "ROLE_ASSEMBLY_ADMIN";
+		}
+
 		return role;
-		
+
 	}
 
+//	@PostMapping("/api/assembly")
+//	public Asamblea createAsamblea(@Valid @RequestBody Asamblea asamblea) {
+//		return asambleaRepository.save(asamblea);
+//	}
 
-	@PostMapping("/api/assembly")
-	public Asamblea createAsamblea(@Valid @RequestBody Asamblea asamblea) {
-		return asambleaRepository.save(asamblea);
-	}
-	
 	@PostMapping("/api/assembly/{asambleaId}/adduser")
 	public ResponseEntity<?> addUser(@Valid @RequestBody AssemblyUserRequest addUserRequest,
 			@PathVariable Integer asambleaId) {
@@ -274,14 +276,14 @@ public class AsambleaController {
 
 	}
 
-	@PutMapping("/api/assembly/{asambleaId}")
-	public ResponseEntity<?> updateAsamblea(@Valid @RequestBody Asamblea asamblea, @PathVariable Integer asambleaId) {
-		return asambleaRepository.findById(asambleaId).map(foundAsamblea -> {
-			asamblea.setIdAsamblea(asambleaId);
-			asambleaRepository.save(asamblea);
-			return ResponseEntity.ok().build();
-		}).orElseThrow(() -> new ResourceNotFoundException("Asamblea not found with id " + asambleaId));
-	}
+//	@PutMapping("/api/assembly/{asambleaId}")
+//	public ResponseEntity<?> updateAsamblea(@Valid @RequestBody Asamblea asamblea, @PathVariable Integer asambleaId) {
+//		return asambleaRepository.findById(asambleaId).map(foundAsamblea -> {
+//			asamblea.setIdAsamblea(asambleaId);
+//			asambleaRepository.save(asamblea);
+//			return ResponseEntity.ok().build();
+//		}).orElseThrow(() -> new ResourceNotFoundException("Asamblea not found with id " + asambleaId));
+//	}
 
 	@DeleteMapping("/api/assembly/{asambleaId}")
 	public ResponseEntity<?> deleteAsamblea(@PathVariable Integer asambleaId) {

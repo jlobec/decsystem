@@ -37,24 +37,25 @@ public class AssemblyRepositoryTest {
 
 	@Autowired
 	private AsambleaRepository asambleaRepository;
-	
+
 	@Test
 	@Transactional
 	public void shouldSaveAndFindAssembly() {
 		Asamblea asamblea = new Asamblea();
 		asamblea.setNombre("Test assembly");
 		asamblea.setDescripcion("Test description");
-		
+
 		Asamblea saved = asambleaRepository.save(asamblea);
-		
+
 		Optional<Asamblea> optional = asambleaRepository.findById(saved.getIdAsamblea());
-		
-		// Should be present 
+
+		// Should be present
 		assertTrue(optional.isPresent());
-		
+
 		Asamblea fetched = optional.get();
-		
+
 		// Should be equals the previous saved
+		assertEquals(saved.getIdAsamblea(), fetched.getIdAsamblea());
 		assertEquals(saved.getNombre(), fetched.getNombre());
 		assertEquals(saved.getDescripcion(), fetched.getDescripcion());
 	}
