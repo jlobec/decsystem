@@ -1,3 +1,18 @@
+/**
+ * Copyright © 2019 Jesus Lopez Becerra (jesus.lopez.becerra@udc.es)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package es.udc.fic.decisionsystem.controller.comentario;
 
 import java.security.Principal;
@@ -12,12 +27,10 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -69,7 +82,7 @@ public class ComentarioController {
 	public CommentResponse getComentario(@PathVariable Long comentarioId) {
 		return comentarioRepository.findById(comentarioId).map(comentario -> {
 			CommentResponse response = new CommentResponse();
-			
+
 			UserDto user = new UserDto();
 			Set<String> roles = new HashSet<>();
 			user.setUserId(comentario.getUsuario().getIdUsuario());
@@ -81,7 +94,7 @@ public class ComentarioController {
 				roles.add(r.getNombre().name());
 			}
 			user.setRoles(roles);
-			
+
 			response.setCommentId(comentario.getIdComentario());
 			response.setPollId(comentario.getConsulta().getIdConsulta());
 			response.setUser(user);
@@ -95,7 +108,7 @@ public class ComentarioController {
 	public Page<CommentResponse> getComentario(Pageable pageable) {
 		return comentarioRepository.findAll(pageable).map(comentario -> {
 			CommentResponse response = new CommentResponse();
-			
+
 			UserDto user = new UserDto();
 			Set<String> roles = new HashSet<>();
 			user.setUserId(comentario.getUsuario().getIdUsuario());
@@ -107,7 +120,7 @@ public class ComentarioController {
 				roles.add(r.getNombre().name());
 			}
 			user.setRoles(roles);
-			
+
 			response.setCommentId(comentario.getIdComentario());
 			response.setPollId(comentario.getConsulta().getIdConsulta());
 			response.setUser(user);
@@ -142,7 +155,7 @@ public class ComentarioController {
 
 		// Return result
 		CommentResponse response = new CommentResponse();
-		
+
 		UserDto userResponse = new UserDto();
 		Set<String> roles = new HashSet<>();
 		userResponse.setUserId(user.getIdUsuario());
@@ -154,7 +167,7 @@ public class ComentarioController {
 			roles.add(r.getNombre().name());
 		}
 		userResponse.setRoles(roles);
-		
+
 		response.setCommentId(commentAdded.getIdComentario());
 		response.setPollId(commentAdded.getConsulta().getIdConsulta());
 		response.setUser(userResponse);
@@ -163,7 +176,7 @@ public class ComentarioController {
 		response.setReactions(new ArrayList<>());
 		response.setReactedByUser(false);
 		return response;
-		
+
 	}
 
 	@PostMapping("/api/comment/{comentarioId}/reply")
@@ -194,7 +207,7 @@ public class ComentarioController {
 
 		// Return result
 		CommentResponse response = new CommentResponse();
-		
+
 		UserDto userResponse = new UserDto();
 		Set<String> roles = new HashSet<>();
 		userResponse.setUserId(user.getIdUsuario());
@@ -206,21 +219,20 @@ public class ComentarioController {
 			roles.add(r.getNombre().name());
 		}
 		userResponse.setRoles(roles);
-		
+
 		response.setCommentId(commentAdded.getIdComentario());
 		response.setPollId(commentAdded.getConsulta().getIdConsulta());
 		response.setUser(userResponse);
 		response.setContent(commentAdded.getContenido());
 		response.setRemoved(commentAdded.getEliminado());
 		return response;
-		
-		
+
 	}
 
 	@PostMapping("/api/comment/{comentarioId}/reaction/add")
 	public CommentResponse addReaction(@Valid @RequestBody AddCommentReactionRequest addReactionRequest,
 			@PathVariable Long comentarioId, Principal principal) {
-		
+
 		Comentario comment = comentarioRepository.findById(comentarioId)
 				.orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
 		Usuario usuario = usuarioRepository.findByNicknameOrEmail(principal.getName(), principal.getName())
@@ -239,16 +251,16 @@ public class ComentarioController {
 		reaction.setUsuario(usuario);
 
 		reaccionRepository.save(reaction);
-		
+
 		// Build response
 		List<Reaccion> reactions = reaccionRepository.findByComentario(comment);
 		return ComentarioUtil.buildCommentResponse(comment, usuario, reactions);
 	}
-	
+
 	@PostMapping("/api/comment/{comentarioId}/reaction/remove")
 	public CommentResponse removeReaction(@Valid @RequestBody RemoveCommentReactionRequest removeReactionRequest,
 			@PathVariable Long comentarioId, Principal principal) {
-		
+
 		Comentario comment = comentarioRepository.findById(comentarioId)
 				.orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
 		Usuario usuario = usuarioRepository.findByNicknameOrEmail(principal.getName(), principal.getName())
@@ -262,33 +274,34 @@ public class ComentarioController {
 		}
 
 		reaccionRepository.delete(reaction.get());
-		
+
 		// Build response
 		List<Reaccion> reactions = reaccionRepository.findByComentario(comment);
 		return ComentarioUtil.buildCommentResponse(comment, usuario, reactions);
 	}
 
-	@PutMapping("/api/comment/{comentarioId}")
-	public ResponseEntity<?> updateComentario(@Valid @RequestBody Comentario comentario,
-			@PathVariable Long comentarioId) {
-		return comentarioRepository.findById(comentarioId).map(foundComentario -> {
-			comentario.setIdComentario(comentarioId);
-			comentarioRepository.save(comentario);
-			return ResponseEntity.ok().build();
-		}).orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
-	}
+//	@PutMapping("/api/comment/{comentarioId}")
+//	public ResponseEntity<?> updateComentario(@Valid @RequestBody Comentario comentario,
+//			@PathVariable Long comentarioId) {
+//		return comentarioRepository.findById(comentarioId).map(foundComentario -> {
+//			comentario.setIdComentario(comentarioId);
+//			comentarioRepository.save(comentario);
+//			return ResponseEntity.ok().build();
+//		}).orElseThrow(() -> new ResourceNotFoundException("Comment not found with id " + comentarioId));
+//	}
 
 	@DeleteMapping("/api/comment/{comentarioId}")
 	public CommentResponse deleteComentario(@PathVariable Long comentarioId) {
-		// Logical remove in case the comment has responses and the responses have responses and so on
+		// Logical remove in case the comment has responses and the responses have
+		// responses and so on
 		CommentResponse res = comentarioRepository.findById(comentarioId).map(comentario -> {
 			comentario.setEliminado(true);
 			Comentario updated = comentarioRepository.save(comentario);
 			Usuario user = updated.getUsuario();
-			
+
 			// Return result
 			CommentResponse response = new CommentResponse();
-			
+
 			UserDto userResponse = new UserDto();
 			Set<String> roles = new HashSet<>();
 			userResponse.setUserId(user.getIdUsuario());
@@ -300,7 +313,7 @@ public class ComentarioController {
 				roles.add(r.getNombre().name());
 			}
 			userResponse.setRoles(roles);
-			
+
 			response.setCommentId(updated.getIdComentario());
 			response.setPollId(updated.getConsulta().getIdConsulta());
 			response.setUser(userResponse);
