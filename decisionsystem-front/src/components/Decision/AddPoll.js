@@ -50,8 +50,23 @@ const initialState = {
   pollOptions: [{ name: "", description: "" }]
 };
 
+const resetedState = {
+  open: false,
+  fullScreen: false,
+  title: "",
+  description: "",
+  startTime: "",
+  endTime: "",
+  pollTypeId: 0,
+  assemblyId: 0,
+  pollResultsVisibilityId: 0,
+  pollOptions: [{ name: "", description: "" }]
+};
+
 initialState.startTime = getStartDefaultValue();
 initialState.endTime = getEndDefaultValue();
+resetedState.startTime = getStartDefaultValue();
+resetedState.endTime = getEndDefaultValue();
 
 class AddPoll extends React.Component {
   state = { ...initialState };
@@ -70,6 +85,7 @@ class AddPoll extends React.Component {
   };
 
   async componentDidMount() {
+    console.log("componentDidMount");
     this.setState({ loading: true });
     const { data: assemblies } = await this.getUserAssemblies();
     if (assemblies) {
@@ -91,6 +107,7 @@ class AddPoll extends React.Component {
   }
 
   componentWillUnmount() {
+    console.log("componentWillUnMount");
     this.setState({ ...initialState });
   }
 
@@ -137,11 +154,11 @@ class AddPoll extends React.Component {
       drawRemoveBtn =
         drawRemoveBtn && index !== this.state.pollOptions.length - 1;
       return (
-        <ListItem key={`${index}${now}`}>
+        <ListItem key={`litem${index}`}>
           <TextField
             required
             margin="dense"
-            id={`${now}${option.name}`}
+            id={`${index}${option.name}`}
             name="name"
             label="Option name"
             type="text"
@@ -151,7 +168,7 @@ class AddPoll extends React.Component {
           />
           <TextField
             margin="dense"
-            id={`${now}${option.description}`}
+            id={`${index}${option.description}`}
             name="description"
             label="Option description"
             type="text"
@@ -218,7 +235,7 @@ class AddPoll extends React.Component {
       pollOptions: this.state.pollOptions
     });
     this.handleClose();
-    this.setState({ ...initialState });
+    this.setState({ ...resetedState });
   };
 
   render() {

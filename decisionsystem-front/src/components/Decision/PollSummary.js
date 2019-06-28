@@ -234,6 +234,7 @@ class PollSummary extends React.Component {
       poll.pollOptions
     );
     const pollSystem = poll.pollSystem;
+    const showMenu = poll.votedByUser || isAssemblyAdmin;
     return (
       <Card className={classes.card}>
         <CardContent>
@@ -251,24 +252,31 @@ class PollSummary extends React.Component {
             <Grid item>
               <Chip label={`${pollSystem.name}`} color="primary" />
             </Grid>
-            <Grid item>
-              <IconButton aria-label="Options" onClick={this.handleOpenMenu}>
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                id="simple-menu"
-                anchorEl={this.state.anchorEl}
-                open={Boolean(this.state.anchorEl)}
-                onClose={this.handleCloseMenu}
-              >
-                <MenuItem onClick={this.handleCloseMenu}>Undo vote</MenuItem>
-                {isAssemblyAdmin && (
-                  <MenuItem onClick={this.handleSendVoteReminder}>
-                    Send vote reminder
-                  </MenuItem>
-                )}
-              </Menu>
-            </Grid>
+            {showMenu && (
+              <Grid item>
+                <IconButton aria-label="Options" onClick={this.handleOpenMenu}>
+                  <MoreVertIcon />
+                </IconButton>
+                <Menu
+                  id="simple-menu"
+                  anchorEl={this.state.anchorEl}
+                  open={Boolean(this.state.anchorEl)}
+                  onClose={this.handleCloseMenu}
+                >
+                  {poll.votedByUser && (
+                    <MenuItem onClick={this.handleCloseMenu}>
+                      Undo vote
+                    </MenuItem>
+                  )}
+
+                  {isAssemblyAdmin && (
+                    <MenuItem onClick={this.handleSendVoteReminder}>
+                      Send vote reminder
+                    </MenuItem>
+                  )}
+                </Menu>
+              </Grid>
+            )}
           </Grid>
           <Typography className={classes.pos} color="textSecondary">
             {`From ${this.getFormattedDate(
