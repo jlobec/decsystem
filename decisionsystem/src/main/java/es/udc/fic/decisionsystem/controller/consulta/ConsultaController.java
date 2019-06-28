@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -54,13 +53,11 @@ import es.udc.fic.decisionsystem.model.consultaasamblea.ConsultaAsamblea;
 import es.udc.fic.decisionsystem.model.consultaopcion.ConsultaOpcion;
 import es.udc.fic.decisionsystem.model.notificacion.Notificacion;
 import es.udc.fic.decisionsystem.model.reaccion.Reaccion;
-import es.udc.fic.decisionsystem.model.rol.Rol;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsulta;
 import es.udc.fic.decisionsystem.model.sistemaconsulta.SistemaConsultaEnum;
 import es.udc.fic.decisionsystem.model.usuario.Usuario;
 import es.udc.fic.decisionsystem.model.util.DateUtil;
 import es.udc.fic.decisionsystem.payload.ApiResponse;
-import es.udc.fic.decisionsystem.payload.comentario.CommentReactionResponse;
 import es.udc.fic.decisionsystem.payload.comentario.CommentResponse;
 import es.udc.fic.decisionsystem.payload.consulta.AddPollOptionRequest;
 import es.udc.fic.decisionsystem.payload.consulta.CreatePollRequest;
@@ -74,7 +71,6 @@ import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultCsv;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResults;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultsItem;
 import es.udc.fic.decisionsystem.payload.pollsystem.PollSystemResponse;
-import es.udc.fic.decisionsystem.payload.usuario.UserDto;
 import es.udc.fic.decisionsystem.repository.asamblea.AsambleaRepository;
 import es.udc.fic.decisionsystem.repository.comentario.ComentarioRepository;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
@@ -118,13 +114,13 @@ public class ConsultaController {
 
 	@Autowired
 	private VisibilidadResultadoConsultaRepository visibilidadResultadoConsultaRepository;
-	
+
 	@Autowired
 	private NotificacionRepository notificacionRepository;
 
 	@Autowired
 	private ConsultaService consultaService;
-	
+
 	@Autowired
 	private ReaccionRepository reaccionRepository;
 
@@ -177,7 +173,7 @@ public class ConsultaController {
 			return result;
 		}).collect(Collectors.toList());
 	}
-	
+
 	@GetMapping("/api/poll/open")
 	public Page<PollSummaryResponse> getOpenPolls(Pageable pageable, Principal principal,
 			@RequestParam(value = "pollTypeId", required = false) Integer pollTypeId,
@@ -198,7 +194,7 @@ public class ConsultaController {
 		Consulta consulta = consultaRepository.findById(consultaId).map(c -> {
 			return c;
 		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
-		
+
 		Usuario loggedUser = usuarioRepository.findByNickname(principal.getName())
 				.orElseThrow(() -> new ResourceNotFoundException("Logged user not found"));
 
@@ -214,8 +210,9 @@ public class ConsultaController {
 	}
 
 	@GetMapping("/api/poll/{consultaId}/results/export")
-	public void getExportedResults(@PathVariable Long consultaId, @RequestParam(value = "format", required = true) String format,
-			HttpServletResponse response) throws IOException {
+	public void getExportedResults(@PathVariable Long consultaId,
+			@RequestParam(value = "format", required = true) String format, HttpServletResponse response)
+			throws IOException {
 
 		if (!"csv".equalsIgnoreCase(format)) {
 			throw new BadRequestException("Format not supported yet.");
@@ -259,7 +256,7 @@ public class ConsultaController {
 		}
 
 		response.setContentType("text/csv");
-	    response.setHeader("Content-Disposition", "attachment; file=example.csv");
+		response.setHeader("Content-Disposition", "attachment; file=example.csv");
 		try (CSVPrinter csvPrinter = new CSVPrinter(response.getWriter(), CSVFormat.DEFAULT.withHeader(header));) {
 			for (PollResultCsv csvRow : resultList) {
 				List<String> data = Arrays.asList(csvRow.getOptionName(), csvRow.getOptionDescription(),
@@ -270,8 +267,7 @@ public class ConsultaController {
 			}
 			csvPrinter.flush();
 		} catch (Exception e) {
-			System.out.println("Writing CSV error!");
-			e.printStackTrace();
+			throw new BadRequestException("Could not generate report");
 		}
 
 	}
@@ -385,39 +381,38 @@ public class ConsultaController {
 		return ResponseEntity.ok().body(new ApiResponse(true, "Option added"));
 
 	}
-	
-	
+
 	@PostMapping("/api/poll/{consultaId}/reminder")
 	public ResponseEntity<?> addReminder(@Valid @RequestBody PollReminderRequest pollReminderRequest,
 			@PathVariable Long consultaId) {
-		
+
 		Consulta consulta = consultaRepository.findById(consultaId).map(c -> {
 			return c;
 		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
-		
+
 		// Check by type
 		Set<Usuario> usersToRemind = new HashSet<>();
 		Set<Usuario> pollUsers = new HashSet<>();
 		if ("unvoted_poll".equalsIgnoreCase(pollReminderRequest.getReminderType())) {
-			
-			// Get all registered users for the poll 
+
+			// Get all registered users for the poll
 			List<Asamblea> pollAssemblies = asambleaRepository.findByIdConsulta(consultaId);
 			if (pollAssemblies != null && !pollAssemblies.isEmpty()) {
-				
-				for (Asamblea a: pollAssemblies) {
+
+				for (Asamblea a : pollAssemblies) {
 					List<Usuario> assemblyUsers = usuarioRepository.findAllByIdAsamblea(a.getIdAsamblea());
 					pollUsers.addAll(assemblyUsers);
 				}
 			}
-			
+
 			// Filter the ones who havent voted
-			for (Usuario user: pollUsers) {
+			for (Usuario user : pollUsers) {
 				PollSummaryResponse pollSummary = consultaService.buildPollSummaryResponse(consulta, user);
 				if (!pollSummary.isVotedByUser()) {
 					usersToRemind.add(user);
 				}
 			}
-			
+
 			// Save a notification per user
 			for (Usuario u : usersToRemind) {
 				Notificacion notification = new Notificacion();
@@ -433,14 +428,14 @@ public class ConsultaController {
 
 	}
 
-	@PutMapping("/api/poll/{consultaId}")
-	public ResponseEntity<?> updateConsulta(@Valid @RequestBody Consulta consulta, @PathVariable Long consultaId) {
-		return consultaRepository.findById(consultaId).map(foundConsulta -> {
-			consulta.setIdConsulta(consultaId);
-			consultaRepository.save(consulta);
-			return ResponseEntity.ok().build();
-		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
-	}
+//	@PutMapping("/api/poll/{consultaId}")
+//	public ResponseEntity<?> updateConsulta(@Valid @RequestBody Consulta consulta, @PathVariable Long consultaId) {
+//		return consultaRepository.findById(consultaId).map(foundConsulta -> {
+//			consulta.setIdConsulta(consultaId);
+//			consultaRepository.save(consulta);
+//			return ResponseEntity.ok().build();
+//		}).orElseThrow(() -> new ResourceNotFoundException("Poll not found with id " + consultaId));
+//	}
 
 	@DeleteMapping("/api/poll/{consultaId}")
 	public ResponseEntity<?> deleteConsulta(@PathVariable Long consultaId) {

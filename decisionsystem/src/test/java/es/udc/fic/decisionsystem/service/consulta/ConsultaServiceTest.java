@@ -72,9 +72,8 @@ import es.udc.fic.decisionsystem.repository.voto.VotoRepository;
 @SpringBootTest
 @Sql(executionPhase = ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:test_setup.sql")
 public class ConsultaServiceTest {
-	
+
 	private static final Integer SINGLE_OPTION_SYSTEM_ID = 1;
-	
 
 	@Autowired
 	private ConsultaService consultaService;
@@ -108,7 +107,7 @@ public class ConsultaServiceTest {
 
 	@Autowired
 	private ConsultaAsambleaRepository consultaAsambleaRepository;
-	
+
 	@Autowired
 	private VotoRepository voteRepository;
 
@@ -123,7 +122,7 @@ public class ConsultaServiceTest {
 		// Check data
 		assertEquals(savedPoll.getIdConsulta(), pollResponse.getPollId());
 	}
-	
+
 	@Test
 	@Transactional
 	public void shouldSaveAndReturnPollByIdWithOptions() {
@@ -131,7 +130,7 @@ public class ConsultaServiceTest {
 				VisibilidadResultadoConsultaEnum.Public, "test", "test desc", new Date(), new Date());
 		this.addOptionToPoll(savedPoll, "Option1", "option 1 description");
 		this.addOptionToPoll(savedPoll, "Option2", "option 2 description");
-		
+
 		PollSummaryResponse pollResponse = consultaService.getPollById(savedPoll.getIdConsulta(), null);
 
 		// Check data
@@ -160,13 +159,13 @@ public class ConsultaServiceTest {
 		// Check results
 		// Only one poll for the user and it must be the one we have just saved
 		assertTrue(userPolls.size() == 1);
-		
+
 		// The poll retrieved should be the one saved
 		PollSummaryResponse userPoll = userPolls.get(0);
 		assertEquals(userPoll.getPollId(), savedPoll.getIdConsulta());
 		assertEquals(userPoll.getTitle(), savedPoll.getTitulo());
 	}
-	
+
 	@Test
 	@Transactional
 	public void shouldReturnUserPollsWithOnlySystemFilter() {
@@ -189,13 +188,13 @@ public class ConsultaServiceTest {
 		// Check results
 		// Only one poll for the user and it must be the one we have just saved
 		assertTrue(userPolls.size() == 1);
-		
+
 		// The poll retrieved should be the one saved
 		PollSummaryResponse userPoll = userPolls.get(0);
 		assertEquals(userPoll.getPollId(), savedPoll.getIdConsulta());
 		assertEquals(userPoll.getTitle(), savedPoll.getTitulo());
 	}
-	
+
 	@Test
 	@Transactional
 	public void shouldReturnUserPollsWithOnlyStatusFilter() {
@@ -218,13 +217,13 @@ public class ConsultaServiceTest {
 		// Check results
 		// Only one poll for the user and it must be the one we have just saved
 		assertTrue(userPolls.size() == 1);
-		
+
 		// The poll retrieved should be the one saved
 		PollSummaryResponse userPoll = userPolls.get(0);
 		assertEquals(userPoll.getPollId(), savedPoll.getIdConsulta());
 		assertEquals(userPoll.getTitle(), savedPoll.getTitulo());
 	}
-	
+
 	@Test
 	@Transactional
 	public void shouldReturnUserPollsWithStatusAndTypeFilter() {
@@ -247,7 +246,7 @@ public class ConsultaServiceTest {
 		// Check results
 		// Only one poll for the user and it must be the one we have just saved
 		assertTrue(userPolls.size() == 1);
-		
+
 		// The poll retrieved should be the one saved
 		PollSummaryResponse userPoll = userPolls.get(0);
 		assertEquals(userPoll.getPollId(), savedPoll.getIdConsulta());
@@ -263,7 +262,7 @@ public class ConsultaServiceTest {
 		List<PollResults> results = consultaService.getResults(savedPoll.getIdConsulta());
 		assertTrue(results.size() == 0);
 	}
-	
+
 	@Test
 	@Transactional
 	public void pollWithNoVotedOptionsShouldGetEmptyResults() {
@@ -272,25 +271,26 @@ public class ConsultaServiceTest {
 
 		this.addOptionToPoll(savedPoll, "Option1", "option 1 description");
 		this.addOptionToPoll(savedPoll, "Option2", "option 2 description");
-		
+
 		List<PollResults> results = consultaService.getResults(savedPoll.getIdConsulta());
 		assertTrue(results.size() == 0);
 	}
-	
+
 	@Test
 	@Transactional
 	public void pollWithVotedOptionsShouldGetResults() {
 		// Prepare data
 		Consulta savedPoll = this.savePoll(EstadoConsultaEnum.Open, SistemaConsultaEnum.SINGLE_OPTION,
 				VisibilidadResultadoConsultaEnum.Public, "test", "test desc", new Date(), new Date());
-		Usuario user = this.saveUsuario("name", "lastName", "email@email.com", "nickname", "passwd", RoleName.ROLE_USER);
+		Usuario user = this.saveUsuario("name", "lastName", "email@email.com", "nickname", "passwd",
+				RoleName.ROLE_USER);
 		ConsultaOpcion option1 = this.addOptionToPoll(savedPoll, "Option1", "option 1 description");
 		ConsultaOpcion option2 = this.addOptionToPoll(savedPoll, "Option2", "option 2 description");
 		this.addVote(option1, user);
-		
+
 		// Execute operation
 		List<PollResults> results = consultaService.getResults(savedPoll.getIdConsulta());
-		
+
 		// Check results
 		assertTrue(results.size() == 1);
 		PollResults result = results.get(0);
@@ -306,9 +306,9 @@ public class ConsultaServiceTest {
 		assertEquals(resultItems.get(0).getUser().getName(), user.getNombre());
 		assertEquals(resultItems.get(0).getUser().getLastName(), user.getApellido());
 		assertEquals(resultItems.get(0).getUser().getNickname(), user.getNickname());
-		
+
 	}
-	
+
 	private void addVote(ConsultaOpcion option, Usuario user) {
 		Voto v = new Voto();
 		v.setConsultaOpcion(option);
@@ -317,8 +317,7 @@ public class ConsultaServiceTest {
 
 		Voto savedVote = voteRepository.save(v);
 	}
-	
-	
+
 	private ConsultaOpcion addOptionToPoll(Consulta poll, String optionName, String optionDesc) {
 		ConsultaOpcion option = new ConsultaOpcion();
 		option.setConsulta(poll);
