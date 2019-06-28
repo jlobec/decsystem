@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import es.udc.fic.decisionsystem.exception.BadRequestException;
 import es.udc.fic.decisionsystem.exception.ResourceNotFoundException;
+import es.udc.fic.decisionsystem.model.comentario.Comentario;
 import es.udc.fic.decisionsystem.model.consulta.Consulta;
 import es.udc.fic.decisionsystem.model.consultaopcion.ConsultaOpcion;
 import es.udc.fic.decisionsystem.model.rol.Rol;
@@ -46,6 +47,7 @@ import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResults;
 import es.udc.fic.decisionsystem.payload.consulta.resultados.PollResultsItem;
 import es.udc.fic.decisionsystem.payload.pollsystem.PollSystemResponse;
 import es.udc.fic.decisionsystem.payload.usuario.UserDto;
+import es.udc.fic.decisionsystem.repository.comentario.ComentarioRepository;
 import es.udc.fic.decisionsystem.repository.consulta.ConsultaRepository;
 import es.udc.fic.decisionsystem.repository.consultaopcion.ConsultaOpcionRepository;
 import es.udc.fic.decisionsystem.repository.voto.VotoRepository;
@@ -61,6 +63,9 @@ public class ConsultaServiceImpl implements ConsultaService {
 
 	@Autowired
 	private VotoRepository votoRepository;
+	
+	@Autowired
+	private ComentarioRepository comentarioRepository;
 
 	/**
 	 * {@inheritDoc}
@@ -159,6 +164,12 @@ public class ConsultaServiceImpl implements ConsultaService {
 		default:
 			throw new BadRequestException("Poll system not found");
 		}
+		
+		List<Comentario> comments = comentarioRepository.findAllByConsulta(poll);
+		Integer commentNumber = 0;
+		if (comments != null && !comments.isEmpty()) {
+			commentNumber = comments.size();
+		}
 
 		PollSystemResponse pollSystem = new PollSystemResponse();
 		pollSystem.setPollTypeId(poll.getSistemaConsulta().getIdSistemaConsulta());
@@ -185,6 +196,7 @@ public class ConsultaServiceImpl implements ConsultaService {
 		pollSummary.setStatus(pollStatus);
 		pollSummary.setResultsVisibility(pollResultsVisibility);
 		pollSummary.setPollOptions(pollOptions);
+		pollSummary.setCommentNumber(commentNumber);
 
 		return pollSummary;
 	}

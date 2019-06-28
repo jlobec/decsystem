@@ -309,7 +309,7 @@ class PollSummary extends React.Component {
           {!onDetails && (
             <IconButton aria-label="Comment" onClick={this.handleClickComment}>
               <CommentIcon />
-              {this.props.commentsNumber ? this.props.commentsNumber : 0}
+              {poll.commentNumber ? poll.commentNumber : 0}
             </IconButton>
           )}
         </CardActions>

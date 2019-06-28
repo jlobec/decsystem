@@ -15,6 +15,8 @@
  */
 package es.udc.fic.decisionsystem.repository.comentario;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,4 +29,6 @@ import es.udc.fic.decisionsystem.model.consulta.Consulta;
 public interface ComentarioRepository extends JpaRepository<Comentario, Long>{
 
 	Page<Comentario> findByConsulta(Pageable pageable, Consulta consulta);
+	
+	List<Comentario> findAllByConsulta(Consulta consulta);
 }

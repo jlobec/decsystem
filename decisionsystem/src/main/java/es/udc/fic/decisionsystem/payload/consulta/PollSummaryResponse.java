@@ -31,6 +31,7 @@ public class PollSummaryResponse {
 	private boolean votedByUser;
 	private PollSystemResponse pollSystem;
 	private List<PollOptionResponse> pollOptions;
+	private Integer commentNumber;
 
 	public Long getPollId() {
 		return pollId;
@@ -110,6 +111,14 @@ public class PollSummaryResponse {
 
 	public void setResultsVisibility(PollResultsVisibilityResponse resultsVisibility) {
 		this.resultsVisibility = resultsVisibility;
+	}
+
+	public Integer getCommentNumber() {
+		return commentNumber;
+	}
+
+	public void setCommentNumber(Integer commentNumber) {
+		this.commentNumber = commentNumber;
 	}
 
 }
